@@ -15,9 +15,9 @@ export default function MobileNav({ onQuickAdd }: { onQuickAdd: () => void }) {
   const isActive = (href: string) => pathname?.startsWith(href);
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-background/92 backdrop-blur-lg lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card lg:hidden">
       <div className="relative mx-auto max-w-[820px] px-2 pb-2 pt-2">
-        <div className="grid grid-cols-5 items-end gap-1 rounded-xl bg-card/85 px-1 py-1">
+        <div className="grid grid-cols-5 items-end gap-1 rounded-xl bg-card px-1 py-1">
           {[0, 1, 2, 3, 4].map((slot) => {
             const placement =
               slot === 2

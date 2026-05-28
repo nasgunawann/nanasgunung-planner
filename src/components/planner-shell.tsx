@@ -33,7 +33,7 @@ export default function PlannerShell({
         <Sidebar />
 
         <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0 lg:ml-[220px]">
-          <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 px-4 py-3 backdrop-blur-lg sm:px-6 lg:px-8">
+          <header className="sticky top-0 z-30 border-b border-border/60 bg-background px-4 py-3 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between gap-4">
               <h1 className="font-heading text-lg font-semibold">
                 {activePageHeader.title}

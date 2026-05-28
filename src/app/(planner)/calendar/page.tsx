@@ -44,17 +44,10 @@ export default function CalendarPage() {
     return eachDayOfInterval({ start: gridStart, end: gridEnd });
   }, [currentMonth]);
 
-  const monthHasItems = useMemo(() => {
-    return days.some(
-      (d) => isSameMonth(d, currentMonth) && itemsForDate(d).length > 0,
-    );
-  }, [days, currentMonth, drafts]);
-
   const monthLabel = format(currentMonth, "LLLL yyyy", { locale: id });
 
   function itemsForDate(date: Date) {
     const key = format(date, "yyyy-MM-dd");
-
     return Array.isArray(drafts)
       ? drafts.filter((draft) => draft.date === key)
       : [];
@@ -67,6 +60,9 @@ export default function CalendarPage() {
     LinkedIn: IconBrandLinkedin,
   };
 
+  const categoryOptions = ["Stories", "Reels", "Post"];
+  const statusOptions = ["Draft", "In progress", "Published"];
+
   function openDay(date: Date) {
     setSelectedDate(date);
   }
@@ -77,16 +73,17 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-border/60 bg-card/75 p-3">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">{monthLabel}</h2>
+      <div className="rounded-md border border-border/60 bg-card p-3">
+        {/* Header Calendar */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold capitalize">{monthLabel}</h2>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
               aria-label="Previous month"
               onClick={() => setCurrentMonth((date) => subMonths(date, 1))}
-              className="rounded-md border border-border px-2 py-1 text-sm"
+              className="rounded-md border border-border bg-background hover:bg-muted px-2 py-1 text-sm transition-colors"
             >
               <IconChevronLeft className="h-4 w-4" />
             </button>
@@ -98,7 +95,7 @@ export default function CalendarPage() {
                 const now = new Date();
                 setCurrentMonth(new Date(now.getFullYear(), now.getMonth(), 1));
               }}
-              className="rounded-md border border-border px-3 py-1 text-sm"
+              className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1 text-sm font-medium transition-colors"
             >
               Today
             </button>
@@ -107,202 +104,128 @@ export default function CalendarPage() {
               type="button"
               aria-label="Next month"
               onClick={() => setCurrentMonth((date) => addMonths(date, 1))}
-              className="rounded-md border border-border px-2 py-1 text-sm"
+              className="rounded-md border border-border bg-background hover:bg-muted px-2 py-1 text-sm transition-colors"
             >
               <IconChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-7 gap-2">
+
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 gap-2 mb-2">
           {weekDays.map((day) => (
             <div
               key={day}
-              className="px-2 py-1 text-center text-xs font-medium text-muted-foreground"
+              className="px-2 py-1 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider"
             >
               {day}
             </div>
           ))}
         </div>
 
-        {monthHasItems ? (
-          <div className="mt-3 max-h-[60vh] overflow-y-auto">
-            <div className="grid grid-cols-7 gap-2">
-              {days.map((date) => {
-                const activeMonth = isSameMonth(date, currentMonth);
-                const dateKey = format(date, "yyyy-MM-dd");
-                const items = itemsForDate(date);
+        {/* Calendar Grid - ALWAYS visible */}
+        <div className="grid grid-cols-7 gap-2">
+          {days.map((date) => {
+            const activeMonth = isSameMonth(date, currentMonth);
+            const dateKey = format(date, "yyyy-MM-dd");
+            const items = itemsForDate(date);
+            const today = isToday(date);
 
-                return (
-                  <button
-                    key={dateKey}
-                    type="button"
-                    onClick={() => openDay(date)}
-                    className={[
-                      "relative min-h-28 overflow-hidden rounded-md border p-2 pt-8 text-left text-sm transition-colors",
-                      activeMonth
-                        ? "border-border/50 bg-background"
-                        : "border-border/10 bg-muted/5 dark:bg-muted/5 text-muted-foreground/60 dark:text-muted-foreground/60 opacity-70",
-                      isToday(date)
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "",
-                    ].join(" ")}
-                  >
-                    <div
-                      className={[
-                        "absolute left-1/2 top-2 -translate-x-1/2 rounded-full px-2 py-0.5 text-xs font-semibold",
-                        isToday(date)
-                          ? "bg-background/15 text-primary-foreground"
-                          : "bg-muted/70 text-foreground",
-                      ].join(" ")}
-                    >
-                      {format(date, "d")}
-                    </div>
-
-                    <div className="space-y-1">
-                      {items.slice(0, 1).map((item) => {
-                        const status = normalizeStatus(item.status);
-                        const statusTheme =
-                          statusAccentMap[status] ?? statusAccentMap.Default;
-                        const Icon = platformIconMap[item.platform ?? ""];
-
-                        return (
-                          <div
-                            key={item.id}
-                            className={[
-                              "rounded-md px-2 py-1 text-[11px] leading-tight",
-                              statusTheme.bg,
-                              statusTheme.chipText,
-                            ].join(" ")}
-                          >
-                            <div className="flex items-center gap-2">
-                              {Icon ? (
-                                <span
-                                  className={[
-                                    "inline-flex items-center justify-center rounded-full p-1",
-                                    platformColorMap[
-                                      item.platform ?? "Default"
-                                    ],
-                                  ].join(" ")}
-                                  aria-hidden
-                                >
-                                  <Icon className="h-4 w-4" />
-                                </span>
-                              ) : null}
-
-                              <div className="min-w-0 flex-1">
-                                <div className="truncate whitespace-nowrap font-medium">
-                                  {item.title}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {items.length > 1 ? (
-                        <div className="px-2 text-[10px] font-medium text-muted-foreground md:hidden">
-                          +{items.length - 1} more
-                        </div>
-                      ) : null}
-
-                      {items.slice(1, 2).map((item) => {
-                        const status = normalizeStatus(item.status);
-                        const statusTheme =
-                          statusAccentMap[status] ?? statusAccentMap.Default;
-                        const Icon = platformIconMap[item.platform ?? ""];
-
-                        return (
-                          <div
-                            key={item.id}
-                            className={[
-                              "hidden rounded-md px-2 py-1 text-[11px] leading-tight md:block",
-                              statusTheme.bg,
-                              statusTheme.chipText,
-                            ].join(" ")}
-                          >
-                            <div className="flex items-center gap-2">
-                              {Icon ? (
-                                <span
-                                  className={[
-                                    "inline-flex items-center justify-center rounded-full p-1",
-                                    platformColorMap[
-                                      item.platform ?? "Default"
-                                    ],
-                                  ].join(" ")}
-                                  aria-hidden
-                                >
-                                  <Icon className="h-4 w-4" />
-                                </span>
-                              ) : null}
-
-                              <div className="min-w-0 flex-1">
-                                <div className="truncate whitespace-nowrap font-medium">
-                                  {item.title}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {items.length > 2 ? (
-                        <div className="hidden px-2 text-[10px] font-medium text-muted-foreground md:block">
-                          +{items.length - 2} more
-                        </div>
-                      ) : null}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div className="mt-3 flex items-center justify-center rounded-md border border-border/60 bg-muted/10 p-6">
-            <div className="max-w-xl text-center">
-              <p className="mb-2 text-lg font-semibold">
-                No items scheduled this month.
-              </p>
-              <p className="mb-4 text-sm text-muted-foreground">
-                Add your first draft to get started.
-              </p>
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedDate(
-                      new Date(
-                        currentMonth.getFullYear(),
-                        currentMonth.getMonth(),
-                        1,
-                      ),
-                    )
-                  }
-                  className="rounded bg-primary px-4 py-2 text-white"
+            return (
+              <button
+                key={dateKey}
+                type="button"
+                onClick={() => openDay(date)}
+                className={[
+                  "relative min-h-[110px] overflow-hidden rounded-md border p-1 pt-7 text-left text-sm transition-all outline-none",
+                  activeMonth
+                    ? "border-border/50 bg-background hover:border-primary/40"
+                    : "border-border/10 bg-muted/20 text-muted-foreground/40 opacity-60",
+                  today
+                    ? "ring-2 ring-primary border-primary bg-primary/5"
+                    : "",
+                ].join(" ")}
+              >
+                {/* Date Number Badge */}
+                <div
+                  className={[
+                    "absolute left-1/2 top-1.5 -translate-x-1/2 rounded-full px-2 py-0.5 text-xs font-bold transition-colors",
+                    today
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : activeMonth
+                      ? "bg-muted text-foreground"
+                      : "bg-muted/30 text-muted-foreground/50",
+                  ].join(" ")}
                 >
-                  Add event
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+                  {format(date, "d")}
+                </div>
+
+                {/* Items/Drafts List inside Date Block */}
+                <div className="space-y-1 mt-1">
+                  {items.slice(0, 2).map((item) => {
+                    const status = normalizeStatus(item.status);
+                    const statusTheme =
+                      statusAccentMap[status] ?? statusAccentMap.Default;
+                    const Icon = platformIconMap[item.platform ?? ""];
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={[
+                          "rounded px-1.5 py-0.5 text-[10px] leading-tight font-medium overflow-hidden truncate",
+                          statusTheme.bg,
+                          statusTheme.chipText,
+                          "border",
+                          statusTheme.border,
+                        ].join(" ")}
+                      >
+                        <div className="flex items-center gap-1">
+                          {Icon ? (
+                            <span
+                              className={[
+                                "inline-flex items-center justify-center rounded-full p-0.5 scale-75",
+                                platformColorMap[item.platform ?? "Default"],
+                              ].join(" ")}
+                              aria-hidden
+                            >
+                              <Icon className="h-3 w-3 text-white" />
+                            </span>
+                          ) : null}
+                          <span className="truncate flex-1">{item.title}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {items.length > 2 ? (
+                    <div className="px-1.5 text-[9px] font-bold text-muted-foreground">
+                      +{items.length - 2} more
+                    </div>
+                  ) : null}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Enhanced Scheduling Modal (with Script/Storyboard Support) */}
       {selectedDate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3 py-3">
-          <div className="w-full max-w-md overflow-hidden rounded-xl border border-border/60 bg-background p-6 shadow-lg">
-            <div className="flex items-center justify-between gap-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-3">
+          <div className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
               <div>
-                <h3 className="font-heading text-lg font-semibold">
-                  New draft
+                <h3 className="font-heading text-lg font-bold">
+                  Schedule New Content
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {format(selectedDate, "PP")}
+                <p className="text-xs text-muted-foreground">
+                  Planned for {format(selectedDate, "PP")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="rounded-md border border-border px-3 py-2 text-sm"
+                className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1.5 text-xs font-semibold transition-colors"
               >
                 Close
               </button>
@@ -317,36 +240,129 @@ export default function CalendarPage() {
                   form.elements.namedItem("title") as HTMLInputElement | null
                 )?.value.trim();
                 const platform = (
-                  form.elements.namedItem("platform") as HTMLInputElement | null
+                  form.elements.namedItem("platform") as HTMLSelectElement | null
+                )?.value.trim();
+                const category = (
+                  form.elements.namedItem("category") as HTMLSelectElement | null
+                )?.value.trim();
+                const status = (
+                  form.elements.namedItem("status") as HTMLSelectElement | null
+                )?.value.trim();
+                const content = (
+                  form.elements.namedItem("content") as HTMLTextAreaElement | null
                 )?.value.trim();
 
                 if (!title) return;
 
                 addDraft({
                   title,
-                  platform,
+                  platform: platform || "Instagram",
+                  category: category || "Post",
+                  status: status || "Draft",
+                  content: content || "",
                   date: format(selectedDate, "yyyy-MM-dd"),
                 });
 
                 closeModal();
               }}
             >
-              <input
-                name="title"
-                placeholder="Title"
-                className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none"
-              />
-              <input
-                name="platform"
-                placeholder="Platform"
-                className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none"
-              />
-              <div className="flex justify-end">
+              {/* Title Field */}
+              <div className="grid gap-1">
+                <label htmlFor="title" className="text-xs font-semibold text-muted-foreground">
+                  Title
+                </label>
+                <input
+                  id="title"
+                  name="title"
+                  required
+                  placeholder="e.g. Next.js Refactoring Reels"
+                  className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+                />
+              </div>
+
+              {/* Grid for Platform and Category */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-1">
+                  <label htmlFor="platform" className="text-xs font-semibold text-muted-foreground">
+                    Platform
+                  </label>
+                  <select
+                    id="platform"
+                    name="platform"
+                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+                  >
+                    <option value="Instagram">Instagram</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="YouTube">YouTube</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                  </select>
+                </div>
+
+                <div className="grid gap-1">
+                  <label htmlFor="category" className="text-xs font-semibold text-muted-foreground">
+                    Format/Category
+                  </label>
+                  <select
+                    id="category"
+                    name="category"
+                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+                  >
+                    {categoryOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Status Selector */}
+              <div className="grid gap-1">
+                <label htmlFor="status" className="text-xs font-semibold text-muted-foreground">
+                  Workflow Status
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+                >
+                  {statusOptions.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Script / Storyboard - Prep for Rich-Text Editor */}
+              <div className="grid gap-1">
+                <label htmlFor="content" className="text-xs font-semibold text-muted-foreground flex justify-between">
+                  <span>Script & Outline</span>
+                  <span className="text-[10px] text-muted-foreground font-normal">(Rich text prep)</span>
+                </label>
+                <textarea
+                  id="content"
+                  name="content"
+                  rows={4}
+                  placeholder="Hook: Stop coding React state...&#10;Scene 1: Close up of laptop...&#10;Scene 2: Transition..."
+                  className="rounded-md border border-border bg-background p-3 text-sm outline-none focus:border-primary/50 resize-none"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2 border-t border-border/60 pt-3 mt-1">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="rounded-md border border-border bg-background hover:bg-muted px-4 py-2 text-sm font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
-                  className="rounded bg-primary px-3 py-2 text-white"
+                  className="rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2 text-sm font-semibold transition-colors"
                 >
-                  Create
+                  Create & Schedule
                 </button>
               </div>
             </form>

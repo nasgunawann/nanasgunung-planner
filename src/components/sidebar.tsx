@@ -15,7 +15,7 @@ export default function Sidebar() {
   const isActive = (href: string) => pathname?.startsWith(href);
 
   return (
-    <aside className="sticky top-0 hidden lg:fixed lg:left-0 lg:top-0 lg:h-screen h-screen w-[220px] shrink-0 border-r border-border/70 bg-background/80 px-4 py-6 backdrop-blur-xl lg:flex lg:flex-col">
+    <aside className="sticky top-0 hidden lg:fixed lg:left-0 lg:top-0 lg:h-screen h-screen w-[220px] shrink-0 border-r border-border/70 bg-card px-4 py-6 lg:flex lg:flex-col">
       <div className="flex items-center gap-3">
         <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <IconLayoutDashboard className="size-5" />
