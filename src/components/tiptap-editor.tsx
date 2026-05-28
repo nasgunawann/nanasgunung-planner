@@ -18,9 +18,14 @@ import {
 type TipTapEditorProps = {
   content: string;
   onChange: (val: string) => void;
+  insertTrigger?: { text: string; time: number } | null;
 };
 
-export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
+export default function TipTapEditor({
+  content,
+  onChange,
+  insertTrigger,
+}: TipTapEditorProps) {
   // Initialize TipTap
   const editor = useEditor({
     extensions: [StarterKit],
@@ -31,10 +36,18 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
     },
     editorProps: {
       attributes: {
-        class: "focus:outline-none min-h-[420px] text-xs text-muted-foreground leading-relaxed p-4 font-sans ProseMirror",
+        class:
+          "focus:outline-none min-h-[420px] text-xs text-muted-foreground leading-relaxed p-4 font-sans ProseMirror",
       },
     },
   });
+
+  // Listen for text insertion triggers from parents
+  useEffect(() => {
+    if (!editor || !insertTrigger) return;
+    editor.commands.insertContent(insertTrigger.text);
+    editor.commands.focus();
+  }, [insertTrigger, editor]);
 
   // Sync internal TipTap state if the parent content changes externally (e.g. Initial load)
   useEffect(() => {
@@ -50,22 +63,10 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
     );
   }
 
-  // Inject hashtags into current cursor location using TipTap Transactions
-  const injectHashtags = (tags: string[]) => {
-    editor.chain().focus().insertContent(" " + tags.join(" ") + " ").run();
-  };
-
-  const hashtagPacks: Record<string, string[]> = {
-    Code: ["#developer", "#nextjs", "#programming", "#coding", "#reactjs"],
-    Design: ["#uidesign", "#webdesign", "#figma", "#creative", "#aesthetics"],
-    Life: ["#solocreator", "#developerlife", "#buildinpublic", "#remotework"],
-  };
-
   return (
     <div className="flex-1 flex flex-col overflow-hidden min-h-0">
       {/* Dynamic WYSIWYG Formatting Toolbar */}
       <div className="bg-muted/30 border-b border-border/50 px-3 py-2 flex flex-wrap items-center gap-1 shadow-inner shrink-0">
-        
         {/* Bold Button */}
         <button
           type="button"
@@ -100,7 +101,9 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
         <button
           type="button"
           title="Heading 1"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
           className={[
             "size-7 flex items-center justify-center rounded transition-colors",
             editor.isActive("heading", { level: 1 })
@@ -115,7 +118,9 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
         <button
           type="button"
           title="Heading 2"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
           className={[
             "size-7 flex items-center justify-center rounded transition-colors",
             editor.isActive("heading", { level: 2 })
@@ -187,22 +192,6 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
         </button>
 
         <span className="h-4 w-px bg-border mx-2" />
-
-        {/* Live Hashtag Injections */}
-        <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 mr-1">
-          <IconHash className="size-3" />
-          Inject Hashtags:
-        </span>
-        {Object.entries(hashtagPacks).map(([packName, tags]) => (
-          <button
-            key={packName}
-            type="button"
-            onClick={() => injectHashtags(tags)}
-            className="text-[10px] bg-background hover:bg-muted border border-border px-2 py-0.5 rounded font-semibold transition-all text-muted-foreground hover:text-foreground"
-          >
-            +{packName}
-          </button>
-        ))}
       </div>
 
       {/* Tiptap Styled Content Area */}

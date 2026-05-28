@@ -301,3 +301,62 @@ export function useDrafts() {
   if (!ctx) throw new Error("useDrafts must be used within DraftsProvider");
   return ctx;
 }
+
+export type DraftRevision = {
+  id: string;
+  draftId: string;
+  title: string;
+  content: string;
+  timestamp: number;
+};
+
+export function getRevisions(draftId: string): DraftRevision[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem("nanas_draft_revisions");
+    if (!stored) return [];
+    const allRevisions: DraftRevision[] = JSON.parse(stored);
+    return allRevisions
+      .filter((rev) => rev.draftId === draftId)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  } catch (e) {
+    return [];
+  }
+}
+
+export function saveRevision(draftId: string, title: string, content: string): DraftRevision[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem("nanas_draft_revisions");
+    const allRevisions: DraftRevision[] = stored ? JSON.parse(stored) : [];
+
+    // Check if the exact same content is already the latest revision for this draft to avoid duplicates
+    const draftRevisions = allRevisions
+      .filter((rev) => rev.draftId === draftId)
+      .sort((a, b) => b.timestamp - a.timestamp);
+    
+    if (draftRevisions.length > 0 && draftRevisions[0].content === content) {
+      return draftRevisions; // No need to save a duplicate revision
+    }
+
+    const newRevision: DraftRevision = {
+      id: `rev-${Date.now()}`,
+      draftId,
+      title,
+      content,
+      timestamp: Date.now(),
+    };
+
+    const updatedAll = [newRevision, ...allRevisions];
+
+    // Limit to 5 revisions per draft to optimize localStorage usage
+    const filteredDraftRevisions = updatedAll.filter((rev) => rev.draftId === draftId).slice(0, 5);
+    const otherDraftsRevisions = updatedAll.filter((rev) => rev.draftId !== draftId);
+    const finalRevisions = [...filteredDraftRevisions, ...otherDraftsRevisions];
+
+    localStorage.setItem("nanas_draft_revisions", JSON.stringify(finalRevisions));
+    return filteredDraftRevisions;
+  } catch (e) {
+    return [];
+  }
+}
