@@ -40,6 +40,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import PageTransition from "@/components/page-transition";
+import QuickAddModal from "@/components/quick-add-modal";
 import { AnimatePresence, m } from "motion/react";
 import {
   Dialog,
@@ -57,11 +58,12 @@ const platformIconMap: Record<string, ComponentType<{ className?: string }>> = {
 };
 
 export default function DraftsPage() {
-  const { drafts, deleteDraft, addDraft, updateDraft } = useDrafts();
+  const { drafts, deleteDraft, deleteDrafts, addDraft, updateDraft } = useDrafts();
 
   // Dialog Confirmation States
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [deletingDraft, setDeletingDraft] = useState<Draft | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -230,25 +232,8 @@ export default function DraftsPage() {
         {/* Add Draft Shortcut */}
         <button
           type="button"
-          onClick={() => {
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}-${String(
-              now.getMonth() + 1
-            ).padStart(2, "0")}-${String(now.getDate()).padStart(
-              2,
-              "0"
-            )}T08:00`;
-            addDraft({
-              title: "New Draft Concept",
-              platform:
-                selectedPlatform !== "All" ? selectedPlatform : "Instagram",
-              category: "Post",
-              status: "Draft",
-              content: "",
-              date: dateStr,
-            });
-          }}
-          className="flex h-8 items-center justify-center gap-1 rounded-md bg-primary px-3 text-[11px] font-bold text-primary-foreground hover:bg-primary/95 transition-colors"
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex h-8 items-center justify-center gap-1 rounded-md bg-primary px-3 text-[11px] font-bold text-primary-foreground hover:bg-primary/95 transition-colors cursor-pointer"
         >
           <IconPlus className="size-3" />
           Add Draft
@@ -549,7 +534,7 @@ export default function DraftsPage() {
             <button
               type="button"
               onClick={() => {
-                selectedIds.forEach((id) => deleteDraft(id));
+                deleteDrafts(selectedIds);
                 setSelectedIds([]);
                 setIsBulkDeleteOpen(false);
               }}
@@ -560,6 +545,13 @@ export default function DraftsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Premium Unified Add Draft Modal */}
+      <QuickAddModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        defaultPlatform={selectedPlatform !== "All" ? selectedPlatform : "Instagram"}
+      />
       </div>
     </PageTransition>
   );

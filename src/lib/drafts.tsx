@@ -148,9 +148,10 @@ export const seedIdeas: Idea[] = [
 
 type DraftsContextValue = {
   drafts: Draft[];
-  addDraft: (d: Omit<Draft, "id" | "updatedAt">) => string;
+  addDraft: (d: Omit<Draft, "id" | "updatedAt">, silent?: boolean) => string;
   updateDraft: (id: string, patch: Omit<Partial<Draft>, "id">) => void;
   deleteDraft: (id: string) => void;
+  deleteDrafts: (ids: string[]) => void;
   ideas: Idea[];
   addIdea: (idea: Omit<Idea, "id" | "createdAt">) => void;
   deleteIdea: (id: string) => void;
@@ -213,7 +214,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ideas, isHydrated]);
 
-  function addDraft(d: Omit<Draft, "id" | "updatedAt">): string {
+  function addDraft(d: Omit<Draft, "id" | "updatedAt">, silent = false): string {
     const now = new Date();
     const newId = `${now.getTime()}`;
     const newDraft: Draft = {
@@ -228,7 +229,9 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     };
 
     setDrafts((s) => [newDraft, ...s]);
-    toast.success(`Draft "${d.title}" berhasil ditambahkan!`);
+    if (!silent) {
+      toast.success(`Draft "${d.title}" berhasil ditambahkan!`);
+    }
     return newId;
   }
 
@@ -250,10 +253,44 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
 
   function deleteDraft(id: string) {
     const found = drafts.find((d) => d.id === id);
-    if (found) {
-      toast.error(`Draft "${found.title}" telah dihapus.`);
-    }
+    if (!found) return;
+
     setDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== id));
+
+    // Show single Undo toast
+    toast.error(`Draft "${found.title}" telah dihapus.`, {
+      action: {
+        label: "Undo",
+        onClick: () => {
+          setDrafts((currentDrafts) => {
+            if (currentDrafts.some((d) => d.id === found.id)) return currentDrafts;
+            return [found, ...currentDrafts];
+          });
+          toast.success(`Draft "${found.title}" berhasil dipulihkan!`);
+        },
+      },
+    });
+  }
+
+  function deleteDrafts(ids: string[]) {
+    const found = drafts.filter((d) => ids.includes(d.id));
+    if (found.length === 0) return;
+
+    setDrafts((currentDrafts) => currentDrafts.filter((draft) => !ids.includes(draft.id)));
+
+    // Show single bulk Undo toast
+    toast.error(`${found.length} draft telah dihapus.`, {
+      action: {
+        label: "Undo",
+        onClick: () => {
+          setDrafts((currentDrafts) => {
+            const toAdd = found.filter((f) => !currentDrafts.some((d) => d.id === f.id));
+            return [...toAdd, ...currentDrafts];
+          });
+          toast.success(`${found.length} draf berhasil dipulihkan!`);
+        },
+      },
+    });
   }
 
   function addIdea(idea: Omit<Idea, "id" | "createdAt">) {
@@ -286,6 +323,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         addDraft,
         updateDraft,
         deleteDraft,
+        deleteDrafts,
         ideas,
         addIdea,
         deleteIdea,

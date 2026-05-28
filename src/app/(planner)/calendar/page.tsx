@@ -29,12 +29,7 @@ import {
   IconBrandYoutube,
   IconBrandLinkedin,
 } from "@tabler/icons-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import QuickAddModal from "@/components/quick-add-modal";
 import PageTransition from "@/components/page-transition";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -221,155 +216,12 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Enhanced Scheduling Modal (with Script/Storyboard Support) */}
-      <Dialog open={!!selectedDate} onOpenChange={(open) => { if (!open) closeModal(); }}>
-        {selectedDate && (
-          <DialogContent className="w-full max-w-md p-6 rounded-xl border border-border bg-card shadow-xl outline-none sm:max-w-md" showCloseButton={true}>
-            <DialogHeader className="border-b border-border/60 pb-3">
-              <DialogTitle className="font-heading text-lg font-bold">Schedule New Content</DialogTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Planned for {format(selectedDate, "PP")}
-              </p>
-            </DialogHeader>
-
-            <form
-              className="mt-4 grid gap-3"
-              onSubmit={(event) => {
-                event.preventDefault();
-                const form = event.currentTarget as HTMLFormElement;
-                const title = (
-                  form.elements.namedItem("title") as HTMLInputElement | null
-                )?.value.trim();
-                const platform = (
-                  form.elements.namedItem("platform") as HTMLSelectElement | null
-                )?.value.trim();
-                const category = (
-                  form.elements.namedItem("category") as HTMLSelectElement | null
-                )?.value.trim();
-                const status = (
-                  form.elements.namedItem("status") as HTMLSelectElement | null
-                )?.value.trim();
-                const content = (
-                  form.elements.namedItem("content") as HTMLTextAreaElement | null
-                )?.value.trim();
-
-                if (!title) return;
-
-                addDraft({
-                  title,
-                  platform: platform || "Instagram",
-                  category: category || "Post",
-                  status: status || "Draft",
-                  content: content || "",
-                  date: format(selectedDate, "yyyy-MM-dd") + "T08:00",
-                });
-
-                closeModal();
-              }}
-            >
-              {/* Title Field */}
-              <div className="grid gap-1">
-                <label htmlFor="title" className="text-xs font-semibold text-muted-foreground">
-                  Title
-                </label>
-                <input
-                  id="title"
-                  name="title"
-                  required
-                  placeholder="e.g. Next.js Refactoring Reels"
-                  className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
-                />
-              </div>
-
-              {/* Grid for Platform and Category */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-1">
-                  <label htmlFor="platform" className="text-xs font-semibold text-muted-foreground">
-                    Platform
-                  </label>
-                  <select
-                    id="platform"
-                    name="platform"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
-                  >
-                    <option value="Instagram">Instagram</option>
-                    <option value="TikTok">TikTok</option>
-                    <option value="YouTube">YouTube</option>
-                    <option value="LinkedIn">LinkedIn</option>
-                  </select>
-                </div>
-
-                <div className="grid gap-1">
-                  <label htmlFor="category" className="text-xs font-semibold text-muted-foreground">
-                    Format/Category
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
-                  >
-                    {categoryOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Status Selector */}
-              <div className="grid gap-1">
-                <label htmlFor="status" className="text-xs font-semibold text-muted-foreground">
-                  Workflow Status
-                </label>
-                <select
-                  id="status"
-                  name="status"
-                  className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Script / Storyboard - Prep for Rich-Text Editor */}
-              <div className="grid gap-1">
-                <label htmlFor="content" className="text-xs font-semibold text-muted-foreground flex justify-between">
-                  <span>Script & Outline</span>
-                  <span className="text-[10px] text-muted-foreground font-normal">(Rich text prep)</span>
-                </label>
-                <textarea
-                  id="content"
-                  name="content"
-                  rows={4}
-                  placeholder="Hook: Stop coding React state...&#10;Scene 1: Close up of laptop...&#10;Scene 2: Transition..."
-                  className="rounded-md border border-border bg-background p-3 text-sm outline-none focus:border-primary/50 resize-none"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-2 border-t border-border/60 pt-3 mt-1">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="rounded-md border border-border bg-background hover:bg-muted px-4 py-2 text-sm font-semibold transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2 text-sm font-semibold transition-colors"
-                >
-                  Create & Schedule
-                </button>
-              </div>
-            </form>
-          </DialogContent>
-        )}
-      </Dialog>
+      {/* Premium Unified Scheduling Modal */}
+      <QuickAddModal
+        isOpen={!!selectedDate}
+        onClose={closeModal}
+        defaultDate={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
+      />
       </div>
     </PageTransition>
   );
