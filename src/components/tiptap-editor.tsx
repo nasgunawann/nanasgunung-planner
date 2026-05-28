@@ -79,6 +79,15 @@ export default function TipTapEditor({
   const [aiCommandType, setAiCommandType] = useState("general");
   const [isAiStreaming, setIsAiStreaming] = useState(false);
 
+  // Post-generation Action Bar State
+  const [aiActionBar, setAiActionBar] = useState<{
+    startPos: number;
+    endPos: number;
+    commandType: string;
+    prompt: string;
+    coords: { top: number; left: number };
+  } | null>(null);
+
   const aiPromptInputRef = useRef<HTMLInputElement>(null);
   const selectedItemRef = useRef<HTMLButtonElement>(null);
   const slashTriggerPosRef = useRef<number | null>(null);
@@ -312,12 +321,25 @@ export default function TipTapEditor({
     chain.run();
   };
 
+  // Human-readable labels for each AI command type
+  const AI_COMMAND_LABELS: Record<string, string> = {
+    general: "AI Generate",
+    hook: "Tulis Hook",
+    caption: "Caption Medsos",
+    outline: "Buat Outline",
+    improve: "Perbaiki Tulisan",
+  };
+
   // ─── Streaming AI generate ────────────────────────────────────────────────────
   const streamAiGenerate = async (commandType: string, userPrompt: string) => {
     if (!editor || isAiStreaming) return;
     setIsAiStreaming(true);
+    setAiActionBar(null); // dismiss any previous action bar
 
     const currentContent = editor.getHTML();
+
+    // Record where streaming will START (before any insertions)
+    const startPos = editor.state.selection.from;
 
     try {
       const response = await fetch("/api/ai", {
@@ -336,7 +358,6 @@ export default function TipTapEditor({
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      // Ensure editor is focused and cursor is at insert position
       editor.commands.focus();
 
       while (true) {
@@ -344,9 +365,24 @@ export default function TipTapEditor({
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
         if (chunk) {
-          // Insert each streamed token directly at cursor — creates live "typing" effect
           editor.commands.insertContent(chunk);
         }
+      }
+
+      // After streaming — record end position and show action bar
+      const endPos = editor.state.selection.from;
+      try {
+        const coords = editor.view.coordsAtPos(endPos);
+        const barTop = typeof window !== "undefined" && coords.bottom + 60 > window.innerHeight
+          ? coords.top - 52
+          : coords.bottom + 8;
+        const barLeft = typeof window !== "undefined"
+          ? Math.max(12, Math.min(coords.left, window.innerWidth - 360))
+          : coords.left;
+        setAiActionBar({ startPos, endPos, commandType, prompt: userPrompt, coords: { top: barTop, left: barLeft } });
+      } catch (e) {
+        // coords unavailable — still show action bar at fallback position
+        setAiActionBar({ startPos, endPos, commandType, prompt: userPrompt, coords: { top: 200, left: 100 } });
       }
     } catch (e) {
       console.error("AI stream error", e);
@@ -362,6 +398,28 @@ export default function TipTapEditor({
     setAiPromptValue("");
   };
 
+  // ─── Action Bar Handlers ──────────────────────────────────────────────────────
+  const handleAiAccept = () => {
+    setAiActionBar(null);
+    editor?.commands.focus();
+  };
+
+  const handleAiDiscard = () => {
+    if (!aiActionBar || !editor) return;
+    editor.chain().focus().deleteRange({ from: aiActionBar.startPos, to: aiActionBar.endPos }).run();
+    setAiActionBar(null);
+  };
+
+  const handleAiRetry = async () => {
+    if (!aiActionBar || !editor) return;
+    const { commandType, prompt, startPos, endPos } = aiActionBar;
+    // First discard the previous output
+    editor.chain().focus().deleteRange({ from: startPos, to: endPos }).run();
+    setAiActionBar(null);
+    // Re-run the exact same command + prompt
+    await streamAiGenerate(commandType, prompt);
+  };
+
   useEffect(() => {
     triggerExecuteRef.current = () => {
       if (filteredItems[selectedIndexRef.current]) {
@@ -369,6 +427,14 @@ export default function TipTapEditor({
       }
     };
   }, [filteredItems]);
+
+  // Dismiss action bar when user starts typing (they implicitly accepted the output)
+  useEffect(() => {
+    if (!editor || !aiActionBar) return;
+    const handler = () => setAiActionBar(null);
+    editor.on("update", handler);
+    return () => { editor.off("update", handler); };
+  }, [editor, aiActionBar]);
 
   // Close slash menu on scroll
   useEffect(() => {
@@ -604,6 +670,67 @@ export default function TipTapEditor({
                 <IconSparkles className="size-3.5" />
               </button>
             </div>
+          </div>,
+          document.body,
+        )
+      }
+
+      {/* ── Post-generation Action Bar (Portal) ──────────────────────── */}
+      {aiActionBar && !isAiStreaming && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            id="tiptap-ai-action-bar"
+            style={{
+              position: "fixed",
+              top: aiActionBar.coords.top,
+              left: aiActionBar.coords.left,
+            }}
+            className="fixed z-[9998] flex items-center gap-1.5 bg-card border border-border shadow-xl rounded-xl px-3 py-2 backdrop-blur-md animate-in fade-in slide-in-from-bottom-1 duration-150"
+          >
+            {/* Command label */}
+            <div className="flex items-center gap-1.5 mr-1">
+              <IconSparkles className="size-3 text-primary shrink-0" />
+              <span className="text-[10px] font-medium text-foreground/80 max-w-[180px] truncate">
+                {aiActionBar.commandType === "general" && aiActionBar.prompt
+                  ? `"${aiActionBar.prompt.length > 28 ? aiActionBar.prompt.slice(0, 28) + "…" : aiActionBar.prompt}"`
+                  : AI_COMMAND_LABELS[aiActionBar.commandType] ?? "AI Generate"}
+              </span>
+            </div>
+
+            <span className="w-px h-4 bg-border/60 mx-0.5" />
+
+            {/* Accept */}
+            <button
+              type="button"
+              onClick={handleAiAccept}
+              title="Simpan hasil AI"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              <svg viewBox="0 0 16 16" fill="none" className="size-3"><path d="M3 8l3.5 3.5L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Simpan
+            </button>
+
+            {/* Retry */}
+            <button
+              type="button"
+              onClick={handleAiRetry}
+              title="Coba lagi dengan instruksi yang sama"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <svg viewBox="0 0 16 16" fill="none" className="size-3"><path d="M13.5 2.5A6.5 6.5 0 1 1 9 2.07" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M13.5 2.5V6h-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Coba Lagi
+            </button>
+
+            {/* Discard */}
+            <button
+              type="button"
+              onClick={handleAiDiscard}
+              title="Buang hasil AI"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+            >
+              <svg viewBox="0 0 16 16" fill="none" className="size-3"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              Buang
+            </button>
           </div>,
           document.body,
         )
