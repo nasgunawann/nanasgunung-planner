@@ -2,7 +2,8 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   IconBold,
   IconItalic,
@@ -12,35 +13,309 @@ import {
   IconListNumbers,
   IconQuote,
   IconCode,
-  IconHash,
+  IconSeparatorHorizontal,
+  IconStrikethrough,
+  IconSparkles,
 } from "@tabler/icons-react";
 
 type TipTapEditorProps = {
   content: string;
   onChange: (val: string) => void;
   insertTrigger?: { text: string; time: number } | null;
+  snippets?: { id: string; title: string; content: string }[];
 };
 
 export default function TipTapEditor({
   content,
   onChange,
   insertTrigger,
+  snippets = [],
 }: TipTapEditorProps) {
-  // Initialize TipTap
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Slash Command Menu States
+  const [isSlashActive, setIsSlashActive] = useState(false);
+  const [slashCoords, setSlashCoords] = useState<{ top: number; bottom: number; left: number } | null>(null);
+  const [slashQuery, setSlashQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const selectedItemRef = useRef<HTMLButtonElement>(null);
+  const slashTriggerPosRef = useRef<number | null>(null);
+  const escapedTriggerPosRef = useRef<number | null>(null);
+
+  // Setup refs to bypass stale React closures in useEditor handleKeyDown hook
+  const isSlashActiveRef = useRef(isSlashActive);
+  const selectedIndexRef = useRef(selectedIndex);
+  const filteredCountRef = useRef(0);
+  const triggerExecuteRef = useRef(() => {});
+  
+  useEffect(() => { isSlashActiveRef.current = isSlashActive; }, [isSlashActive]);
+  useEffect(() => { selectedIndexRef.current = selectedIndex; }, [selectedIndex]);
+
+  // Initialize TipTap Editor
   const editor = useEditor({
     extensions: [StarterKit],
     content: content,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML()); // Pass the compiled HTML to the parent's debounced save state
+      onChange(editor.getHTML()); // Pass computed HTML to debounced autosave
+      handleTextUpdate(editor);
+    },
+    onSelectionUpdate: ({ editor }) => {
+      handleTextUpdate(editor);
     },
     editorProps: {
       attributes: {
         class:
-          "focus:outline-none min-h-[420px] text-xs text-muted-foreground leading-relaxed p-4 font-sans ProseMirror",
+          "focus:outline-none min-h-[420px] text-xs text-foreground/90 leading-relaxed p-4 font-sans ProseMirror",
+      },
+      handleKeyDown: (view, event) => {
+        if (!isSlashActiveRef.current) return false;
+
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          setSelectedIndex((prev) => (prev + 1) % filteredCountRef.current);
+          return true;
+        }
+        if (event.key === "ArrowUp") {
+          event.preventDefault();
+          setSelectedIndex((prev) => (prev - 1 + filteredCountRef.current) % filteredCountRef.current);
+          return true;
+        }
+        if (event.key === "Enter") {
+          event.preventDefault();
+          triggerExecuteRef.current();
+          return true;
+        }
+        if (event.key === "Escape") {
+          event.preventDefault();
+          escapedTriggerPosRef.current = slashTriggerPosRef.current;
+          setIsSlashActive(false);
+          return true;
+        }
+        return false;
       },
     },
   });
+
+  // Formatting blocks list
+  const formatCommands = [
+    {
+      id: "h1",
+      title: "Heading 1",
+      desc: "Judul ukuran besar (H1)",
+      icon: IconH1,
+      action: (ed: any) => ed.chain().focus().toggleHeading({ level: 1 }).run(),
+    },
+    {
+      id: "h2",
+      title: "Heading 2",
+      desc: "Judul ukuran sedang (H2)",
+      icon: IconH2,
+      action: (ed: any) => ed.chain().focus().toggleHeading({ level: 2 }).run(),
+    },
+    {
+      id: "bullet",
+      title: "Bulleted List",
+      desc: "Daftar bulatan sederhana",
+      icon: IconList,
+      action: (ed: any) => ed.chain().focus().toggleBulletList().run(),
+    },
+    {
+      id: "number",
+      title: "Numbered List",
+      desc: "Daftar urutan angka",
+      icon: IconListNumbers,
+      action: (ed: any) => ed.chain().focus().toggleOrderedList().run(),
+    },
+    {
+      id: "quote",
+      title: "Quote / Kutipan",
+      desc: "Blok kutipan teks/visual",
+      icon: IconQuote,
+      action: (ed: any) => ed.chain().focus().toggleBlockquote().run(),
+    },
+    {
+      id: "divider",
+      title: "Divider (Garis)",
+      desc: "Garis pembatas horizontal",
+      icon: IconSeparatorHorizontal,
+      action: (ed: any) => ed.chain().focus().setHorizontalRule().run(),
+    },
+    {
+      id: "code",
+      title: "Storyboard Block",
+      desc: "Blok kode storyboard",
+      icon: IconCode,
+      action: (ed: any) => ed.chain().focus().toggleCodeBlock().run(),
+    },
+    {
+      id: "strike",
+      title: "Strikethrough",
+      desc: "Coretan teks draf",
+      icon: IconStrikethrough,
+      action: (ed: any) => ed.chain().focus().toggleStrike().run(),
+    },
+  ];
+
+  // Map user custom snippets to command items
+  const snippetCommands = snippets.map((s) => ({
+    id: s.id,
+    title: s.title,
+    desc: `Salin aset: "${s.title}"`,
+    icon: IconSparkles,
+    content: s.content, // content to insert
+  }));
+
+  const allItems = [
+    ...formatCommands.map(item => ({ ...item, type: "format" })),
+    ...snippetCommands.map(item => ({ ...item, type: "snippet" }))
+  ];
+
+  const filteredItems = allItems.filter((item) =>
+    item.title.toLowerCase().includes(slashQuery.toLowerCase()) ||
+    item.id.toLowerCase().includes(slashQuery.toLowerCase())
+  );
+
+  useEffect(() => {
+    filteredCountRef.current = filteredItems.length;
+    setSelectedIndex((prev) => (prev >= filteredItems.length ? 0 : prev));
+  }, [filteredItems.length]);
+
+  const handleTextUpdate = (editorInstance: any) => {
+    const { view, state } = editorInstance;
+    const { selection } = state;
+    const { $from } = selection;
+    
+    // Get text from current block up to cursor (start of paragraph to cursor)
+    const textBeforeCursor = $from.parent.textBetween(
+      0,
+      $from.parentOffset,
+      " "
+    );
+
+    const match = textBeforeCursor.match(/(?:^|\s)\/([a-zA-Z0-9\-+_]*)$/);
+    if (!match) {
+      slashTriggerPosRef.current = null;
+      escapedTriggerPosRef.current = null;
+      setIsSlashActive(false);
+      setSlashQuery("");
+      return;
+    }
+
+    const matchIndex = match.index ?? 0;
+    const slashParentOffset = matchIndex + (match[0].startsWith(" ") ? 1 : 0);
+    const slashDocPos = $from.start() + slashParentOffset;
+
+    // Record current trigger pos
+    slashTriggerPosRef.current = slashDocPos;
+
+    // If the user dismissed this specific trigger pos using Escape, do not reopen
+    if (escapedTriggerPosRef.current === slashDocPos) {
+      setIsSlashActive(false);
+      setSlashQuery("");
+      return;
+    }
+
+    setIsSlashActive(true);
+    setSlashQuery(match[1]);
+    
+    try {
+      const coords = view.coordsAtPos(selection.from);
+      if (coords) {
+        setSlashCoords({
+          top: coords.top,
+          bottom: coords.bottom,
+          left: coords.left,
+        });
+      }
+    } catch (e) {}
+  };
+
+  const executeCommand = (item: any) => {
+    if (!editor) return;
+
+    // Delete trigger slash keyword text from document
+    const { selection } = editor.state;
+    const triggerLength = slashQuery.length + 1; // slash + keyword
+    const from = selection.from - triggerLength;
+    const to = selection.from;
+    
+    // Combine operations into a single atomic transaction chain
+    let chain = editor.chain().focus().deleteRange({ from, to });
+
+    if (item.type === "format") {
+      if (item.id === "h1") chain = chain.toggleHeading({ level: 1 });
+      else if (item.id === "h2") chain = chain.toggleHeading({ level: 2 });
+      else if (item.id === "bullet") chain = chain.toggleBulletList();
+      else if (item.id === "number") chain = chain.toggleOrderedList();
+      else if (item.id === "quote") chain = chain.toggleBlockquote();
+      else if (item.id === "divider") chain = chain.setHorizontalRule();
+      else if (item.id === "code") chain = chain.toggleCodeBlock();
+      else if (item.id === "strike") chain = chain.toggleStrike();
+    } else {
+      chain = chain.insertContent(item.content);
+    }
+    
+    chain.run();
+    
+    slashTriggerPosRef.current = null;
+    escapedTriggerPosRef.current = null;
+    setIsSlashActive(false);
+    setSlashQuery("");
+    setSelectedIndex(0);
+  };
+
+  useEffect(() => {
+    triggerExecuteRef.current = () => {
+      if (filteredItems[selectedIndexRef.current]) {
+        executeCommand(filteredItems[selectedIndexRef.current]);
+      }
+    };
+  }, [filteredItems]);
+
+  // Close slash menu popover during any page or editor scrolling event to avoid floating drift,
+  // but ignore scrolling events inside the slash menu itself.
+  useEffect(() => {
+    if (!isSlashActive) return;
+    const handleScroll = (event: Event) => {
+      const menuEl = document.getElementById("tiptap-slash-menu");
+      if (menuEl && menuEl.contains(event.target as Node)) {
+        return;
+      }
+      setIsSlashActive(false);
+    };
+
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll, { capture: true });
+    };
+  }, [isSlashActive]);
+
+  // Close slash menu popover when clicking outside the menu
+  useEffect(() => {
+    if (!isSlashActive) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const menuEl = document.getElementById("tiptap-slash-menu");
+      if (menuEl && !menuEl.contains(event.target as Node)) {
+        setIsSlashActive(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSlashActive]);
+
+  // Auto-scroll the highlighted menu item into view when navigating via keyboard
+  useEffect(() => {
+    if (isSlashActive && selectedItemRef.current) {
+      selectedItemRef.current.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+  }, [selectedIndex, isSlashActive]);
 
   // Listen for text insertion triggers from parents
   useEffect(() => {
@@ -52,7 +327,7 @@ export default function TipTapEditor({
   // Sync internal TipTap state if the parent content changes externally (e.g. Initial load)
   useEffect(() => {
     if (!editor || content === editor.getHTML()) return;
-    editor.commands.setContent(content, { emitUpdate: false }); // prevents triggering onUpdate again to avoid infinite loops
+    editor.commands.setContent(content, { emitUpdate: false });
   }, [content, editor]);
 
   if (!editor) {
@@ -64,7 +339,7 @@ export default function TipTapEditor({
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+    <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden min-h-0 relative">
       {/* Dynamic WYSIWYG Formatting Toolbar */}
       <div className="bg-muted/30 border-b border-border/50 px-3 py-2 flex flex-wrap items-center gap-1 shadow-inner shrink-0">
         {/* Bold Button */}
@@ -191,6 +466,31 @@ export default function TipTapEditor({
           <IconCode className="size-4" />
         </button>
 
+        {/* Strikethrough Button */}
+        <button
+          type="button"
+          title="Strikethrough"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          className={[
+            "size-7 flex items-center justify-center rounded transition-colors",
+            editor.isActive("strike")
+              ? "bg-primary/10 text-primary border border-primary/20"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          ].join(" ")}
+        >
+          <IconStrikethrough className="size-4" />
+        </button>
+
+        {/* Divider (Horizontal Rule) Button */}
+        <button
+          type="button"
+          title="Divider Line"
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          className="size-7 flex items-center justify-center rounded transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <IconSeparatorHorizontal className="size-4" />
+        </button>
+
         <span className="h-4 w-px bg-border mx-2" />
       </div>
 
@@ -198,6 +498,108 @@ export default function TipTapEditor({
       <div className="flex-1 p-4 bg-background/30 overflow-y-auto min-h-0">
         <EditorContent editor={editor} />
       </div>
+
+      {/* Slash Command Floating Menu Popover (Rendered globally using React Portal) */}
+      {isSlashActive && slashCoords && filteredItems.length > 0 && typeof document !== "undefined" && createPortal(
+        <div
+          id="tiptap-slash-menu"
+          style={{
+            position: "fixed",
+            top: typeof window !== "undefined" && slashCoords.bottom + 260 > window.innerHeight
+              ? slashCoords.top - Math.min(260, filteredItems.length * 40 + 20) - 4
+              : slashCoords.bottom + 4,
+            left: typeof window !== "undefined"
+              ? Math.max(12, Math.min(slashCoords.left, window.innerWidth - 270))
+              : slashCoords.left,
+          }}
+          className="fixed z-[9999] w-64 bg-card/95 border border-border shadow-2xl rounded-xl p-2 max-h-[260px] overflow-y-auto backdrop-blur-md flex flex-col focus:outline-none scrollbar-none"
+        >
+          {/* Render Formatting Category if any matching formatting items are present */}
+          {filteredItems.some(i => i.type === "format") && (
+            <div className="flex flex-col">
+              <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
+                Format Teks
+              </div>
+              {filteredItems
+                .filter(i => i.type === "format")
+                .map((item) => {
+                  const itemIndex = filteredItems.indexOf(item);
+                  const isSelected = itemIndex === selectedIndex;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      ref={isSelected ? selectedItemRef : null}
+                      type="button"
+                      onClick={() => executeCommand(item)}
+                      className={[
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
+                        isSelected
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-foreground hover:bg-muted",
+                      ].join(" ")}
+                    >
+                      <Icon className={[
+                        "size-4 shrink-0",
+                        isSelected ? "text-primary-foreground" : "text-muted-foreground/80"
+                      ].join(" ")} />
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate">{item.title}</div>
+                        <div className={[
+                          "text-[9px] truncate font-normal leading-tight mt-0.5",
+                          isSelected ? "text-primary-foreground/75" : "text-muted-foreground/65"
+                        ].join(" ")}>{item.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          )}
+
+          {/* Render Aset Siap Pakai Category if any matching snippet items are present */}
+          {filteredItems.some(i => i.type === "snippet") && (
+            <div className="flex flex-col mt-1 pt-1 border-t border-border/40">
+              <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
+                Aset Siap Pakai
+              </div>
+              {filteredItems
+                .filter(i => i.type === "snippet")
+                .map((item) => {
+                  const itemIndex = filteredItems.indexOf(item);
+                  const isSelected = itemIndex === selectedIndex;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      ref={isSelected ? selectedItemRef : null}
+                      type="button"
+                      onClick={() => executeCommand(item)}
+                      className={[
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
+                        isSelected
+                          ? "bg-primary text-primary-foreground font-semibold"
+                          : "text-foreground hover:bg-muted",
+                      ].join(" ")}
+                    >
+                      <Icon className={[
+                        "size-4 shrink-0",
+                        isSelected ? "text-primary-foreground" : "text-primary"
+                      ].join(" ")} />
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate">{item.title}</div>
+                        <div className={[
+                          "text-[9px] truncate font-normal leading-tight mt-0.5",
+                          isSelected ? "text-primary-foreground/75" : "text-muted-foreground/65"
+                        ].join(" ")}>{item.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

@@ -4,7 +4,13 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useDrafts, type Draft, type DraftRevision, getRevisions, saveRevision } from "@/lib/drafts";
+import {
+  useDrafts,
+  type Draft,
+  type DraftRevision,
+  getRevisions,
+  saveRevision,
+} from "@/lib/drafts";
 import {
   IconArrowLeft,
   IconSparkles,
@@ -40,7 +46,7 @@ const TipTapEditor = dynamic(() => import("@/components/tiptap-editor"), {
   ssr: false,
   loading: () => (
     <div className="flex-1 flex items-center justify-center p-8 text-xs font-mono text-muted-foreground/60">
-      Loading TipTap Writing Canvas...
+      Loading...
     </div>
   ),
 });
@@ -71,7 +77,10 @@ export default function DraftWorkspacePage() {
   const [snippets, setSnippets] = useState<
     { id: string; title: string; content: string }[]
   >([]);
-  const [insertTrigger, setInsertTrigger] = useState<{ text: string; time: number } | null>(null);
+  const [insertTrigger, setInsertTrigger] = useState<{
+    text: string;
+    time: number;
+  } | null>(null);
   const [revisions, setRevisions] = useState<DraftRevision[]>([]);
 
   useEffect(() => {
@@ -120,16 +129,18 @@ export default function DraftWorkspacePage() {
     if (!draft) return;
     // Save current state first so they can undo the restore
     saveRevision(draft.id, draft.title, localContent);
-    
+
     // Update local state and persist
     setLocalContent(rev.content);
     updateDraft(draft.id, { content: rev.content });
-    
+
     // Reload revision list
     const updated = getRevisions(draft.id);
     setRevisions(updated);
-    
-    toast.success(`Draf dipulihkan ke versi (${new Date(rev.timestamp).toLocaleTimeString()})!`);
+
+    toast.success(
+      `Draf dipulihkan ke versi (${new Date(rev.timestamp).toLocaleTimeString()})!`,
+    );
   };
 
   // Initial Sync from drafts context state
@@ -143,7 +154,7 @@ export default function DraftWorkspacePage() {
   // Load and initialize version history revisions for this draft session
   useEffect(() => {
     if (!draft) return;
-    
+
     // Load existing revisions
     const existingRevisions = getRevisions(draft.id);
     setRevisions(existingRevisions);
@@ -225,21 +236,31 @@ export default function DraftWorkspacePage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Two-Column Editor Layout - Contained Height on Desktop */}
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:h-[calc(100vh-170px)] lg:min-h-0 lg:overflow-hidden">
+        <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:h-[calc(100vh-120px)] lg:min-h-0 lg:overflow-hidden">
           {/* Left Column: Metadata Sidebar - Scrolling only inside */}
           <aside className="space-y-4 lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pr-1 select-none flex flex-col shrink-0">
             <div className="bg-card border border-border/60 p-4 rounded-xl shadow-sm space-y-4">
               {/* Embedded Stationary Navigation Header */}
-              <div className="border-b border-border/60 pb-3">
+              <div className="border-b border-border/60 pb-3 space-y-2">
                 <Link
                   href="/drafts"
                   className="w-full flex items-center justify-center gap-2 h-9 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold transition-all shadow-sm"
                 >
                   <IconArrowLeft className="size-4" />
-                  Back to Drafts Hub
+                  Kembali ke Drafts
                 </Link>
+
+                {/* Delete Action button */}
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteOpen(true)}
+                  className="w-full flex items-center justify-center gap-1.5 h-9 rounded-md border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-500 text-xs font-bold transition-all cursor-pointer"
+                >
+                  <IconTrash className="size-4" />
+                  Delete Draft
+                </button>
               </div>
 
               {/* Title Field (Debounced Input) */}
@@ -358,16 +379,6 @@ export default function DraftWorkspacePage() {
                 />
               </div>
             </div>
-
-            {/* Delete Action button */}
-            <button
-              type="button"
-              onClick={() => setIsDeleteOpen(true)}
-              className="w-full flex items-center justify-center gap-1.5 h-9 rounded-md border border-red-500/10 bg-red-500/5 hover:bg-red-500/10 text-red-500 text-xs font-bold transition-all mt-auto cursor-pointer"
-            >
-              <IconTrash className="size-4" />
-              Delete Draft
-            </button>
           </aside>
 
           {/* Right Column: Immersive Creative Canvas - Completely Contained */}
@@ -408,14 +419,15 @@ export default function DraftWorkspacePage() {
                       setIsHistoryOpen(false);
                     }}
                     className={[
-                      "flex h-8 items-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none shrink-0",
+                      "flex h-9 items-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none shrink-0 touch-manipulation active:scale-95",
                       isLibraryOpen
-                        ? "bg-primary border-primary text-primary-foreground shadow-sm"
-                        : "bg-background border-border text-muted-foreground hover:text-foreground hover:border-primary/20",
+                        ? "bg-primary border-primary text-primary-foreground shadow-sm active:bg-primary/95"
+                        : "bg-background border-border text-muted-foreground hover:text-foreground hover:border-primary/20 active:bg-muted/30",
                     ].join(" ")}
                     title="Buka Aset Siap Pakai"
                   >
                     <IconTags className="size-3.5" />
+                    <span className="inline sm:hidden">Aset</span>
                     <span className="hidden sm:inline">Aset Siap Pakai</span>
                   </button>
 
@@ -427,14 +439,15 @@ export default function DraftWorkspacePage() {
                       setIsLibraryOpen(false);
                     }}
                     className={[
-                      "flex h-8 items-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none shrink-0",
+                      "flex h-9 items-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none shrink-0 touch-manipulation active:scale-95",
                       isHistoryOpen
-                        ? "bg-primary border-primary text-primary-foreground shadow-sm"
-                        : "bg-background border-border text-muted-foreground hover:text-foreground hover:border-primary/20",
+                        ? "bg-primary border-primary text-primary-foreground shadow-sm active:bg-primary/95"
+                        : "bg-background border-border text-muted-foreground hover:text-foreground hover:border-primary/20 active:bg-muted/30",
                     ].join(" ")}
                     title="Buka Riwayat Versi"
                   >
                     <IconHistory className="size-3.5" />
+                    <span className="inline sm:hidden">Riwayat</span>
                     <span className="hidden sm:inline">Riwayat Versi</span>
                   </button>
                 </div>
@@ -446,6 +459,7 @@ export default function DraftWorkspacePage() {
                   content={localContent}
                   onChange={(val) => setLocalContent(val)}
                   insertTrigger={insertTrigger}
+                  snippets={snippets}
                 />
               </div>
 
@@ -469,7 +483,7 @@ export default function DraftWorkspacePage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setIsLibraryOpen(false)}
-                    className="absolute inset-0 z-30 bg-background/25 cursor-pointer"
+                    className="fixed inset-0 z-40 bg-background/40 backdrop-blur-sm cursor-pointer"
                   />
                   <m.aside
                     initial={{ x: "100%", opacity: 0 }}
@@ -480,7 +494,7 @@ export default function DraftWorkspacePage() {
                       ease: [0.16, 1, 0.3, 1],
                       duration: 0.25,
                     }}
-                    className="absolute top-0 right-0 z-40 w-[290px] border-l border-border bg-card flex flex-col h-full overflow-hidden shadow-2xl"
+                    className="fixed top-0 right-0 z-50 w-[290px] border-l border-border bg-card flex flex-col h-full overflow-hidden shadow-2xl"
                   >
                     {/* Header */}
                     <div className="p-3.5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/10">
@@ -502,8 +516,8 @@ export default function DraftWorkspacePage() {
                       {snippets.length > 0 ? (
                         snippets.map((snip) => (
                           <div
-                             key={snip.id}
-                             className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
+                            key={snip.id}
+                            className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
                           >
                             <div className="flex justify-between items-center gap-2">
                               <span className="font-bold text-foreground truncate max-w-[130px]">
@@ -514,11 +528,20 @@ export default function DraftWorkspacePage() {
                                 onClick={() => {
                                   // Save a revision before applying snippet so they can undo it!
                                   if (draft) {
-                                    const updated = saveRevision(draft.id, draft.title, localContent);
+                                    const updated = saveRevision(
+                                      draft.id,
+                                      draft.title,
+                                      localContent,
+                                    );
                                     setRevisions(updated);
                                   }
-                                  setInsertTrigger({ text: snip.content, time: Date.now() });
-                                  toast.success(`Aset "${snip.title}" disisipkan!`);
+                                  setInsertTrigger({
+                                    text: snip.content,
+                                    time: Date.now(),
+                                  });
+                                  toast.success(
+                                    `Aset "${snip.title}" disisipkan!`,
+                                  );
                                 }}
                                 className="flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all cursor-pointer select-none"
                               >
@@ -533,7 +556,9 @@ export default function DraftWorkspacePage() {
                         ))
                       ) : (
                         <div className="text-center py-10 text-muted-foreground space-y-1">
-                          <p className="text-xs font-bold">Aset Siap Pakai Kosong</p>
+                          <p className="text-xs font-bold">
+                            Aset Siap Pakai Kosong
+                          </p>
                           <p className="text-[10px] max-w-[200px] mx-auto leading-relaxed font-sans mt-1">
                             Tambahkan templat tulisan, tanda tangan, atau aset
                             baru di tab **Library** agar muncul di sini!
@@ -556,7 +581,7 @@ export default function DraftWorkspacePage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setIsHistoryOpen(false)}
-                    className="absolute inset-0 z-30 bg-background/25 cursor-pointer"
+                    className="fixed inset-0 z-40 bg-background/40 backdrop-blur-sm cursor-pointer"
                   />
                   <m.aside
                     initial={{ x: "100%", opacity: 0 }}
@@ -567,7 +592,7 @@ export default function DraftWorkspacePage() {
                       ease: [0.16, 1, 0.3, 1],
                       duration: 0.25,
                     }}
-                    className="absolute top-0 right-0 z-40 w-[290px] border-l border-border bg-card flex flex-col h-full overflow-hidden shadow-2xl"
+                    className="fixed top-0 right-0 z-50 w-[290px] border-l border-border bg-card flex flex-col h-full overflow-hidden shadow-2xl"
                   >
                     {/* Header */}
                     <div className="p-3.5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/10">
@@ -601,20 +626,29 @@ export default function DraftWorkspacePage() {
                     {/* List of revisions */}
                     <div className="flex-1 overflow-y-auto p-3 space-y-3">
                       <p className="text-[10px] text-muted-foreground leading-relaxed px-1 font-sans">
-                        Sistem mencatat maksimal 5 versi terakhir secara otomatis. Mengembalikan versi akan mencadangkan status saat ini.
+                        Sistem mencatat maksimal 5 versi terakhir secara
+                        otomatis. Mengembalikan versi akan mencadangkan status
+                        saat ini.
                       </p>
 
                       {revisions.length > 0 ? (
                         revisions.map((rev, index) => {
                           const dateObj = new Date(rev.timestamp);
-                          const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                          const dateStr = dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                          const timeStr = dateObj.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          });
+                          const dateStr = dateObj.toLocaleDateString([], {
+                            month: "short",
+                            day: "numeric",
+                          });
                           const isInitial = index === revisions.length - 1;
 
                           return (
                             <div
-                               key={rev.id}
-                               className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
+                              key={rev.id}
+                              className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
                             >
                               <div className="flex justify-between items-start gap-2">
                                 <div className="space-y-0.5">
@@ -623,7 +657,12 @@ export default function DraftWorkspacePage() {
                                     <span>{timeStr}</span>
                                   </div>
                                   <div className="text-[9px] text-muted-foreground font-mono">
-                                    {dateStr} {isInitial && <span className="text-emerald-500 font-bold ml-1">(Awal Sesi)</span>}
+                                    {dateStr}{" "}
+                                    {isInitial && (
+                                      <span className="text-emerald-500 font-bold ml-1">
+                                        (Awal Sesi)
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                                 <button
@@ -635,7 +674,8 @@ export default function DraftWorkspacePage() {
                                 </button>
                               </div>
                               <p className="text-[10px] text-muted-foreground leading-relaxed bg-muted/15 p-2 rounded truncate max-h-[35px] overflow-hidden border border-border/20 font-mono">
-                                {getTextFromHtml(rev.content) || "(Teks Kosong)"}
+                                {getTextFromHtml(rev.content) ||
+                                  "(Teks Kosong)"}
                               </p>
                             </div>
                           );
@@ -644,7 +684,8 @@ export default function DraftWorkspacePage() {
                         <div className="text-center py-10 text-muted-foreground font-sans">
                           <p className="text-xs font-bold">Belum Ada Riwayat</p>
                           <p className="text-[10px] max-w-[200px] mx-auto leading-relaxed mt-1">
-                            Cadangan versi draf otomatis akan terekam saat Anda mulai mengetik atau menyisipkan aset baru!
+                            Cadangan versi draf otomatis akan terekam saat Anda
+                            mulai mengetik atau menyisipkan aset baru!
                           </p>
                         </div>
                       )}

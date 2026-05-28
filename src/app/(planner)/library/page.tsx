@@ -30,7 +30,8 @@ const templates = [
     usage: "4 kali digunakan",
     platform: "Instagram",
     category: "Reels",
-    description: "Cocok untuk membangun rasa penasaran audiens sebelum merilis fitur atau produk baru.",
+    description:
+      "Cocok untuk membangun rasa penasaran audiens sebelum merilis fitur atau produk baru.",
     blueprint: `<h3><strong>[OUTLINE STORYBOARD VIDEO]</strong></h3>
 <p></p>
 <ul>
@@ -46,7 +47,8 @@ const templates = [
     usage: "7 kali digunakan",
     platform: "LinkedIn",
     category: "Post",
-    description: "Membagi tips teknis mendalam menggunakan struktur slide yang informatif dan memiliki tingkat simpan tinggi.",
+    description:
+      "Membagi tips teknis mendalam menggunakan struktur slide yang informatif dan memiliki tingkat simpan tinggi.",
     blueprint: `<h3><strong>[STRUKTUR SLIDE CAROUSEL]</strong></h3>
 <p></p>
 <ol>
@@ -63,7 +65,8 @@ const templates = [
     usage: "11 kali digunakan",
     platform: "Instagram",
     category: "Stories",
-    description: "Membangun interaksi personal menggunakan urutan stiker jajak pendapat (Poll) atau Q&A.",
+    description:
+      "Membangun interaksi personal menggunakan urutan stiker jajak pendapat (Poll) atau Q&A.",
     blueprint: `<h3><strong>[URUTAN INSTAGRAM STORIES]</strong></h3>
 <p></p>
 <ul>
@@ -87,21 +90,24 @@ const defaultSnippets: Snippet[] = [
   {
     id: "snip-1",
     title: "CTA Follow Standard",
-    content: "Jangan lupa untuk follow @nanasgunung untuk tips menarik seputar Web Development & Design setiap hari! 🚀",
+    content:
+      "Jangan lupa untuk follow @nanasgunung untuk tips menarik seputar Web Development & Design setiap hari! 🚀",
     category: "CTA",
     tags: ["Promo", "Instagram"],
   },
   {
     id: "snip-2",
     title: "Kumpulan Hashtag Tech",
-    content: "#nextjs #typescript #programmerindonesia #webdev #codinglife #belajarcoding",
+    content:
+      "#nextjs #typescript #programmerindonesia #webdev #codinglife #belajarcoding",
     category: "Hashtags",
     tags: ["Hashtags", "Tech"],
   },
   {
     id: "snip-3",
     title: "Closing Post LinkedIn",
-    content: "Bagaimana dengan workflow tim Anda saat membangun MVP? Mari diskusi di kolom komentar! 👇",
+    content:
+      "Bagaimana dengan workflow tim Anda saat membangun MVP? Mari diskusi di kolom komentar! 👇",
     category: "Stories",
     tags: ["Launch", "LinkedIn"],
   },
@@ -114,7 +120,9 @@ export default function LibraryPage() {
   const router = useRouter();
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"templates" | "snippets" | "history">("templates");
+  const [activeTab, setActiveTab] = useState<
+    "templates" | "snippets" | "history"
+  >("templates");
 
   // Reusable Snippets State
   const [snippets, setSnippets] = useState<Snippet[]>([]);
@@ -131,7 +139,8 @@ export default function LibraryPage() {
 
   // Filtering State
   const [selectedTagFilter, setSelectedTagFilter] = useState<string>("All");
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("All");
+  const [selectedCategoryFilter, setSelectedCategoryFilter] =
+    useState<string>("All");
 
   // Inline Editing State
   const [editingSnippetId, setEditingSnippetId] = useState<string | null>(null);
@@ -148,7 +157,7 @@ export default function LibraryPage() {
 
   const toggleTemplateExpand = (title: string) => {
     setExpandedTemplates((prev) =>
-      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
     );
   };
 
@@ -167,7 +176,10 @@ export default function LibraryPage() {
       if (storedCategories) {
         setCategories(JSON.parse(storedCategories));
       } else {
-        localStorage.setItem("nanas_snippet_categories", JSON.stringify(defaultCategories));
+        localStorage.setItem(
+          "nanas_snippet_categories",
+          JSON.stringify(defaultCategories),
+        );
       }
     } catch (e) {
       // ignore
@@ -186,7 +198,10 @@ export default function LibraryPage() {
   const saveCategories = (newCategories: string[]) => {
     setCategories(newCategories);
     try {
-      localStorage.setItem("nanas_snippet_categories", JSON.stringify(newCategories));
+      localStorage.setItem(
+        "nanas_snippet_categories",
+        JSON.stringify(newCategories),
+      );
     } catch (e) {
       // ignore
     }
@@ -259,7 +274,7 @@ export default function LibraryPage() {
             category: editCategory,
             tags: tagsArray,
           }
-        : s
+        : s,
     );
 
     saveSnippets(updated);
@@ -272,11 +287,12 @@ export default function LibraryPage() {
     setTimeout(() => setCopiedId(null), 1500);
   };
 
-  const handleUseTemplate = (template: typeof templates[0]) => {
+  const handleUseTemplate = (template: (typeof templates)[0]) => {
     const now = new Date();
-    const dateStr = `${now.getFullYear()}-${String(
-      now.getMonth() + 1
-    ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}T08:00`;
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}-${String(now.getDate()).padStart(2, "0")}T08:00`;
 
     const newId = addDraft({
       title: `Konsep ${template.title}`,
@@ -292,7 +308,7 @@ export default function LibraryPage() {
 
   // Compute all unique tags from active snippets to render the Tag Cloud dynamically!
   const allUniqueTags = Array.from(
-    new Set(snippets.flatMap((s) => s.tags ?? []))
+    new Set(snippets.flatMap((s) => s.tags ?? [])),
   );
 
   // Filter snippets based on dynamic search controls
@@ -314,15 +330,24 @@ export default function LibraryPage() {
               initial={{ opacity: 0, height: 0, marginBottom: 0 }}
               animate={{ opacity: 1, height: "auto", marginBottom: 12 }}
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              transition={{ type: "tween", ease: [0.16, 1, 0.3, 1], duration: 0.22 }}
+              transition={{
+                type: "tween",
+                ease: [0.16, 1, 0.3, 1],
+                duration: 0.22,
+              }}
               className="overflow-hidden w-full"
             >
               <div className="relative rounded-xl border border-primary/20 bg-primary/5 p-4 pr-10 text-xs flex gap-3 shadow-sm shadow-primary/5">
                 <IconSparkles className="size-4.5 text-primary shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
-                  <h4 className="font-bold text-foreground">💡 Tip: Gunakan Aset Siap Pakai Instan</h4>
+                  <h4 className="font-bold text-foreground">
+                    Tip: Gunakan Aset Siap Pakai Instan
+                  </h4>
                   <p className="text-muted-foreground leading-relaxed text-[11px]">
-                    Simpan potongan teks yang sering diulang di tab <strong>Aset Siap Pakai</strong>. Cukup klik tombol <strong>Apply</strong> di panel draf untuk menyisipkan secara instan ke kanvas editor draf Anda!
+                    Simpan potongan teks yang sering diulang di tab{" "}
+                    <strong>Aset Siap Pakai</strong>. Cukup klik tombol{" "}
+                    <strong>Apply</strong> di panel draf untuk menyisipkan
+                    secara instan ke kanvas editor draf Anda!
                   </p>
                 </div>
                 {/* Close Button */}
@@ -332,7 +357,10 @@ export default function LibraryPage() {
                   className="absolute top-3.5 right-3.5 p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted/60 transition-all cursor-pointer"
                   title="Tutup Notifikasi"
                 >
-                  <svg className="size-3 fill-none stroke-current stroke-[2.5px]" viewBox="0 0 24 24">
+                  <svg
+                    className="size-3 fill-none stroke-current stroke-[2.5px]"
+                    viewBox="0 0 24 24"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
@@ -379,7 +407,8 @@ export default function LibraryPage() {
             </span>
             <span className="text-border/60">|</span>
             <span className="flex items-center gap-1 bg-muted/40 px-2 py-1 rounded border border-border/35 shadow-sm">
-              <span className="text-foreground">{snippets.length}</span> Snippets
+              <span className="text-foreground">{snippets.length}</span>{" "}
+              Snippets
             </span>
             <span className="text-border/60">|</span>
             <span className="flex items-center gap-1 bg-muted/40 px-2 py-1 rounded border border-border/35 shadow-sm">
@@ -403,7 +432,9 @@ export default function LibraryPage() {
               >
                 <div className="grid gap-4">
                   {templates.map((template) => {
-                    const isExpanded = expandedTemplates.includes(template.title);
+                    const isExpanded = expandedTemplates.includes(
+                      template.title,
+                    );
 
                     return (
                       <article
@@ -417,7 +448,8 @@ export default function LibraryPage() {
                               <span
                                 className={[
                                   "px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider",
-                                  platformColorMap[template.platform] ?? "bg-primary",
+                                  platformColorMap[template.platform] ??
+                                    "bg-primary",
                                 ].join(" ")}
                               >
                                 {template.platform}
@@ -447,7 +479,11 @@ export default function LibraryPage() {
                             onClick={() => toggleTemplateExpand(template.title)}
                             className="flex items-center gap-1 text-[11px] font-bold text-primary hover:underline cursor-pointer select-none"
                           >
-                            <span>{isExpanded ? "Sembunyikan Skema Blueprint" : "Lihat Skema Blueprint Outline"}</span>
+                            <span>
+                              {isExpanded
+                                ? "Sembunyikan Skema Blueprint"
+                                : "Lihat Skema Blueprint Outline"}
+                            </span>
                             <svg
                               className={[
                                 "size-3.5 fill-none stroke-current stroke-[2.5px] transition-transform duration-200",
@@ -465,7 +501,11 @@ export default function LibraryPage() {
                           {isExpanded && (
                             <m.div
                               initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                              animate={{ height: "auto", opacity: 1, marginTop: 8 }}
+                              animate={{
+                                height: "auto",
+                                opacity: 1,
+                                marginTop: 8,
+                              }}
                               exit={{ height: 0, opacity: 0, marginTop: 0 }}
                               transition={{
                                 type: "tween",
@@ -479,7 +519,9 @@ export default function LibraryPage() {
                                   Blueprint Template Outline (HTML Rendered):
                                 </span>
                                 <div
-                                  dangerouslySetInnerHTML={{ __html: template.blueprint }}
+                                  dangerouslySetInnerHTML={{
+                                    __html: template.blueprint,
+                                  }}
                                   className="bg-background border border-border/40 p-4 rounded-lg text-xs leading-relaxed text-muted-foreground/80 font-sans max-w-none space-y-2 prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:ml-4 select-all shadow-inner"
                                 />
                               </div>
@@ -521,7 +563,9 @@ export default function LibraryPage() {
                   <div className="bg-card border border-border/60 p-4 rounded-xl shadow-sm space-y-3 select-none">
                     {/* Category Filter */}
                     <div className="flex items-center gap-2 flex-wrap text-[11px]">
-                      <span className="font-bold text-muted-foreground uppercase text-[10px]">Filter Kategori:</span>
+                      <span className="font-bold text-muted-foreground uppercase text-[10px]">
+                        Filter Kategori:
+                      </span>
                       <button
                         type="button"
                         onClick={() => setSelectedCategoryFilter("All")}
@@ -554,7 +598,9 @@ export default function LibraryPage() {
                     {/* Tag Filter Cloud */}
                     {allUniqueTags.length > 0 && (
                       <div className="flex items-center gap-2 flex-wrap text-[10px] border-t border-border/40 pt-2.5">
-                        <span className="font-bold text-muted-foreground uppercase text-[9px]">Filter Tags Cloud:</span>
+                        <span className="font-bold text-muted-foreground uppercase text-[9px]">
+                          Filter Tags Cloud:
+                        </span>
                         <button
                           type="button"
                           onClick={() => setSelectedTagFilter("All")}
@@ -589,8 +635,11 @@ export default function LibraryPage() {
                   {/* Snippets List wrapper */}
                   <div className="space-y-3">
                     <h3 className="text-sm font-bold text-foreground flex justify-between items-center">
-                      <span>Daftar Aset Siap Pakai ({filteredSnippets.length})</span>
-                      {(selectedCategoryFilter !== "All" || selectedTagFilter !== "All") && (
+                      <span>
+                        Daftar Aset Siap Pakai ({filteredSnippets.length})
+                      </span>
+                      {(selectedCategoryFilter !== "All" ||
+                        selectedTagFilter !== "All") && (
                         <button
                           type="button"
                           onClick={() => {
@@ -613,9 +662,24 @@ export default function LibraryPage() {
                             return (
                               <m.div
                                 key={snip.id}
-                                initial={{ height: 0, opacity: 0, scale: 0.98, y: 4 }}
-                                animate={{ height: "auto", opacity: 1, scale: 1, y: 0 }}
-                                exit={{ height: 0, opacity: 0, scale: 0.98, y: -4 }}
+                                initial={{
+                                  height: 0,
+                                  opacity: 0,
+                                  scale: 0.98,
+                                  y: 4,
+                                }}
+                                animate={{
+                                  height: "auto",
+                                  opacity: 1,
+                                  scale: 1,
+                                  y: 0,
+                                }}
+                                exit={{
+                                  height: 0,
+                                  opacity: 0,
+                                  scale: 0.98,
+                                  y: -4,
+                                }}
                                 transition={{
                                   type: "tween",
                                   ease: [0.16, 1, 0.3, 1],
@@ -630,46 +694,64 @@ export default function LibraryPage() {
                                       <div className="space-y-3 text-xs animate-in fade-in duration-100">
                                         <div className="grid gap-2 sm:grid-cols-2">
                                           <div className="grid gap-0.5">
-                                            <span className="text-[9px] font-bold text-muted-foreground uppercase">Judul Klip</span>
+                                            <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                                              Judul Klip
+                                            </span>
                                             <input
                                               type="text"
                                               value={editTitle}
-                                              onChange={(e) => setEditTitle(e.target.value)}
+                                              onChange={(e) =>
+                                                setEditTitle(e.target.value)
+                                              }
                                               className="h-8 rounded border border-border bg-background px-2.5 text-xs outline-none"
                                               required
                                             />
                                           </div>
                                           <div className="grid gap-0.5">
-                                            <span className="text-[9px] font-bold text-muted-foreground uppercase">Kategori</span>
+                                            <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                                              Kategori
+                                            </span>
                                             <select
                                               value={editCategory}
-                                              onChange={(e) => setEditCategory(e.target.value)}
+                                              onChange={(e) =>
+                                                setEditCategory(e.target.value)
+                                              }
                                               className="h-8 rounded border border-border bg-background px-2 text-xs outline-none"
                                             >
                                               {categories.map((c) => (
-                                                <option key={c} value={c}>{c}</option>
+                                                <option key={c} value={c}>
+                                                  {c}
+                                                </option>
                                               ))}
                                             </select>
                                           </div>
                                         </div>
 
                                         <div className="grid gap-0.5">
-                                          <span className="text-[9px] font-bold text-muted-foreground uppercase">Tags (Pisahkan dengan koma)</span>
+                                          <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                                            Tags (Pisahkan dengan koma)
+                                          </span>
                                           <input
                                             type="text"
                                             value={editTagsInput}
-                                            onChange={(e) => setEditTagsInput(e.target.value)}
+                                            onChange={(e) =>
+                                              setEditTagsInput(e.target.value)
+                                            }
                                             placeholder="cth: Launch, Promo"
                                             className="h-8 rounded border border-border bg-background px-2.5 text-xs outline-none"
                                           />
                                         </div>
 
                                         <div className="grid gap-0.5">
-                                          <span className="text-[9px] font-bold text-muted-foreground uppercase">Isi Caption</span>
+                                          <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                                            Isi Caption
+                                          </span>
                                           <textarea
                                             rows={4}
                                             value={editContent}
-                                            onChange={(e) => setEditContent(e.target.value)}
+                                            onChange={(e) =>
+                                              setEditContent(e.target.value)
+                                            }
                                             className="rounded border border-border bg-background p-2.5 text-xs outline-none resize-none"
                                             required
                                           />
@@ -678,14 +760,18 @@ export default function LibraryPage() {
                                         <div className="flex justify-end gap-2 border-t border-border/40 pt-2">
                                           <button
                                             type="button"
-                                            onClick={() => setEditingSnippetId(null)}
+                                            onClick={() =>
+                                              setEditingSnippetId(null)
+                                            }
                                             className="px-2.5 py-1.5 rounded border border-border bg-background hover:bg-muted text-[10px] font-bold transition-all cursor-pointer"
                                           >
                                             Batal
                                           </button>
                                           <button
                                             type="button"
-                                            onClick={() => handleSaveEdit(snip.id)}
+                                            onClick={() =>
+                                              handleSaveEdit(snip.id)
+                                            }
                                             className="px-3 py-1.5 rounded bg-primary text-primary-foreground hover:bg-primary/95 text-[10px] font-bold transition-all cursor-pointer"
                                           >
                                             Simpan Aset
@@ -703,14 +789,15 @@ export default function LibraryPage() {
                                                 {snip.category}
                                               </span>
                                               {/* Tags Badges */}
-                                              {snip.tags && snip.tags.map((t) => (
-                                                <span
-                                                  key={t}
-                                                  className="bg-muted text-muted-foreground border border-border/40 px-1.5 py-0.5 rounded text-[8px] leading-none shrink-0"
-                                                >
-                                                  #{t}
-                                                </span>
-                                              ))}
+                                              {snip.tags &&
+                                                snip.tags.map((t) => (
+                                                  <span
+                                                    key={t}
+                                                    className="bg-muted text-muted-foreground border border-border/40 px-1.5 py-0.5 rounded text-[8px] leading-none shrink-0"
+                                                  >
+                                                    #{t}
+                                                  </span>
+                                                ))}
                                             </div>
                                             <h4 className="font-heading font-bold text-sm text-foreground truncate">
                                               {snip.title}
@@ -721,7 +808,12 @@ export default function LibraryPage() {
                                             {/* Salin Button */}
                                             <button
                                               type="button"
-                                              onClick={() => handleCopy(snip.id, snip.content)}
+                                              onClick={() =>
+                                                handleCopy(
+                                                  snip.id,
+                                                  snip.content,
+                                                )
+                                              }
                                               className={[
                                                 "flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold transition-all cursor-pointer border select-none",
                                                 copiedId === snip.id
@@ -745,7 +837,9 @@ export default function LibraryPage() {
                                             {/* Edit Button */}
                                             <button
                                               type="button"
-                                              onClick={() => handleStartEdit(snip)}
+                                              onClick={() =>
+                                                handleStartEdit(snip)
+                                              }
                                               className="p-1 rounded text-muted-foreground/35 hover:text-primary hover:bg-primary/5 transition-all cursor-pointer"
                                               title="Edit Klip"
                                             >
@@ -755,7 +849,9 @@ export default function LibraryPage() {
                                             {/* Hapus Button */}
                                             <button
                                               type="button"
-                                              onClick={() => handleDeleteSnippet(snip.id)}
+                                              onClick={() =>
+                                                handleDeleteSnippet(snip.id)
+                                              }
                                               className="p-1 rounded text-muted-foreground/35 hover:text-red-500 hover:bg-red-500/5 transition-all cursor-pointer"
                                               title="Hapus Klip"
                                             >
@@ -777,9 +873,12 @@ export default function LibraryPage() {
                       </div>
                     ) : (
                       <div className="rounded-xl border border-dashed border-border/80 p-8 text-center bg-card">
-                        <p className="text-xs font-bold text-foreground">Aset Siap Pakai tidak ditemukan</p>
+                        <p className="text-xs font-bold text-foreground">
+                          Aset Siap Pakai tidak ditemukan
+                        </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[240px] mx-auto">
-                          Tidak ada aset dengan kombinasi filter kategori atau tag yang Anda pilih. Coba klik reset filter.
+                          Tidak ada aset dengan kombinasi filter kategori atau
+                          tag yang Anda pilih. Coba klik reset filter.
                         </p>
                       </div>
                     )}
@@ -796,7 +895,10 @@ export default function LibraryPage() {
                     <form onSubmit={handleAddSnippet} className="grid gap-3.5">
                       {/* Title */}
                       <div className="grid gap-1">
-                        <label htmlFor="snip-title" className="text-[10px] font-bold text-muted-foreground uppercase">
+                        <label
+                          htmlFor="snip-title"
+                          className="text-[10px] font-bold text-muted-foreground uppercase"
+                        >
                           Judul Aset
                         </label>
                         <input
@@ -813,12 +915,17 @@ export default function LibraryPage() {
                       {/* Category Selector with Inline Category Adder */}
                       <div className="grid gap-1">
                         <div className="flex justify-between items-center">
-                          <label htmlFor="snip-category" className="text-[10px] font-bold text-muted-foreground uppercase">
+                          <label
+                            htmlFor="snip-category"
+                            className="text-[10px] font-bold text-muted-foreground uppercase"
+                          >
                             Kategori Aset
                           </label>
                           <button
                             type="button"
-                            onClick={() => setIsAddingNewCategory(!isAddingNewCategory)}
+                            onClick={() =>
+                              setIsAddingNewCategory(!isAddingNewCategory)
+                            }
                             className="text-[9px] text-primary font-bold hover:underline select-none"
                           >
                             {isAddingNewCategory ? "Batal" : "+ Kategori"}
@@ -829,17 +936,29 @@ export default function LibraryPage() {
                         <AnimatePresence>
                           {isAddingNewCategory && (
                             <m.div
-                              initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-                              animate={{ height: "auto", opacity: 1, marginBottom: 8 }}
+                              initial={{
+                                height: 0,
+                                opacity: 0,
+                                marginBottom: 0,
+                              }}
+                              animate={{
+                                height: "auto",
+                                opacity: 1,
+                                marginBottom: 8,
+                              }}
                               exit={{ height: 0, opacity: 0, marginBottom: 0 }}
                               className="overflow-hidden grid gap-1.5 p-2 bg-muted/40 rounded border border-border/50"
                             >
-                              <span className="text-[9px] font-bold text-muted-foreground uppercase">Nama Kategori Baru</span>
+                              <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                                Nama Kategori Baru
+                              </span>
                               <div className="flex gap-1.5">
                                 <input
                                   type="text"
                                   value={newCategoryName}
-                                  onChange={(e) => setNewCategoryName(e.target.value)}
+                                  onChange={(e) =>
+                                    setNewCategoryName(e.target.value)
+                                  }
                                   placeholder="cth: Penutup"
                                   className="h-7 flex-1 rounded border border-border bg-background px-2 text-[11px] outline-none"
                                 />
@@ -871,7 +990,10 @@ export default function LibraryPage() {
 
                       {/* Tags */}
                       <div className="grid gap-1">
-                        <label htmlFor="snip-tags" className="text-[10px] font-bold text-muted-foreground uppercase">
+                        <label
+                          htmlFor="snip-tags"
+                          className="text-[10px] font-bold text-muted-foreground uppercase"
+                        >
                           Tags (Pisahkan dengan koma)
                         </label>
                         <input
@@ -886,7 +1008,10 @@ export default function LibraryPage() {
 
                       {/* Content Textarea */}
                       <div className="grid gap-1">
-                        <label htmlFor="snip-content" className="text-[10px] font-bold text-muted-foreground uppercase">
+                        <label
+                          htmlFor="snip-content"
+                          className="text-[10px] font-bold text-muted-foreground uppercase"
+                        >
                           Isi Aset Siap Pakai (Caption/Hashtags/Text)
                         </label>
                         <textarea
@@ -903,7 +1028,9 @@ export default function LibraryPage() {
                       {/* Submit Trigger */}
                       <button
                         type="submit"
-                        disabled={!snippetTitle.trim() || !snippetContent.trim()}
+                        disabled={
+                          !snippetTitle.trim() || !snippetContent.trim()
+                        }
                         className="w-full h-8 flex items-center justify-center gap-1 rounded bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
                       >
                         <IconPlus className="size-3.5" />
@@ -936,9 +1063,18 @@ export default function LibraryPage() {
 
                   <div className="space-y-3">
                     {[
-                      { time: "2 jam yang lalu", msg: "Memperbarui kerangka struktur Launch Teaser Blueprint." },
-                      { time: "Kemarin", msg: "Mengarsipkan 3 draft ide usang setelah ulasan bulanan." },
-                      { time: "Hari Ini", msg: "Sinkronisasi lokal selesai. 12 templat aktif tersimpan secara offline." },
+                      {
+                        time: "2 jam yang lalu",
+                        msg: "Memperbarui kerangka struktur Launch Teaser Blueprint.",
+                      },
+                      {
+                        time: "Kemarin",
+                        msg: "Mengarsipkan 3 draft ide usang setelah ulasan bulanan.",
+                      },
+                      {
+                        time: "Hari Ini",
+                        msg: "Sinkronisasi lokal selesai. 12 templat aktif tersimpan secara offline.",
+                      },
                     ].map((item, idx) => (
                       <div
                         key={idx}
@@ -957,13 +1093,19 @@ export default function LibraryPage() {
                 <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm space-y-4 h-fit bg-primary/5 border-primary/20">
                   <div className="flex items-center gap-2.5 border-b border-primary/20 pb-2">
                     <IconSparkles className="size-4.5 text-primary" />
-                    <h4 className="font-bold text-foreground text-xs uppercase tracking-wider">Asset Synchronization</h4>
+                    <h4 className="font-bold text-foreground text-xs uppercase tracking-wider">
+                      Asset Synchronization
+                    </h4>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Semua data templat, aset siap pakai, kustom kategori, dan tag cloud Anda dikelola secara lokal pada sandboxed <strong>localStorage</strong> browser Anda.
+                    Semua data templat, aset siap pakai, kustom kategori, dan
+                    tag cloud Anda dikelola secara lokal pada sandboxed{" "}
+                    <strong>localStorage</strong> browser Anda.
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Sistem otomatis mengamankan kuota dan melakukan kompresi data lokal untuk menjaga pemrosesan antarmuka snap-to-fit tetap stabil dan snap di frame-rate <strong>60fps</strong>.
+                    Sistem otomatis mengamankan kuota dan melakukan kompresi
+                    data lokal untuk menjaga pemrosesan antarmuka snap-to-fit
+                    tetap stabil dan snap di frame-rate <strong>60fps</strong>.
                   </p>
                 </div>
               </m.div>
