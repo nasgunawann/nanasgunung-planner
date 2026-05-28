@@ -139,9 +139,9 @@ export default function CalendarPage() {
                     "min-h-24 rounded-md border p-2 text-left text-sm transition-colors",
                     activeMonth
                       ? "border-border/50 bg-background"
-                      : "border-border/10 bg-muted/5 text-muted-foreground/60 opacity-70",
+                      : "border-border/10 bg-muted/5 dark:bg-muted/5 text-muted-foreground/60 dark:text-muted-foreground/60 opacity-70",
                     isToday(date)
-                      ? "ring-2 ring-primary bg-primary text-white shadow-md"
+                      ? "bg-primary text-primary-foreground shadow-md"
                       : "",
                   ].join(" ")}
                 >

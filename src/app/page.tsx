@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import Landing from "./(public)/page";
 
 export default function Home() {
-  redirect("/calendar");
+  return <Landing />;
 }

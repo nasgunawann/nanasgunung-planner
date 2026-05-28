@@ -1,0 +1,60 @@
+"use client";
+
+import Link from "next/link";
+import React from "react";
+import { usePathname } from "next/navigation";
+import { IconLayoutDashboard, IconPlus } from "@tabler/icons-react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { navItems } from "@/lib/nav";
+import { iconMap } from "@/lib/icon-map";
+
+export default function Sidebar({ onQuickAdd }: { onQuickAdd: () => void }) {
+  const pathname = usePathname();
+
+  const isActive = (href: string) => pathname?.startsWith(href);
+
+  return (
+    <aside className="sticky top-0 hidden lg:fixed lg:left-0 lg:top-0 lg:h-screen h-screen w-[220px] shrink-0 border-r border-border/70 bg-background/80 px-4 py-6 backdrop-blur-xl lg:flex lg:flex-col">
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <IconLayoutDashboard className="size-5" />
+        </div>
+        <div>
+          <p className="font-heading text-sm font-semibold">Nanasgunung</p>
+          <p className="text-xs text-muted-foreground">Planner</p>
+        </div>
+      </div>
+
+      <nav className="mt-6 flex flex-col gap-2">
+        {navItems.map((item) => {
+          const Icon = iconMap[item.iconName as keyof typeof iconMap];
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                isActive(item.href)
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              <Icon className="size-5" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto">
+        <Button variant="outline" onClick={onQuickAdd}>
+          <IconPlus className="size-5" />
+          New
+        </Button>
+      </div>
+    </aside>
+  );
+}
