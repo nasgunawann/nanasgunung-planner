@@ -160,6 +160,7 @@ const DraftsContext = createContext<DraftsContextValue | undefined>(undefined);
 export function DraftsProvider({ children }: { children: React.ReactNode }) {
   const [drafts, setDrafts] = useState<Draft[]>(seedDrafts);
   const [ideas, setIdeas] = useState<Idea[]>(seedIdeas);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Hydrate from localStorage on first mount (client-only)
   useEffect(() => {
@@ -168,6 +169,9 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
       if (rawDrafts) {
         const parsed = JSON.parse(rawDrafts) as Draft[];
         setDrafts(parsed);
+      } else {
+        // First load: seed localStorage with default mock data
+        localStorage.setItem("nanas_drafts", JSON.stringify(seedDrafts));
       }
     } catch (e) {
       // ignore
@@ -178,29 +182,35 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
       if (rawIdeas) {
         const parsed = JSON.parse(rawIdeas) as Idea[];
         setIdeas(parsed);
+      } else {
+        // First load: seed localStorage with default mock data
+        localStorage.setItem("nanas_ideas", JSON.stringify(seedIdeas));
       }
     } catch (e) {
       // ignore
     }
+    setIsHydrated(true);
   }, []);
 
   // Persist drafts to localStorage whenever they change
   useEffect(() => {
+    if (!isHydrated) return;
     try {
       localStorage.setItem("nanas_drafts", JSON.stringify(drafts));
     } catch (e) {
       // ignore quota / serialization errors
     }
-  }, [drafts]);
+  }, [drafts, isHydrated]);
 
   // Persist ideas to localStorage whenever they change
   useEffect(() => {
+    if (!isHydrated) return;
     try {
       localStorage.setItem("nanas_ideas", JSON.stringify(ideas));
     } catch (e) {
       // ignore quota / serialization errors
     }
-  }, [ideas]);
+  }, [ideas, isHydrated]);
 
   function addDraft(d: Omit<Draft, "id" | "updatedAt">) {
     const now = new Date();

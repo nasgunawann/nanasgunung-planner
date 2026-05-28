@@ -53,7 +53,7 @@ export default function PlannerShell({
               {children}
             </main>
 
-            <div className="pointer-events-none absolute bottom-6 right-6 hidden lg:block">
+            <div className="pointer-events-none fixed bottom-6 right-6 z-40 hidden lg:block">
               <Button
                 variant="default"
                 size="icon-lg"
