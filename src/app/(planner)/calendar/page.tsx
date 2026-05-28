@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   addMonths,
   eachDayOfInterval,
@@ -132,12 +133,11 @@ export default function CalendarPage() {
             const today = isToday(date);
 
             return (
-              <button
+              <div
                 key={dateKey}
-                type="button"
                 onClick={() => openDay(date)}
                 className={[
-                  "relative min-h-[110px] overflow-hidden rounded-md border p-1 pt-7 text-left text-sm transition-all outline-none",
+                  "relative min-h-[110px] overflow-hidden rounded-md border p-1 pt-7 text-left text-sm transition-all outline-none cursor-pointer",
                   activeMonth
                     ? "border-border/50 bg-background hover:border-primary/40"
                     : "border-border/10 bg-muted/20 text-muted-foreground/40 opacity-60",
@@ -169,10 +169,14 @@ export default function CalendarPage() {
                     const Icon = platformIconMap[item.platform ?? ""];
 
                     return (
-                      <div
+                      <Link
                         key={item.id}
+                        href={`/drafts/${item.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Stop opening the "New Draft" modal
+                        }}
                         className={[
-                          "rounded px-1.5 py-0.5 text-[10px] leading-tight font-medium overflow-hidden truncate",
+                          "block rounded px-1.5 py-0.5 text-[10px] leading-tight font-medium overflow-hidden truncate transition-colors hover:opacity-90",
                           statusTheme.bg,
                           statusTheme.chipText,
                           "border",
@@ -193,7 +197,7 @@ export default function CalendarPage() {
                           ) : null}
                           <span className="truncate flex-1">{item.title}</span>
                         </div>
-                      </div>
+                      </Link>
                     );
                   })}
 
@@ -203,7 +207,7 @@ export default function CalendarPage() {
                     </div>
                   ) : null}
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ComponentType } from "react";
+import Link from "next/link";
 import { useDrafts, type Draft } from "@/lib/drafts";
 import {
   contentCategoryLabelMap,
@@ -29,8 +30,7 @@ const platformIconMap: Record<string, ComponentType<{ className?: string }>> = {
 };
 
 export default function DraftsPage() {
-  const { drafts, updateDraft, deleteDraft, addDraft } = useDrafts();
-  const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
+  const { drafts, deleteDraft, addDraft } = useDrafts();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Filter States
@@ -40,12 +40,6 @@ export default function DraftsPage() {
 
   const platformOptions = ["All", "Instagram", "TikTok", "LinkedIn", "YouTube"];
   const statusTabOptions = ["All", "Draft", "In progress", "Published"];
-  const categoryOptions = ["", "Stories", "Reels", "Post"];
-  const statusOptions = ["Draft", "In progress", "Published"];
-
-  function closeEditor() {
-    setEditingDraft(null);
-  }
 
   function toggleExpand(id: string) {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -241,17 +235,14 @@ export default function DraftsPage() {
 
                     {/* Tray actions */}
                     <div className="flex justify-end gap-2 border-t border-border/40 pt-2.5">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingDraft(d);
-                        }}
+                      <Link
+                        href={`/drafts/${d.id}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="flex items-center gap-1.5 rounded-md border border-border bg-background hover:bg-muted px-2.5 py-1 text-xs font-semibold text-foreground transition-colors"
                       >
                         <IconEdit className="size-3.5" />
                         Edit Draft
-                      </button>
+                      </Link>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -280,189 +271,6 @@ export default function DraftsPage() {
           </p>
         </div>
       )}
-
-      {/* Editing Dialog Modal */}
-      {editingDraft ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-3">
-          <div className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
-              <div>
-                <h3 className="font-heading text-lg font-bold">Edit Draft Details</h3>
-                <p className="text-xs text-muted-foreground">
-                  Saved immediately in local storage.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closeEditor}
-                className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1.5 text-xs font-semibold transition-colors"
-              >
-                Close
-              </button>
-            </div>
-
-            <form
-              className="mt-4 grid gap-3"
-              onSubmit={(event) => {
-                event.preventDefault();
-                const form = event.currentTarget as HTMLFormElement;
-                const title = (
-                  form.elements.namedItem("title") as HTMLInputElement | null
-                )?.value.trim();
-                const platform = (
-                  form.elements.namedItem("platform") as HTMLInputElement | null
-                )?.value.trim();
-                const category = (
-                  form.elements.namedItem("category") as HTMLSelectElement | null
-                )?.value.trim();
-                const status = (
-                  form.elements.namedItem("status") as HTMLSelectElement | null
-                )?.value.trim();
-                const date = (
-                  form.elements.namedItem("date") as HTMLInputElement | null
-                )?.value.trim();
-                const content = (
-                  form.elements.namedItem("content") as HTMLTextAreaElement | null
-                )?.value.trim();
-
-                if (!title) return;
-
-                updateDraft(editingDraft.id, {
-                  title,
-                  platform: platform || "Instagram",
-                  category: category || undefined,
-                  status: status || "Draft",
-                  date: date || undefined,
-                  content: content || "",
-                });
-
-                closeEditor();
-              }}
-            >
-              {/* Title */}
-              <div className="grid gap-1">
-                <label htmlFor="edit-title" className="text-xs font-semibold text-muted-foreground">
-                  Title
-                </label>
-                <input
-                  id="edit-title"
-                  name="title"
-                  defaultValue={editingDraft.title}
-                  placeholder="Title"
-                  required
-                  className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
-                />
-              </div>
-
-              {/* Platform Selector */}
-              <div className="grid gap-1">
-                <label htmlFor="edit-platform" className="text-xs font-semibold text-muted-foreground">
-                  Platform
-                </label>
-                <select
-                  id="edit-platform"
-                  name="platform"
-                  defaultValue={editingDraft.platform ?? "Instagram"}
-                  className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
-                >
-                  <option value="Instagram">Instagram</option>
-                  <option value="TikTok">TikTok</option>
-                  <option value="YouTube">YouTube</option>
-                  <option value="LinkedIn">LinkedIn</option>
-                </select>
-              </div>
-
-              {/* Category and Status Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="grid gap-1">
-                  <label htmlFor="edit-category" className="text-xs font-semibold text-muted-foreground">
-                    Category
-                  </label>
-                  <select
-                    id="edit-category"
-                    name="category"
-                    defaultValue={editingDraft.category ?? ""}
-                    className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
-                  >
-                    {categoryOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option
-                          ? (contentCategoryLabelMap[option] ?? option)
-                          : "No category"}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid gap-1">
-                  <label htmlFor="edit-status" className="text-xs font-semibold text-muted-foreground">
-                    Status
-                  </label>
-                  <select
-                    id="edit-status"
-                    name="status"
-                    defaultValue={normalizeStatus(editingDraft.status)}
-                    className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
-                  >
-                    {statusOptions.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Date */}
-              <div className="grid gap-1">
-                <label htmlFor="edit-date" className="text-xs font-semibold text-muted-foreground">
-                  Schedule Date (yyyy-MM-dd)
-                </label>
-                <input
-                  id="edit-date"
-                  name="date"
-                  type="date"
-                  defaultValue={editingDraft.date ?? ""}
-                  className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
-                />
-              </div>
-
-              {/* Script / Storyboard Outline editor */}
-              <div className="grid gap-1">
-                <label htmlFor="edit-content" className="text-xs font-semibold text-muted-foreground flex justify-between">
-                  <span>Script & Outline Editor</span>
-                  <span className="text-[10px] text-muted-foreground font-normal">(Rich text container prep)</span>
-                </label>
-                <textarea
-                  id="edit-content"
-                  name="content"
-                  rows={5}
-                  defaultValue={editingDraft.content ?? ""}
-                  placeholder="Start drafting storyboard scenes, video scripts, or general captions..."
-                  className="rounded-md border border-border bg-background p-3 text-xs outline-none focus:border-primary/50 resize-none font-mono text-muted-foreground leading-relaxed"
-                />
-              </div>
-
-              {/* Submit Buttons */}
-              <div className="flex justify-end gap-2 border-t border-border pt-3 mt-1">
-                <button
-                  type="button"
-                  onClick={closeEditor}
-                  className="rounded-md border border-border bg-background hover:bg-muted px-4 py-2 text-sm font-semibold transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2 text-sm font-semibold transition-colors"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
