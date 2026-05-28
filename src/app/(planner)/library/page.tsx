@@ -4,6 +4,7 @@ import {
   IconRecycle,
   IconTags,
 } from "@tabler/icons-react";
+import PageTransition from "@/components/page-transition";
 
 const templates = [
   { title: "Launch teaser", type: "Video", usage: "4 times" },
@@ -13,7 +14,8 @@ const templates = [
 
 export default function LibraryPage() {
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+    <PageTransition>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
       <section className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-3">
           {[
@@ -141,6 +143,7 @@ export default function LibraryPage() {
           </div>
         </div>
       </aside>
-    </div>
+      </div>
+    </PageTransition>
   );
 }

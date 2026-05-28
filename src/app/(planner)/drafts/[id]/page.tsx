@@ -11,6 +11,7 @@ import {
   IconTrash,
   IconDeviceFloppy,
 } from "@tabler/icons-react";
+import PageTransition from "@/components/page-transition";
 import { formatToDatetimeLocalValue } from "@/lib/date-utils";
 import { Input } from "@/components/ui/input";
 import {
@@ -127,7 +128,8 @@ export default function DraftWorkspacePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PageTransition>
+      <div className="space-y-6">
       {/* Two-Column Editor Layout - Contained Height on Desktop */}
       <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:h-[calc(100vh-140px)] lg:overflow-hidden">
         {/* Left Column: Metadata Sidebar - Scrolling only inside */}
@@ -318,6 +320,7 @@ export default function DraftWorkspacePage() {
           </div>
         </section>
       </div>
-    </div>
+      </div>
+    </PageTransition>
   );
 }

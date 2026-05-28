@@ -25,6 +25,7 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit],
     content: content,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML()); // Pass the compiled HTML to the parent's debounced save state
     },

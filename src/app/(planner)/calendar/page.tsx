@@ -35,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import PageTransition from "@/components/page-transition";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -79,7 +80,8 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <PageTransition>
+      <div className="space-y-4">
       <div className="rounded-md border border-border/60 bg-card p-3">
         {/* Header Calendar */}
         <div className="flex items-center justify-between mb-4">
@@ -368,6 +370,7 @@ export default function CalendarPage() {
           </DialogContent>
         )}
       </Dialog>
-    </div>
+      </div>
+    </PageTransition>
   );
 }

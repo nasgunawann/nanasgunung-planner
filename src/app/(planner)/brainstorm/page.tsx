@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useDrafts, type Idea } from "@/lib/drafts";
 import { platformColorMap } from "@/lib/platform-map";
+import PageTransition from "@/components/page-transition";
+import { AnimatePresence, m } from "motion/react";
 import {
   IconBrandInstagram,
   IconBrandTiktok,
@@ -127,7 +129,8 @@ export default function BrainstormPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageTransition>
+      <div className="space-y-6">
       {/* Intro Header */}
       <div className="flex items-center gap-3 bg-card border border-border/60 p-4 rounded-xl shadow-sm">
         <IconSparkles className="size-6 text-primary shrink-0" />
@@ -235,15 +238,28 @@ export default function BrainstormPage() {
             </h3>
 
             {ideas.length > 0 ? (
-              <div className="space-y-4 max-h-[550px] overflow-y-auto pr-1">
-                {ideas.map((idea) => {
+              <div className="w-full max-h-[550px] overflow-y-auto pr-1">
+                <AnimatePresence initial={false}>
+                  {ideas.map((idea) => {
                   const PlatformIcon = platformIconMap[idea.platform] || IconSparkles;
 
                   return (
-                    <article
+                    <m.div
                       key={idea.id}
-                      className="rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm hover:border-border/100 transition-all"
+                      initial={{ height: 0, opacity: 0, scale: 0.98, y: 6 }}
+                      animate={{ height: "auto", opacity: 1, scale: 1, y: 0 }}
+                      exit={{ height: 0, opacity: 0, scale: 0.98, y: -6 }}
+                      transition={{
+                        type: "tween",
+                        ease: [0.16, 1, 0.3, 1],
+                        duration: 0.22,
+                      }}
+                      className="overflow-hidden w-full"
                     >
+                      <div className="pb-4">
+                        <article
+                          className="rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm hover:border-border/100 transition-all"
+                        >
                       {/* Header Title / Platform */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
@@ -299,9 +315,12 @@ export default function BrainstormPage() {
                           <IconArrowRight className="size-3.5" />
                         </button>
                       </div>
-                    </article>
+                        </article>
+                      </div>
+                    </m.div>
                   );
                 })}
+              </AnimatePresence>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 px-6 rounded-lg border border-dashed border-border/80 text-center bg-background/50">
@@ -414,6 +433,7 @@ export default function BrainstormPage() {
           </div>
         </div>
       ) : null}
-    </div>
+      </div>
+    </PageTransition>
   );
 }
