@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { format } from "date-fns";
 
 export type Draft = {
@@ -21,6 +21,28 @@ const DraftsContext = createContext<DraftsContextValue | undefined>(undefined);
 
 export function DraftsProvider({ children }: { children: React.ReactNode }) {
   const [drafts, setDrafts] = useState<Draft[]>([]);
+
+  // Hydrate from localStorage on first mount (client-only)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("nanas_drafts");
+      if (raw) {
+        const parsed = JSON.parse(raw) as Draft[];
+        setDrafts(parsed);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  // Persist drafts to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem("nanas_drafts", JSON.stringify(drafts));
+    } catch (e) {
+      // ignore quota / serialization errors
+    }
+  }, [drafts]);
 
   function addDraft(d: Omit<Draft, "id" | "updatedAt">) {
     const now = new Date();
