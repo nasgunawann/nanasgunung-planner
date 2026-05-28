@@ -10,8 +10,19 @@ import {
   IconSparkles,
   IconTrash,
   IconDeviceFloppy,
+  IconTags,
+  IconCopy,
+  IconCheck,
 } from "@tabler/icons-react";
 import PageTransition from "@/components/page-transition";
+import { AnimatePresence, m } from "motion/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { formatToDatetimeLocalValue } from "@/lib/date-utils";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,6 +61,48 @@ export default function DraftWorkspacePage() {
   const [localTitle, setLocalTitle] = useState("");
   const [localContent, setLocalContent] = useState("");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
+
+  // Collapsible Library Snippets State
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [snippets, setSnippets] = useState<{ id: string; title: string; content: string }[]>([]);
+  const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("nanas_snippets");
+      if (stored) {
+        setSnippets(JSON.parse(stored));
+      } else {
+        const defaultSnippets = [
+          {
+            id: "snip-1",
+            title: "CTA Follow Standard",
+            content: "Jangan lupa untuk follow @nanasgunung untuk tips menarik seputar Web Development & Design setiap hari! 🚀",
+          },
+          {
+            id: "snip-2",
+            title: "Kumpulan Hashtag Tech",
+            content: "#nextjs #typescript #programmerindonesia #webdev #codinglife #belajarcoding",
+          },
+          {
+            id: "snip-3",
+            title: "Closing Post LinkedIn",
+            content: "Bagaimana dengan workflow tim Anda saat membangun MVP? Mari diskusi di kolom komentar! 👇",
+          },
+        ];
+        setSnippets(defaultSnippets);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  const handleCopySnippet = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSnippetId(id);
+    setTimeout(() => setCopiedSnippetId(null), 1500);
+  };
 
   // Initial Sync from drafts context state
   useEffect(() => {
@@ -255,17 +308,8 @@ export default function DraftWorkspacePage() {
           {/* Delete Action button */}
           <button
             type="button"
-            onClick={() => {
-              if (
-                confirm(
-                  `Delete this entire draft ("${draft.title}") permanently?`,
-                )
-              ) {
-                deleteDraft(draft.id);
-                router.push("/drafts");
-              }
-            }}
-            className="w-full flex items-center justify-center gap-1.5 h-9 rounded-md border border-red-500/10 bg-red-500/5 hover:bg-red-500/10 text-red-500 text-xs font-bold transition-all mt-auto"
+            onClick={() => setIsDeleteOpen(true)}
+            className="w-full flex items-center justify-center gap-1.5 h-9 rounded-md border border-red-500/10 bg-red-500/5 hover:bg-red-500/10 text-red-500 text-xs font-bold transition-all mt-auto cursor-pointer"
           >
             <IconTrash className="size-4" />
             Delete Draft
@@ -273,8 +317,8 @@ export default function DraftWorkspacePage() {
         </aside>
 
         {/* Right Column: Immersive Creative Canvas - Completely Contained */}
-        <section className="lg:h-full lg:overflow-hidden flex flex-col min-h-[520px] flex-1">
-          <div className="bg-card border border-border/60 rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
+        <section className="lg:h-full lg:overflow-hidden flex flex-row min-h-[520px] flex-1 gap-4">
+          <div className="bg-card border border-border/60 rounded-xl shadow-sm flex flex-col h-full overflow-hidden flex-1">
             {/* Editor Hub Header: Title & Stationary Save State (No Redundant Preview Toggle) */}
             <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 shrink-0">
               {/* Left Header Title & Compact Disk Status */}
@@ -299,6 +343,22 @@ export default function DraftWorkspacePage() {
                   )}
                 </div>
               </div>
+
+              {/* Right Header: Toggle Library Snippets Button */}
+              <button
+                type="button"
+                onClick={() => setIsLibraryOpen(!isLibraryOpen)}
+                className={[
+                  "flex h-8 items-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer select-none shrink-0",
+                  isLibraryOpen
+                    ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                    : "bg-background border-border text-muted-foreground hover:text-foreground",
+                ].join(" ")}
+                title="Buka Klip Aset Reusable"
+              >
+                <IconTags className="size-3.5" />
+                <span className="hidden sm:inline">Klip Aset</span>
+              </button>
             </div>
 
             {/* Direct TipTap Editor rendering (WYSIWYG) */}
@@ -318,7 +378,114 @@ export default function DraftWorkspacePage() {
               </div>
             </div>
           </div>
+
+          {/* Library Snippets Sidebar Drawer */}
+          <AnimatePresence>
+            {isLibraryOpen && (
+              <m.aside
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 280, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{
+                  type: "tween",
+                  ease: [0.16, 1, 0.3, 1],
+                  duration: 0.22,
+                }}
+                className="hidden lg:flex border border-border/60 rounded-xl bg-card flex-col h-full overflow-hidden shrink-0 shadow-sm"
+              >
+                {/* Header */}
+                <div className="p-3.5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/10">
+                  <span className="font-heading text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <IconTags className="size-3.5 text-primary" />
+                    Klip Aset Reusable
+                  </span>
+                </div>
+
+                {/* List of snippets with instant copy/insert */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                  {snippets.length > 0 ? (
+                    snippets.map((snip) => (
+                      <div
+                        key={snip.id}
+                        className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
+                      >
+                        <div className="flex justify-between items-center gap-2">
+                          <span className="font-bold text-foreground truncate max-w-[150px]">
+                            {snip.title}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopySnippet(snip.id, snip.content)}
+                            className={[
+                              "flex items-center gap-0.5 px-2 py-0.5 rounded text-[9px] font-bold border transition-all cursor-pointer select-none",
+                              copiedSnippetId === snip.id
+                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
+                                : "bg-card border-border hover:bg-muted text-muted-foreground hover:text-foreground",
+                            ].join(" ")}
+                          >
+                            {copiedSnippetId === snip.id ? (
+                              <>
+                                <IconCheck className="size-2.5" />
+                                Tersalin!
+                              </>
+                            ) : (
+                              <>
+                                <IconCopy className="size-2.5" />
+                                Salin
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed bg-muted/15 p-2 rounded whitespace-pre-wrap select-all border border-border/20 max-h-[85px] overflow-y-auto font-mono">
+                          {snip.content}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-10 text-muted-foreground space-y-1">
+                      <p className="text-xs font-bold">Aset Klip Kosong</p>
+                      <p className="text-[10px] max-w-[200px] mx-auto leading-relaxed">
+                        Tambahkan templat tulisan, tanda tangan, atau klip CTA baru di tab **Library** agar muncul di sini!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </m.aside>
+            )}
+          </AnimatePresence>
         </section>
+
+      {/* Dialog Confirmation: Delete Draft */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-sm font-bold text-foreground">Hapus Draft</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-2">
+              Apakah Anda yakin ingin menghapus draft <strong>"{draft.title}"</strong> secara permanen? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
+            <button
+              type="button"
+              onClick={() => setIsDeleteOpen(false)}
+              className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                deleteDraft(draft.id);
+                setIsDeleteOpen(false);
+                router.push("/drafts");
+              }}
+              className="px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+            >
+              Hapus Draft
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
       </div>
     </PageTransition>

@@ -41,6 +41,13 @@ import {
 } from "@/components/ui/tooltip";
 import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const platformIconMap: Record<string, ComponentType<{ className?: string }>> = {
   Instagram: IconBrandInstagram,
@@ -51,6 +58,10 @@ const platformIconMap: Record<string, ComponentType<{ className?: string }>> = {
 
 export default function DraftsPage() {
   const { drafts, deleteDraft, addDraft, updateDraft } = useDrafts();
+
+  // Dialog Confirmation States
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [deletingDraft, setDeletingDraft] = useState<Draft | null>(null);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -154,14 +165,7 @@ export default function DraftsPage() {
   };
 
   const handleBulkDelete = () => {
-    if (
-      confirm(
-        `Apakah Anda yakin ingin menghapus ${selectedIds.length} draft terpilih? Tindakan ini tidak dapat dibatalkan.`
-      )
-    ) {
-      selectedIds.forEach((id) => deleteDraft(id));
-      setSelectedIds([]);
-    }
+    setIsBulkDeleteOpen(true);
   };
 
   return (
@@ -434,11 +438,7 @@ export default function DraftsPage() {
                           onClick={(e) => {
                             e.preventDefault(); // Prevents navigating to the detail workspace
                             e.stopPropagation(); // Prevents event bubbling
-                            if (
-                              confirm(`Delete "${d.title}"? This cannot be undone.`)
-                            ) {
-                              deleteDraft(d.id);
-                            }
+                            setDeletingDraft(d);
                           }}
                           className="p-1 rounded text-muted-foreground/35 hover:text-red-500 hover:bg-red-500/5 transition-all ml-1 shrink-0 cursor-pointer"
                         >
@@ -496,6 +496,70 @@ export default function DraftsPage() {
           </div>
         </div>
       ) : null}
+      {/* Dialog Confirmation: Single Draft Deletion */}
+      <Dialog open={deletingDraft !== null} onOpenChange={(open) => { if (!open) setDeletingDraft(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-sm font-bold text-foreground">Hapus Draft</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-2">
+              Apakah Anda yakin ingin menghapus draft <strong>"{deletingDraft?.title}"</strong>? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
+            <button
+              type="button"
+              onClick={() => setDeletingDraft(null)}
+              className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (deletingDraft) {
+                  deleteDraft(deletingDraft.id);
+                  setDeletingDraft(null);
+                }
+              }}
+              className="px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+            >
+              Hapus Draft
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Confirmation: Bulk Drafts Deletion */}
+      <Dialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-sm font-bold text-foreground">Hapus Massal Draft</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-2">
+              Apakah Anda yakin ingin menghapus <strong>{selectedIds.length} draft</strong> terpilih secara permanen? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
+            <button
+              type="button"
+              onClick={() => setIsBulkDeleteOpen(false)}
+              className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                selectedIds.forEach((id) => deleteDraft(id));
+                setSelectedIds([]);
+                setIsBulkDeleteOpen(false);
+              }}
+              className="px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+            >
+              Hapus Semua ({selectedIds.length})
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
     </PageTransition>
   );

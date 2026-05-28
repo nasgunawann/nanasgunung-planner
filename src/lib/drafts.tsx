@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 export type Draft = {
   id: string;
@@ -147,7 +148,7 @@ export const seedIdeas: Idea[] = [
 
 type DraftsContextValue = {
   drafts: Draft[];
-  addDraft: (d: Omit<Draft, "id" | "updatedAt">) => void;
+  addDraft: (d: Omit<Draft, "id" | "updatedAt">) => string;
   updateDraft: (id: string, patch: Omit<Partial<Draft>, "id">) => void;
   deleteDraft: (id: string) => void;
   ideas: Idea[];
@@ -212,10 +213,11 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ideas, isHydrated]);
 
-  function addDraft(d: Omit<Draft, "id" | "updatedAt">) {
+  function addDraft(d: Omit<Draft, "id" | "updatedAt">): string {
     const now = new Date();
+    const newId = `${now.getTime()}`;
     const newDraft: Draft = {
-      id: `${now.getTime()}`,
+      id: newId,
       updatedAt: format(now, "PP"),
       title: d.title,
       platform: d.platform,
@@ -226,6 +228,8 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     };
 
     setDrafts((s) => [newDraft, ...s]);
+    toast.success(`Draft "${d.title}" berhasil ditambahkan!`);
+    return newId;
   }
 
   function updateDraft(id: string, patch: Omit<Partial<Draft>, "id">) {
@@ -245,6 +249,10 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
   }
 
   function deleteDraft(id: string) {
+    const found = drafts.find((d) => d.id === id);
+    if (found) {
+      toast.error(`Draft "${found.title}" telah dihapus.`);
+    }
     setDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== id));
   }
 
@@ -260,9 +268,14 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     };
 
     setIdeas((currentIdeas) => [newIdea, ...currentIdeas]);
+    toast.success(`Ide "${idea.title}" disimpan ke Funnel!`);
   }
 
   function deleteIdea(id: string) {
+    const found = ideas.find((i) => i.id === id);
+    if (found) {
+      toast.error(`Ide "${found.title}" telah dihapus.`);
+    }
     setIdeas((currentIdeas) => currentIdeas.filter((idea) => idea.id !== id));
   }
 
