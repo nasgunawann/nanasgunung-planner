@@ -29,6 +29,12 @@ import {
   IconBrandYoutube,
   IconBrandLinkedin,
 } from "@tabler/icons-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -214,26 +220,15 @@ export default function CalendarPage() {
       </div>
 
       {/* Enhanced Scheduling Modal (with Script/Storyboard Support) */}
-      {selectedDate ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-3">
-          <div className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-3">
-              <div>
-                <h3 className="font-heading text-lg font-bold">
-                  Schedule New Content
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Planned for {format(selectedDate, "PP")}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1.5 text-xs font-semibold transition-colors"
-              >
-                Close
-              </button>
-            </div>
+      <Dialog open={!!selectedDate} onOpenChange={(open) => { if (!open) closeModal(); }}>
+        {selectedDate && (
+          <DialogContent className="w-full max-w-md p-6 rounded-xl border border-border bg-card shadow-xl outline-none sm:max-w-md" showCloseButton={true}>
+            <DialogHeader className="border-b border-border/60 pb-3">
+              <DialogTitle className="font-heading text-lg font-bold">Schedule New Content</DialogTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Planned for {format(selectedDate, "PP")}
+              </p>
+            </DialogHeader>
 
             <form
               className="mt-4 grid gap-3"
@@ -293,7 +288,7 @@ export default function CalendarPage() {
                   <select
                     id="platform"
                     name="platform"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
                   >
                     <option value="Instagram">Instagram</option>
                     <option value="TikTok">TikTok</option>
@@ -309,7 +304,7 @@ export default function CalendarPage() {
                   <select
                     id="category"
                     name="category"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
                   >
                     {categoryOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -328,7 +323,7 @@ export default function CalendarPage() {
                 <select
                   id="status"
                   name="status"
-                  className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+                  className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
                 >
                   {statusOptions.map((status) => (
                     <option key={status} value={status}>
@@ -370,9 +365,9 @@ export default function CalendarPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      ) : null}
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

@@ -12,6 +12,14 @@ import {
   IconDeviceFloppy,
 } from "@tabler/icons-react";
 import { formatToDatetimeLocalValue } from "@/lib/date-utils";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 // Dynamic import for TipTap Editor Hub (Client-only / SSR Safe)
 const TipTapEditor = dynamic(() => import("@/components/tiptap-editor"), {
@@ -144,12 +152,12 @@ export default function DraftWorkspacePage() {
               >
                 Title
               </label>
-              <input
+              <Input
                 id="ws-title"
                 type="text"
                 value={localTitle}
                 onChange={(e) => setLocalTitle(e.target.value)}
-                className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
+                className="h-9 text-xs bg-background"
               />
             </div>
 
@@ -161,19 +169,20 @@ export default function DraftWorkspacePage() {
               >
                 Platform
               </label>
-              <select
-                id="ws-platform"
+              <Select
                 value={draft.platform ?? "Instagram"}
-                onChange={(e) =>
-                  handleDropdownChange("platform", e.target.value)
-                }
-                className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
+                onValueChange={(val) => handleDropdownChange("platform", val)}
               >
-                <option value="Instagram">Instagram</option>
-                <option value="TikTok">TikTok</option>
-                <option value="YouTube">YouTube</option>
-                <option value="LinkedIn">LinkedIn</option>
-              </select>
+                <SelectTrigger id="ws-platform" className="h-9 text-xs bg-background cursor-pointer">
+                  <SelectValue placeholder="Platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Instagram">Instagram</SelectItem>
+                  <SelectItem value="TikTok">TikTok</SelectItem>
+                  <SelectItem value="YouTube">YouTube</SelectItem>
+                  <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Category Dropdown */}
@@ -184,19 +193,20 @@ export default function DraftWorkspacePage() {
               >
                 Format / Category
               </label>
-              <select
-                id="ws-category"
-                value={draft.category ?? ""}
-                onChange={(e) =>
-                  handleDropdownChange("category", e.target.value)
-                }
-                className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
+              <Select
+                value={draft.category ?? "none"}
+                onValueChange={(val) => handleDropdownChange("category", val === "none" ? "" : val)}
               >
-                <option value="">No Category</option>
-                <option value="Stories">Stories</option>
-                <option value="Reels">Reels</option>
-                <option value="Post">Post</option>
-              </select>
+                <SelectTrigger id="ws-category" className="h-9 text-xs bg-background cursor-pointer">
+                  <SelectValue placeholder="No Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Category</SelectItem>
+                  <SelectItem value="Stories">Stories</SelectItem>
+                  <SelectItem value="Reels">Reels</SelectItem>
+                  <SelectItem value="Post">Post</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Status Dropdown */}
@@ -207,16 +217,19 @@ export default function DraftWorkspacePage() {
               >
                 Workflow Status
               </label>
-              <select
-                id="ws-status"
+              <Select
                 value={draft.status ?? "Draft"}
-                onChange={(e) => handleDropdownChange("status", e.target.value)}
-                className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
+                onValueChange={(val) => handleDropdownChange("status", val)}
               >
-                <option value="Draft">Draft</option>
-                <option value="In progress">In progress</option>
-                <option value="Published">Published</option>
-              </select>
+                <SelectTrigger id="ws-status" className="h-9 text-xs bg-background cursor-pointer">
+                  <SelectValue placeholder="Workflow Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Draft">Draft</SelectItem>
+                  <SelectItem value="In progress">In progress</SelectItem>
+                  <SelectItem value="Published">Published</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Schedule Date */}
@@ -227,12 +240,12 @@ export default function DraftWorkspacePage() {
               >
                 Schedule Date & Time
               </label>
-              <input
+              <Input
                 id="ws-date"
                 type="datetime-local"
                 value={formatToDatetimeLocalValue(draft.date)}
                 onChange={(e) => handleDropdownChange("date", e.target.value)}
-                className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
+                className="h-9 text-xs bg-background"
               />
             </div>
           </div>

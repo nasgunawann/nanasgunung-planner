@@ -26,6 +26,19 @@ import {
   isDateThisWeek,
   isDateThisMonth,
 } from "@/lib/date-utils";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const platformIconMap: Record<string, ComponentType<{ className?: string }>> = {
   Instagram: IconBrandInstagram,
@@ -116,54 +129,57 @@ export default function DraftsPage() {
       <div className="grid gap-2 grid-cols-1 sm:grid-cols-[2fr_1.2fr_1.2fr_1.2fr_auto] items-center bg-card border border-border/60 p-2 rounded-lg shadow-sm">
         {/* Search */}
         <div className="relative flex items-center">
-          <IconSearch className="absolute left-2.5 size-3.5 text-muted-foreground" />
-          <input
+          <IconSearch className="absolute left-2.5 size-3.5 text-muted-foreground z-10" />
+          <Input
             type="text"
             placeholder="Cari draft..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="h-8 w-full rounded-md border border-border bg-background pl-8 pr-3 text-[11px] outline-none focus:border-primary/50"
+            className="h-8 w-full bg-background pl-8 pr-3 text-[11px] outline-none"
           />
         </div>
 
         {/* Platform Dropdown */}
-        <select
-          value={selectedPlatform}
-          onChange={(e) => handlePlatformChange(e.target.value)}
-          className="h-8 rounded-md border border-border bg-background px-2 text-[11px] outline-none focus:border-primary/50 cursor-pointer"
-        >
-          {platformOptions.map((plat) => (
-            <option key={plat} value={plat}>
-              {plat === "All" ? "Semua Platform" : plat}
-            </option>
-          ))}
-        </select>
+        <Select value={selectedPlatform} onValueChange={handlePlatformChange}>
+          <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
+            <SelectValue placeholder="Semua Platform" />
+          </SelectTrigger>
+          <SelectContent>
+            {platformOptions.map((plat) => (
+              <SelectItem key={plat} value={plat} className="text-[11px]">
+                {plat === "All" ? "Semua Platform" : plat}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Time Filter Dropdown */}
-        <select
-          value={timeFilter}
-          onChange={(e) => handleTimeChange(e.target.value)}
-          className="h-8 rounded-md border border-border bg-background px-2 text-[11px] outline-none focus:border-primary/50 cursor-pointer"
-        >
-          {timeFilterOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <Select value={timeFilter} onValueChange={handleTimeChange}>
+          <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
+            <SelectValue placeholder="Semua Waktu" />
+          </SelectTrigger>
+          <SelectContent>
+            {timeFilterOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Status Dropdown */}
-        <select
-          value={selectedStatus}
-          onChange={(e) => handleStatusChange(e.target.value)}
-          className="h-8 rounded-md border border-border bg-background px-2 text-[11px] outline-none focus:border-primary/50 cursor-pointer"
-        >
-          {statusTabOptions.map((statusTab) => (
-            <option key={statusTab} value={statusTab}>
-              {statusTab === "All" ? "Semua Status" : statusTab}
-            </option>
-          ))}
-        </select>
+        <Select value={selectedStatus} onValueChange={handleStatusChange}>
+          <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
+            <SelectValue placeholder="Semua Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {statusTabOptions.map((statusTab) => (
+              <SelectItem key={statusTab} value={statusTab} className="text-[11px]">
+                {statusTab === "All" ? "Semua Status" : statusTab}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Add Draft Shortcut */}
         <button
@@ -285,23 +301,29 @@ export default function DraftsPage() {
                       {formatFriendlyIndonesianDate(d.date)}
                     </span>
 
-                    {/* Quick Delete button (Stops link navigation) */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault(); // Prevents navigating to the detail workspace
-                        e.stopPropagation(); // Prevents event bubbling
-                        if (
-                          confirm(`Delete "${d.title}"? This cannot be undone.`)
-                        ) {
-                          deleteDraft(d.id);
-                        }
-                      }}
-                      className="p-1 rounded text-muted-foreground/35 hover:text-red-500 hover:bg-red-500/5 transition-all ml-1 shrink-0"
-                      title="Delete Draft"
-                    >
-                      <IconTrash className="size-3.5" />
-                    </button>
+                    {/* Quick Delete button with shadcn Tooltip (Stops link navigation) */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault(); // Prevents navigating to the detail workspace
+                            e.stopPropagation(); // Prevents event bubbling
+                            if (
+                              confirm(`Delete "${d.title}"? This cannot be undone.`)
+                            ) {
+                              deleteDraft(d.id);
+                            }
+                          }}
+                          className="p-1 rounded text-muted-foreground/35 hover:text-red-500 hover:bg-red-500/5 transition-all ml-1 shrink-0 cursor-pointer"
+                        >
+                          <IconTrash className="size-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-[10px] px-2 py-1 font-semibold select-none">
+                        Hapus Draft
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </Link>
