@@ -32,10 +32,14 @@ export default function TipTapEditor({
   snippets = [],
 }: TipTapEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Slash Command Menu States
   const [isSlashActive, setIsSlashActive] = useState(false);
-  const [slashCoords, setSlashCoords] = useState<{ top: number; bottom: number; left: number } | null>(null);
+  const [slashCoords, setSlashCoords] = useState<{
+    top: number;
+    bottom: number;
+    left: number;
+  } | null>(null);
   const [slashQuery, setSlashQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -48,9 +52,13 @@ export default function TipTapEditor({
   const selectedIndexRef = useRef(selectedIndex);
   const filteredCountRef = useRef(0);
   const triggerExecuteRef = useRef(() => {});
-  
-  useEffect(() => { isSlashActiveRef.current = isSlashActive; }, [isSlashActive]);
-  useEffect(() => { selectedIndexRef.current = selectedIndex; }, [selectedIndex]);
+
+  useEffect(() => {
+    isSlashActiveRef.current = isSlashActive;
+  }, [isSlashActive]);
+  useEffect(() => {
+    selectedIndexRef.current = selectedIndex;
+  }, [selectedIndex]);
 
   // Initialize TipTap Editor
   const editor = useEditor({
@@ -79,7 +87,10 @@ export default function TipTapEditor({
         }
         if (event.key === "ArrowUp") {
           event.preventDefault();
-          setSelectedIndex((prev) => (prev - 1 + filteredCountRef.current) % filteredCountRef.current);
+          setSelectedIndex(
+            (prev) =>
+              (prev - 1 + filteredCountRef.current) % filteredCountRef.current,
+          );
           return true;
         }
         if (event.key === "Enter") {
@@ -168,13 +179,14 @@ export default function TipTapEditor({
   }));
 
   const allItems = [
-    ...formatCommands.map(item => ({ ...item, type: "format" })),
-    ...snippetCommands.map(item => ({ ...item, type: "snippet" }))
+    ...formatCommands.map((item) => ({ ...item, type: "format" })),
+    ...snippetCommands.map((item) => ({ ...item, type: "snippet" })),
   ];
 
-  const filteredItems = allItems.filter((item) =>
-    item.title.toLowerCase().includes(slashQuery.toLowerCase()) ||
-    item.id.toLowerCase().includes(slashQuery.toLowerCase())
+  const filteredItems = allItems.filter(
+    (item) =>
+      item.title.toLowerCase().includes(slashQuery.toLowerCase()) ||
+      item.id.toLowerCase().includes(slashQuery.toLowerCase()),
   );
 
   useEffect(() => {
@@ -186,12 +198,12 @@ export default function TipTapEditor({
     const { view, state } = editorInstance;
     const { selection } = state;
     const { $from } = selection;
-    
+
     // Get text from current block up to cursor (start of paragraph to cursor)
     const textBeforeCursor = $from.parent.textBetween(
       0,
       $from.parentOffset,
-      " "
+      " ",
     );
 
     const match = textBeforeCursor.match(/(?:^|\s)\/([a-zA-Z0-9\-+_]*)$/);
@@ -219,7 +231,7 @@ export default function TipTapEditor({
 
     setIsSlashActive(true);
     setSlashQuery(match[1]);
-    
+
     try {
       const coords = view.coordsAtPos(selection.from);
       if (coords) {
@@ -240,7 +252,7 @@ export default function TipTapEditor({
     const triggerLength = slashQuery.length + 1; // slash + keyword
     const from = selection.from - triggerLength;
     const to = selection.from;
-    
+
     // Combine operations into a single atomic transaction chain
     let chain = editor.chain().focus().deleteRange({ from, to });
 
@@ -256,9 +268,9 @@ export default function TipTapEditor({
     } else {
       chain = chain.insertContent(item.content);
     }
-    
+
     chain.run();
-    
+
     slashTriggerPosRef.current = null;
     escapedTriggerPosRef.current = null;
     setIsSlashActive(false);
@@ -286,7 +298,10 @@ export default function TipTapEditor({
       setIsSlashActive(false);
     };
 
-    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    window.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
     return () => {
       window.removeEventListener("scroll", handleScroll, { capture: true });
     };
@@ -339,7 +354,10 @@ export default function TipTapEditor({
   }
 
   return (
-    <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden min-h-0 relative">
+    <div
+      ref={containerRef}
+      className="flex-1 flex flex-col overflow-hidden min-h-0 relative"
+    >
       {/* Dynamic WYSIWYG Formatting Toolbar */}
       <div className="bg-muted/30 border-b border-border/50 px-3 py-2 flex flex-wrap items-center gap-1 shadow-inner shrink-0">
         {/* Bold Button */}
@@ -500,106 +518,138 @@ export default function TipTapEditor({
       </div>
 
       {/* Slash Command Floating Menu Popover (Rendered globally using React Portal) */}
-      {isSlashActive && slashCoords && filteredItems.length > 0 && typeof document !== "undefined" && createPortal(
-        <div
-          id="tiptap-slash-menu"
-          style={{
-            position: "fixed",
-            top: typeof window !== "undefined" && slashCoords.bottom + 260 > window.innerHeight
-              ? slashCoords.top - Math.min(260, filteredItems.length * 40 + 20) - 4
-              : slashCoords.bottom + 4,
-            left: typeof window !== "undefined"
-              ? Math.max(12, Math.min(slashCoords.left, window.innerWidth - 270))
-              : slashCoords.left,
-          }}
-          className="fixed z-[9999] w-64 bg-card/95 border border-border shadow-2xl rounded-xl p-2 max-h-[260px] overflow-y-auto backdrop-blur-md flex flex-col focus:outline-none scrollbar-none"
-        >
-          {/* Render Formatting Category if any matching formatting items are present */}
-          {filteredItems.some(i => i.type === "format") && (
-            <div className="flex flex-col">
-              <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
-                Format Teks
+      {isSlashActive &&
+        slashCoords &&
+        filteredItems.length > 0 &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            id="tiptap-slash-menu"
+            style={{
+              position: "fixed",
+              top:
+                typeof window !== "undefined" &&
+                slashCoords.bottom + 260 > window.innerHeight
+                  ? slashCoords.top -
+                    Math.min(260, filteredItems.length * 40 + 20) -
+                    4
+                  : slashCoords.bottom + 4,
+              left:
+                typeof window !== "undefined"
+                  ? Math.max(
+                      12,
+                      Math.min(slashCoords.left, window.innerWidth - 270),
+                    )
+                  : slashCoords.left,
+            }}
+            className="fixed z-[9999] w-64 bg-card/95 border border-border shadow-2xl rounded-xl p-2 max-h-[260px] overflow-y-auto backdrop-blur-md flex flex-col focus:outline-none scrollbar-none"
+          >
+            {/* Render Formatting Category if any matching formatting items are present */}
+            {filteredItems.some((i) => i.type === "format") && (
+              <div className="flex flex-col">
+                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
+                  Format Teks
+                </div>
+                {filteredItems
+                  .filter((i) => i.type === "format")
+                  .map((item) => {
+                    const itemIndex = filteredItems.indexOf(item);
+                    const isSelected = itemIndex === selectedIndex;
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        ref={isSelected ? selectedItemRef : null}
+                        type="button"
+                        onClick={() => executeCommand(item)}
+                        className={[
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
+                          isSelected
+                            ? "bg-primary text-primary-foreground font-semibold"
+                            : "text-foreground hover:bg-muted",
+                        ].join(" ")}
+                      >
+                        <Icon
+                          className={[
+                            "size-4 shrink-0",
+                            isSelected
+                              ? "text-primary-foreground"
+                              : "text-muted-foreground/80",
+                          ].join(" ")}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="truncate">{item.title}</div>
+                          <div
+                            className={[
+                              "text-[9px] truncate font-normal leading-tight mt-0.5",
+                              isSelected
+                                ? "text-primary-foreground/75"
+                                : "text-muted-foreground/65",
+                            ].join(" ")}
+                          >
+                            {item.desc}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
-              {filteredItems
-                .filter(i => i.type === "format")
-                .map((item) => {
-                  const itemIndex = filteredItems.indexOf(item);
-                  const isSelected = itemIndex === selectedIndex;
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      ref={isSelected ? selectedItemRef : null}
-                      type="button"
-                      onClick={() => executeCommand(item)}
-                      className={[
-                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
-                        isSelected
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-foreground hover:bg-muted",
-                      ].join(" ")}
-                    >
-                      <Icon className={[
-                        "size-4 shrink-0",
-                        isSelected ? "text-primary-foreground" : "text-muted-foreground/80"
-                      ].join(" ")} />
-                      <div className="flex-1 min-w-0">
-                        <div className="truncate">{item.title}</div>
-                        <div className={[
-                          "text-[9px] truncate font-normal leading-tight mt-0.5",
-                          isSelected ? "text-primary-foreground/75" : "text-muted-foreground/65"
-                        ].join(" ")}>{item.desc}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-            </div>
-          )}
+            )}
 
-          {/* Render Aset Siap Pakai Category if any matching snippet items are present */}
-          {filteredItems.some(i => i.type === "snippet") && (
-            <div className="flex flex-col mt-1 pt-1 border-t border-border/40">
-              <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
-                Aset Siap Pakai
+            {/* Render Aset Siap Pakai Category if any matching snippet items are present */}
+            {filteredItems.some((i) => i.type === "snippet") && (
+              <div className="flex flex-col mt-1 pt-1 border-t border-border/40">
+                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
+                  Aset Siap Pakai
+                </div>
+                {filteredItems
+                  .filter((i) => i.type === "snippet")
+                  .map((item) => {
+                    const itemIndex = filteredItems.indexOf(item);
+                    const isSelected = itemIndex === selectedIndex;
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        ref={isSelected ? selectedItemRef : null}
+                        type="button"
+                        onClick={() => executeCommand(item)}
+                        className={[
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
+                          isSelected
+                            ? "bg-primary text-primary-foreground font-semibold"
+                            : "text-foreground hover:bg-muted",
+                        ].join(" ")}
+                      >
+                        <Icon
+                          className={[
+                            "size-4 shrink-0",
+                            isSelected
+                              ? "text-primary-foreground"
+                              : "text-primary",
+                          ].join(" ")}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="truncate">{item.title}</div>
+                          <div
+                            className={[
+                              "text-[9px] truncate font-normal leading-tight mt-0.5",
+                              isSelected
+                                ? "text-primary-foreground/75"
+                                : "text-muted-foreground/65",
+                            ].join(" ")}
+                          >
+                            {item.desc}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
-              {filteredItems
-                .filter(i => i.type === "snippet")
-                .map((item) => {
-                  const itemIndex = filteredItems.indexOf(item);
-                  const isSelected = itemIndex === selectedIndex;
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      ref={isSelected ? selectedItemRef : null}
-                      type="button"
-                      onClick={() => executeCommand(item)}
-                      className={[
-                        "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
-                        isSelected
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-foreground hover:bg-muted",
-                      ].join(" ")}
-                    >
-                      <Icon className={[
-                        "size-4 shrink-0",
-                        isSelected ? "text-primary-foreground" : "text-primary"
-                      ].join(" ")} />
-                      <div className="flex-1 min-w-0">
-                        <div className="truncate">{item.title}</div>
-                        <div className={[
-                          "text-[9px] truncate font-normal leading-tight mt-0.5",
-                          isSelected ? "text-primary-foreground/75" : "text-muted-foreground/65"
-                        ].join(" ")}>{item.desc}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-            </div>
-          )}
-        </div>,
-        document.body
-      )}
+            )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
