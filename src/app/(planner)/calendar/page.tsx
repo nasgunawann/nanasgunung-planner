@@ -264,7 +264,7 @@ export default function CalendarPage() {
                   category: category || "Post",
                   status: status || "Draft",
                   content: content || "",
-                  date: format(selectedDate, "yyyy-MM-dd"),
+                  date: format(selectedDate, "yyyy-MM-dd") + "T08:00",
                 });
 
                 closeModal();

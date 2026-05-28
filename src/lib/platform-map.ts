@@ -11,21 +11,21 @@ export const statusAccentMap: Record<
   { border: string; title: string; bg: string; chipText: string }
 > = {
   Draft: {
-    border: "border-l-amber-400",
-    title: "text-amber-700 dark:text-amber-300",
-    bg: "bg-amber-400/15",
-    chipText: "text-amber-800 dark:text-amber-200",
+    border: "border-l-slate-400 dark:border-l-slate-500",
+    title: "text-slate-600 dark:text-slate-400",
+    bg: "bg-slate-500/10 dark:bg-slate-500/15",
+    chipText: "text-slate-700 dark:text-slate-300",
   },
   "In progress": {
-    border: "border-l-sky-400",
-    title: "text-sky-700 dark:text-sky-300",
-    bg: "bg-sky-400/15",
-    chipText: "text-sky-800 dark:text-sky-200",
+    border: "border-l-amber-500",
+    title: "text-amber-700 dark:text-amber-300",
+    bg: "bg-amber-500/15",
+    chipText: "text-amber-800 dark:text-amber-200",
   },
   Published: {
-    border: "border-l-emerald-400",
+    border: "border-l-emerald-500",
     title: "text-emerald-700 dark:text-emerald-300",
-    bg: "bg-emerald-400/15",
+    bg: "bg-emerald-500/15",
     chipText: "text-emerald-800 dark:text-emerald-200",
   },
   Default: {

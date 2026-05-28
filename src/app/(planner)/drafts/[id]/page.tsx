@@ -11,6 +11,7 @@ import {
   IconTrash,
   IconDeviceFloppy,
 } from "@tabler/icons-react";
+import { formatToDatetimeLocalValue } from "@/lib/date-utils";
 
 // Dynamic import for TipTap Editor Hub (Client-only / SSR Safe)
 const TipTapEditor = dynamic(() => import("@/components/tiptap-editor"), {
@@ -224,12 +225,12 @@ export default function DraftWorkspacePage() {
                 htmlFor="ws-date"
                 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
               >
-                Schedule Date
+                Schedule Date & Time
               </label>
               <input
                 id="ws-date"
-                type="date"
-                value={draft.date ?? ""}
+                type="datetime-local"
+                value={formatToDatetimeLocalValue(draft.date)}
                 onChange={(e) => handleDropdownChange("date", e.target.value)}
                 className="h-9 rounded-md border border-border bg-background px-3 text-xs outline-none focus:border-primary/50"
               />
