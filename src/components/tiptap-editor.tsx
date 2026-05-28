@@ -43,6 +43,13 @@ export default function TipTapEditor({
   const [slashQuery, setSlashQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  // AI Inline Prompt States
+  const [isAiPromptActive, setIsAiPromptActive] = useState(false);
+  const [aiPromptCoords, setAiPromptCoords] = useState<{ top: number; bottom: number; left: number } | null>(null);
+  const [aiPromptValue, setAiPromptValue] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const aiPromptInputRef = useRef<HTMLInputElement>(null);
+
   const selectedItemRef = useRef<HTMLButtonElement>(null);
   const slashTriggerPosRef = useRef<number | null>(null);
   const escapedTriggerPosRef = useRef<number | null>(null);
@@ -181,6 +188,30 @@ export default function TipTapEditor({
   const allItems = [
     ...formatCommands.map((item) => ({ ...item, type: "format" })),
     ...snippetCommands.map((item) => ({ ...item, type: "snippet" })),
+    // AI Generate command (hardcoded model via env)
+    {
+      id: "ai-generate",
+      type: "ai",
+      title: "AI Generate",
+      desc: "Generate AI content for the current selection",
+      icon: IconSparkles,
+      action: async (ed: any) => {
+        const content = ed.getHTML();
+        try {
+          const resp = await fetch("/api/ai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: content }),
+          });
+          const data = await resp.json();
+          if (data && data.output) {
+            ed.chain().focus().insertContent(data.output).run();
+          }
+        } catch (e) {
+          console.error("AI generate error", e);
+        }
+      },
+    },
   ];
 
   const filteredItems = allItems.filter(
@@ -253,6 +284,28 @@ export default function TipTapEditor({
     const from = selection.from - triggerLength;
     const to = selection.from;
 
+    slashTriggerPosRef.current = null;
+    escapedTriggerPosRef.current = null;
+    setIsSlashActive(false);
+    setSlashQuery("");
+    setSelectedIndex(0);
+
+    // AI command: open inline prompt popup instead of inserting content
+    if (item.type === "ai") {
+      editor.chain().focus().deleteRange({ from, to }).run();
+      // Capture cursor coords for the prompt popup
+      try {
+        const coords = editor.view.coordsAtPos(editor.state.selection.from);
+        setAiPromptCoords({ top: coords.top, bottom: coords.bottom, left: coords.left });
+      } catch (e) {
+        setAiPromptCoords({ top: 200, bottom: 220, left: 100 });
+      }
+      setAiPromptValue("");
+      setIsAiPromptActive(true);
+      setTimeout(() => aiPromptInputRef.current?.focus(), 50);
+      return;
+    }
+
     // Combine operations into a single atomic transaction chain
     let chain = editor.chain().focus().deleteRange({ from, to });
 
@@ -270,12 +323,29 @@ export default function TipTapEditor({
     }
 
     chain.run();
+  };
 
-    slashTriggerPosRef.current = null;
-    escapedTriggerPosRef.current = null;
-    setIsSlashActive(false);
-    setSlashQuery("");
-    setSelectedIndex(0);
+  const submitAiPrompt = async () => {
+    if (!editor || !aiPromptValue.trim() || isAiLoading) return;
+    setIsAiLoading(true);
+    try {
+      const currentContent = editor.getHTML();
+      const resp = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: aiPromptValue.trim(), context: currentContent }),
+      });
+      const data = await resp.json();
+      if (data && data.output) {
+        editor.chain().focus().insertContent(data.output).run();
+      }
+    } catch (e) {
+      console.error("AI generate error", e);
+    } finally {
+      setIsAiLoading(false);
+      setIsAiPromptActive(false);
+      setAiPromptValue("");
+    }
   };
 
   useEffect(() => {
@@ -517,6 +587,76 @@ export default function TipTapEditor({
         <EditorContent editor={editor} />
       </div>
 
+      {/* AI Inline Prompt Popup (Portal) */}
+      {isAiPromptActive && aiPromptCoords && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            id="tiptap-ai-prompt"
+            style={{
+              position: "fixed",
+              top:
+                typeof window !== "undefined" && aiPromptCoords.bottom + 140 > window.innerHeight
+                  ? aiPromptCoords.top - 144
+                  : aiPromptCoords.bottom + 6,
+              left:
+                typeof window !== "undefined"
+                  ? Math.max(12, Math.min(aiPromptCoords.left, window.innerWidth - 360))
+                  : aiPromptCoords.left,
+            }}
+            className="fixed z-[9999] w-80 bg-card border border-primary/30 shadow-2xl rounded-xl p-3 backdrop-blur-md"
+          >
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-2">
+              <IconSparkles className="size-3.5 text-primary shrink-0" />
+              <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">AI Generate</span>
+              <span className="text-[9px] text-muted-foreground ml-auto">Enter untuk generate · Esc untuk batal</span>
+            </div>
+            {/* Input */}
+            <div className="flex items-center gap-2">
+              <input
+                ref={aiPromptInputRef}
+                type="text"
+                value={aiPromptValue}
+                onChange={(e) => setAiPromptValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); submitAiPrompt(); }
+                  if (e.key === "Escape") { setIsAiPromptActive(false); setAiPromptValue(""); editor?.commands.focus(); }
+                }}
+                placeholder="Contoh: tulis hook pembuka untuk konten travel..."
+                disabled={isAiLoading}
+                className="flex-1 bg-muted/60 border border-border/50 rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 disabled:opacity-60 transition-all"
+              />
+              <button
+                type="button"
+                onClick={submitAiPrompt}
+                disabled={!aiPromptValue.trim() || isAiLoading}
+                className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+              >
+                {isAiLoading ? (
+                  <svg className="animate-spin size-3.5" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                ) : (
+                  <IconSparkles className="size-3.5" />
+                )}
+              </button>
+            </div>
+            {/* Loading state */}
+            {isAiLoading && (
+              <div className="mt-2 text-[9px] text-muted-foreground flex items-center gap-1.5">
+                <svg className="animate-spin size-3" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                Generating dengan AI...
+              </div>
+            )}
+          </div>,
+          document.body,
+        )
+      }
+
       {/* Slash Command Floating Menu Popover (Rendered globally using React Portal) */}
       {isSlashActive &&
         slashCoords &&
@@ -575,6 +715,58 @@ export default function TipTapEditor({
                             isSelected
                               ? "text-primary-foreground"
                               : "text-muted-foreground/80",
+                          ].join(" ")}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="truncate">{item.title}</div>
+                          <div
+                            className={[
+                              "text-[9px] truncate font-normal leading-tight mt-0.5",
+                              isSelected
+                                ? "text-primary-foreground/75"
+                                : "text-muted-foreground/65",
+                            ].join(" ")}
+                          >
+                            {item.desc}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+
+            {/* Render AI Commands Category */}
+            {filteredItems.some((i) => i.type === "ai") && (
+              <div className="flex flex-col mt-1 pt-1 border-t border-border/40">
+                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
+                  AI Commands
+                </div>
+                {filteredItems
+                  .filter((i) => i.type === "ai")
+                  .map((item) => {
+                    const itemIndex = filteredItems.indexOf(item);
+                    const isSelected = itemIndex === selectedIndex;
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        ref={isSelected ? selectedItemRef : null}
+                        type="button"
+                        onClick={() => executeCommand(item)}
+                        className={[
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
+                          isSelected
+                            ? "bg-primary text-primary-foreground font-semibold"
+                            : "text-foreground hover:bg-muted",
+                        ].join(" ")}
+                      >
+                        <Icon
+                          className={[
+                            "size-4 shrink-0",
+                            isSelected
+                              ? "text-primary-foreground"
+                              : "text-primary",
                           ].join(" ")}
                         />
                         <div className="flex-1 min-w-0">
