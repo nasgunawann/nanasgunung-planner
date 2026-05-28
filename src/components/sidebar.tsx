@@ -3,14 +3,13 @@
 import Link from "next/link";
 import React from "react";
 import { usePathname } from "next/navigation";
-import { IconLayoutDashboard, IconPlus } from "@tabler/icons-react";
+import { IconLayoutDashboard } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/lib/nav";
 import { iconMap } from "@/lib/icon-map";
 
-export default function Sidebar({ onQuickAdd }: { onQuickAdd: () => void }) {
+export default function Sidebar() {
   const pathname = usePathname();
 
   const isActive = (href: string) => pathname?.startsWith(href);
@@ -48,13 +47,6 @@ export default function Sidebar({ onQuickAdd }: { onQuickAdd: () => void }) {
           );
         })}
       </nav>
-
-      <div className="mt-auto">
-        <Button variant="outline" onClick={onQuickAdd}>
-          <IconPlus className="size-5" />
-          New
-        </Button>
-      </div>
     </aside>
   );
 }
