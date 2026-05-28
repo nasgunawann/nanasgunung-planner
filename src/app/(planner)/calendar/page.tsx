@@ -50,24 +50,68 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => setCurrentMonth((date) => subMonths(date, 1))}
-          className="rounded-md border border-border px-3 py-2 text-sm"
-        >
-          Prev
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentMonth((date) => addMonths(date, 1))}
-          className="rounded-md border border-border px-3 py-2 text-sm"
-        >
-          Next
-        </button>
-      </div>
-
       <div className="rounded-md border border-border/60 bg-card/75 p-3">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold">{monthLabel}</h2>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Previous month"
+              onClick={() => setCurrentMonth((date) => subMonths(date, 1))}
+              className="rounded-md border border-border px-2 py-1 text-sm"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 18l-6-6 6-6"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              aria-label="Today"
+              onClick={() => {
+                const now = new Date();
+                setCurrentMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+              }}
+              className="rounded-md border border-border px-3 py-1 text-sm"
+            >
+              Today
+            </button>
+
+            <button
+              type="button"
+              aria-label="Next month"
+              onClick={() => setCurrentMonth((date) => addMonths(date, 1))}
+              className="rounded-md border border-border px-2 py-1 text-sm"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 6l6 6-6 6"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
         <div className="grid grid-cols-7 gap-2">
           {weekDays.map((day) => (
             <div
@@ -95,8 +139,10 @@ export default function CalendarPage() {
                     "min-h-24 rounded-md border p-2 text-left text-sm transition-colors",
                     activeMonth
                       ? "border-border/50 bg-background"
-                      : "border-border/30 bg-muted/20 text-muted-foreground",
-                    isToday(date) ? "ring-1 ring-primary" : "",
+                      : "border-border/10 bg-muted/5 text-muted-foreground/60 opacity-70",
+                    isToday(date)
+                      ? "ring-2 ring-primary bg-primary text-white shadow-md"
+                      : "",
                   ].join(" ")}
                 >
                   <div className="flex items-center justify-between gap-2">
