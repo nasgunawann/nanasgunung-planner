@@ -460,6 +460,12 @@ export default function DraftWorkspacePage() {
                   onChange={(val) => setLocalContent(val)}
                   insertTrigger={insertTrigger}
                   snippets={snippets}
+                  draftMeta={{
+                    title: draft?.title,
+                    platform: draft?.platform,
+                    category: draft?.category,
+                    status: draft?.status,
+                  }}
                 />
               </div>
 

@@ -208,3 +208,72 @@
   border-radius: 3px;
   font-size: 0.9em;
 }
+.ProseMirror h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+  color: var(--foreground);
+}
+/* Highlight (mark) */
+.ProseMirror mark {
+  background-color: color-mix(in oklch, #facc15 45%, transparent);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+/* Link */
+.ProseMirror a {
+  color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ProseMirror a:hover {
+  opacity: 0.8;
+}
+/* Table */
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.75rem 0;
+  font-size: 0.78rem;
+  table-layout: fixed;
+  overflow: hidden;
+}
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  padding: 0.35rem 0.6rem;
+  vertical-align: top;
+  min-width: 60px;
+  position: relative;
+}
+.ProseMirror table th {
+  background-color: color-mix(in oklch, var(--muted) 80%, transparent);
+  font-weight: 600;
+  text-align: left;
+}
+.ProseMirror table .selectedCell::after {
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+.ProseMirror table .column-resize-handle {
+  background-color: var(--primary);
+  bottom: -2px;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+  cursor: col-resize;
+  opacity: 0.4;
+}
+.ProseMirror table .column-resize-handle:hover {
+  opacity: 1;
+}
+/* Text align */
+.ProseMirror [style*="text-align: center"] { text-align: center; }
+.ProseMirror [style*="text-align: right"] { text-align: right; }
+.ProseMirror [style*="text-align: left"] { text-align: left; }

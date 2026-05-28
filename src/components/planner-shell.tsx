@@ -59,7 +59,7 @@ export default function PlannerShell({
                 size="icon-lg"
                 onClick={() => setIsQuickAddOpen(true)}
                 aria-label="Quick add content"
-                className="pointer-events-auto size-14 rounded-full shadow-lg ring-2 ring-border/20"
+                className="pointer-events-auto size-14 z-100 rounded-full shadow-lg ring-2 ring-border/20"
               >
                 <IconPlus className="size-6" />
               </Button>

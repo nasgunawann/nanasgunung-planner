@@ -2,6 +2,14 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import Highlight from "@tiptap/extension-highlight";
+import TextAlign from "@tiptap/extension-text-align";
+import Link from "@tiptap/extension-link";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableCell } from "@tiptap/extension-table-cell";
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -9,6 +17,7 @@ import {
   IconItalic,
   IconH1,
   IconH2,
+  IconH3,
   IconList,
   IconListNumbers,
   IconQuote,
@@ -16,13 +25,31 @@ import {
   IconSeparatorHorizontal,
   IconStrikethrough,
   IconSparkles,
+  IconUnderline,
+  IconHighlight,
+  IconAlignLeft,
+  IconAlignCenter,
+  IconAlignRight,
+  IconLink,
+  IconTable,
+  IconColumnInsertRight,
+  IconRowInsertBottom,
+  IconTrash,
 } from "@tabler/icons-react";
+
+type DraftMeta = {
+  title?: string;
+  platform?: string;
+  category?: string;
+  status?: string;
+};
 
 type TipTapEditorProps = {
   content: string;
   onChange: (val: string) => void;
   insertTrigger?: { text: string; time: number } | null;
   snippets?: { id: string; title: string; content: string }[];
+  draftMeta?: DraftMeta;
 };
 
 export default function TipTapEditor({
@@ -30,6 +57,7 @@ export default function TipTapEditor({
   onChange,
   insertTrigger,
   snippets = [],
+  draftMeta,
 }: TipTapEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -47,9 +75,11 @@ export default function TipTapEditor({
   const [isAiPromptActive, setIsAiPromptActive] = useState(false);
   const [aiPromptCoords, setAiPromptCoords] = useState<{ top: number; bottom: number; left: number } | null>(null);
   const [aiPromptValue, setAiPromptValue] = useState("");
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const aiPromptInputRef = useRef<HTMLInputElement>(null);
+  const [aiPromptPlaceholder, setAiPromptPlaceholder] = useState("Tulis instruksi untuk AI...");
+  const [aiCommandType, setAiCommandType] = useState("general");
+  const [isAiStreaming, setIsAiStreaming] = useState(false);
 
+  const aiPromptInputRef = useRef<HTMLInputElement>(null);
   const selectedItemRef = useRef<HTMLButtonElement>(null);
   const slashTriggerPosRef = useRef<number | null>(null);
   const escapedTriggerPosRef = useRef<number | null>(null);
@@ -60,20 +90,26 @@ export default function TipTapEditor({
   const filteredCountRef = useRef(0);
   const triggerExecuteRef = useRef(() => {});
 
-  useEffect(() => {
-    isSlashActiveRef.current = isSlashActive;
-  }, [isSlashActive]);
-  useEffect(() => {
-    selectedIndexRef.current = selectedIndex;
-  }, [selectedIndex]);
+  useEffect(() => { isSlashActiveRef.current = isSlashActive; }, [isSlashActive]);
+  useEffect(() => { selectedIndexRef.current = selectedIndex; }, [selectedIndex]);
 
-  // Initialize TipTap Editor
+  // Initialize TipTap Editor with all extensions
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Underline,
+      Highlight.configure({ multicolor: false }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Link.configure({ openOnClick: false, HTMLAttributes: { class: "text-primary underline cursor-pointer" } }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
+    ],
     content: content,
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML()); // Pass computed HTML to debounced autosave
+      onChange(editor.getHTML());
       handleTextUpdate(editor);
     },
     onSelectionUpdate: ({ editor }) => {
@@ -86,7 +122,6 @@ export default function TipTapEditor({
       },
       handleKeyDown: (view, event) => {
         if (!isSlashActiveRef.current) return false;
-
         if (event.key === "ArrowDown") {
           event.preventDefault();
           setSelectedIndex((prev) => (prev + 1) % filteredCountRef.current);
@@ -94,10 +129,7 @@ export default function TipTapEditor({
         }
         if (event.key === "ArrowUp") {
           event.preventDefault();
-          setSelectedIndex(
-            (prev) =>
-              (prev - 1 + filteredCountRef.current) % filteredCountRef.current,
-          );
+          setSelectedIndex((prev) => (prev - 1 + filteredCountRef.current) % filteredCountRef.current);
           return true;
         }
         if (event.key === "Enter") {
@@ -116,102 +148,51 @@ export default function TipTapEditor({
     },
   });
 
-  // Formatting blocks list
+  // ─── Format Commands ─────────────────────────────────────────────────────────
   const formatCommands = [
-    {
-      id: "h1",
-      title: "Heading 1",
-      desc: "Judul ukuran besar (H1)",
-      icon: IconH1,
-      action: (ed: any) => ed.chain().focus().toggleHeading({ level: 1 }).run(),
-    },
-    {
-      id: "h2",
-      title: "Heading 2",
-      desc: "Judul ukuran sedang (H2)",
-      icon: IconH2,
-      action: (ed: any) => ed.chain().focus().toggleHeading({ level: 2 }).run(),
-    },
-    {
-      id: "bullet",
-      title: "Bulleted List",
-      desc: "Daftar bulatan sederhana",
-      icon: IconList,
-      action: (ed: any) => ed.chain().focus().toggleBulletList().run(),
-    },
-    {
-      id: "number",
-      title: "Numbered List",
-      desc: "Daftar urutan angka",
-      icon: IconListNumbers,
-      action: (ed: any) => ed.chain().focus().toggleOrderedList().run(),
-    },
-    {
-      id: "quote",
-      title: "Quote / Kutipan",
-      desc: "Blok kutipan teks/visual",
-      icon: IconQuote,
-      action: (ed: any) => ed.chain().focus().toggleBlockquote().run(),
-    },
-    {
-      id: "divider",
-      title: "Divider (Garis)",
-      desc: "Garis pembatas horizontal",
-      icon: IconSeparatorHorizontal,
-      action: (ed: any) => ed.chain().focus().setHorizontalRule().run(),
-    },
-    {
-      id: "code",
-      title: "Storyboard Block",
-      desc: "Blok kode storyboard",
-      icon: IconCode,
-      action: (ed: any) => ed.chain().focus().toggleCodeBlock().run(),
-    },
-    {
-      id: "strike",
-      title: "Strikethrough",
-      desc: "Coretan teks draf",
-      icon: IconStrikethrough,
-      action: (ed: any) => ed.chain().focus().toggleStrike().run(),
-    },
+    { id: "h1", title: "Heading 1", desc: "Judul ukuran besar (H1)", icon: IconH1, action: (ed: any) => ed.chain().focus().toggleHeading({ level: 1 }).run() },
+    { id: "h2", title: "Heading 2", desc: "Judul ukuran sedang (H2)", icon: IconH2, action: (ed: any) => ed.chain().focus().toggleHeading({ level: 2 }).run() },
+    { id: "h3", title: "Heading 3", desc: "Judul ukuran kecil (H3)", icon: IconH3, action: (ed: any) => ed.chain().focus().toggleHeading({ level: 3 }).run() },
+    { id: "bullet", title: "Bulleted List", desc: "Daftar bulatan sederhana", icon: IconList, action: (ed: any) => ed.chain().focus().toggleBulletList().run() },
+    { id: "number", title: "Numbered List", desc: "Daftar urutan angka", icon: IconListNumbers, action: (ed: any) => ed.chain().focus().toggleOrderedList().run() },
+    { id: "quote", title: "Quote / Kutipan", desc: "Blok kutipan teks/visual", icon: IconQuote, action: (ed: any) => ed.chain().focus().toggleBlockquote().run() },
+    { id: "divider", title: "Divider (Garis)", desc: "Garis pembatas horizontal", icon: IconSeparatorHorizontal, action: (ed: any) => ed.chain().focus().setHorizontalRule().run() },
+    { id: "code", title: "Storyboard Block", desc: "Blok kode storyboard", icon: IconCode, action: (ed: any) => ed.chain().focus().toggleCodeBlock().run() },
+    { id: "strike", title: "Strikethrough", desc: "Coretan teks draf", icon: IconStrikethrough, action: (ed: any) => ed.chain().focus().toggleStrike().run() },
+    { id: "underline", title: "Underline", desc: "Garis bawah teks", icon: IconUnderline, action: (ed: any) => ed.chain().focus().toggleUnderline().run() },
+    { id: "highlight", title: "Highlight", desc: "Warna kuning sorotan", icon: IconHighlight, action: (ed: any) => ed.chain().focus().toggleHighlight().run() },
+    { id: "align-left", title: "Rata Kiri", desc: "Teks rata kiri", icon: IconAlignLeft, action: (ed: any) => ed.chain().focus().setTextAlign("left").run() },
+    { id: "align-center", title: "Rata Tengah", desc: "Teks rata tengah", icon: IconAlignCenter, action: (ed: any) => ed.chain().focus().setTextAlign("center").run() },
+    { id: "align-right", title: "Rata Kanan", desc: "Teks rata kanan", icon: IconAlignRight, action: (ed: any) => ed.chain().focus().setTextAlign("right").run() },
+    { id: "table", title: "Tabel", desc: "Sisipkan tabel 3x3", icon: IconTable, action: (ed: any) => ed.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run() },
+    { id: "link", title: "Link / Tautan", desc: "Sisipkan hyperlink", icon: IconLink, action: (ed: any) => {
+      const url = prompt("Masukkan URL:");
+      if (url) ed.chain().focus().setLink({ href: url }).run();
+    }},
   ];
 
-  // Map user custom snippets to command items
+  // Map snippets
   const snippetCommands = snippets.map((s) => ({
     id: s.id,
     title: s.title,
     desc: `Salin aset: "${s.title}"`,
     icon: IconSparkles,
-    content: s.content, // content to insert
+    content: s.content,
   }));
+
+  // AI Commands
+  const aiCommands = [
+    { id: "ai-generate", type: "ai", title: "AI Generate", desc: "Tulis konten bebas sesuai instruksimu", icon: IconSparkles, commandType: "general", requiresInput: true, placeholder: "Contoh: tulis hook pembuka yang menarik perhatian..." },
+    { id: "ai-hook", type: "ai", title: "Tulis Hook", desc: "Generate 3 variasi opening hook viral", icon: IconSparkles, commandType: "hook", requiresInput: false, placeholder: "" },
+    { id: "ai-caption", type: "ai", title: "Caption Medsos", desc: "Caption siap posting untuk platformmu", icon: IconSparkles, commandType: "caption", requiresInput: false, placeholder: "" },
+    { id: "ai-outline", type: "ai", title: "Buat Outline", desc: "Buat struktur konten dari topik ini", icon: IconSparkles, commandType: "outline", requiresInput: false, placeholder: "" },
+    { id: "ai-improve", type: "ai", title: "Perbaiki Tulisan", desc: "Polish & perbaiki teks yang sudah ada", icon: IconSparkles, commandType: "improve", requiresInput: false, placeholder: "" },
+  ];
 
   const allItems = [
     ...formatCommands.map((item) => ({ ...item, type: "format" })),
     ...snippetCommands.map((item) => ({ ...item, type: "snippet" })),
-    // AI Generate command (hardcoded model via env)
-    {
-      id: "ai-generate",
-      type: "ai",
-      title: "AI Generate",
-      desc: "Generate AI content for the current selection",
-      icon: IconSparkles,
-      action: async (ed: any) => {
-        const content = ed.getHTML();
-        try {
-          const resp = await fetch("/api/ai", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: content }),
-          });
-          const data = await resp.json();
-          if (data && data.output) {
-            ed.chain().focus().insertContent(data.output).run();
-          }
-        } catch (e) {
-          console.error("AI generate error", e);
-        }
-      },
-    },
+    ...aiCommands,
   ];
 
   const filteredItems = allItems.filter(
@@ -230,13 +211,7 @@ export default function TipTapEditor({
     const { selection } = state;
     const { $from } = selection;
 
-    // Get text from current block up to cursor (start of paragraph to cursor)
-    const textBeforeCursor = $from.parent.textBetween(
-      0,
-      $from.parentOffset,
-      " ",
-    );
-
+    const textBeforeCursor = $from.parent.textBetween(0, $from.parentOffset, " ");
     const match = textBeforeCursor.match(/(?:^|\s)\/([a-zA-Z0-9\-+_]*)$/);
     if (!match) {
       slashTriggerPosRef.current = null;
@@ -249,11 +224,8 @@ export default function TipTapEditor({
     const matchIndex = match.index ?? 0;
     const slashParentOffset = matchIndex + (match[0].startsWith(" ") ? 1 : 0);
     const slashDocPos = $from.start() + slashParentOffset;
-
-    // Record current trigger pos
     slashTriggerPosRef.current = slashDocPos;
 
-    // If the user dismissed this specific trigger pos using Escape, do not reopen
     if (escapedTriggerPosRef.current === slashDocPos) {
       setIsSlashActive(false);
       setSlashQuery("");
@@ -266,21 +238,17 @@ export default function TipTapEditor({
     try {
       const coords = view.coordsAtPos(selection.from);
       if (coords) {
-        setSlashCoords({
-          top: coords.top,
-          bottom: coords.bottom,
-          left: coords.left,
-        });
+        setSlashCoords({ top: coords.top, bottom: coords.bottom, left: coords.left });
       }
     } catch (e) {}
   };
 
+  // ─── Execute slash command ────────────────────────────────────────────────────
   const executeCommand = (item: any) => {
     if (!editor) return;
 
-    // Delete trigger slash keyword text from document
     const { selection } = editor.state;
-    const triggerLength = slashQuery.length + 1; // slash + keyword
+    const triggerLength = slashQuery.length + 1;
     const from = selection.from - triggerLength;
     const to = selection.from;
 
@@ -290,34 +258,53 @@ export default function TipTapEditor({
     setSlashQuery("");
     setSelectedIndex(0);
 
-    // AI command: open inline prompt popup instead of inserting content
     if (item.type === "ai") {
       editor.chain().focus().deleteRange({ from, to }).run();
-      // Capture cursor coords for the prompt popup
+
+      let coords = { top: 200, bottom: 220, left: 100 };
       try {
-        const coords = editor.view.coordsAtPos(editor.state.selection.from);
-        setAiPromptCoords({ top: coords.top, bottom: coords.bottom, left: coords.left });
-      } catch (e) {
-        setAiPromptCoords({ top: 200, bottom: 220, left: 100 });
+        const c = editor.view.coordsAtPos(editor.state.selection.from);
+        coords = { top: c.top, bottom: c.bottom, left: c.left };
+      } catch (e) {}
+      setAiPromptCoords(coords);
+
+      if (item.requiresInput) {
+        setAiPromptValue("");
+        setAiPromptPlaceholder(item.placeholder || "Tulis instruksi untuk AI...");
+        setAiCommandType(item.commandType || "general");
+        setIsAiPromptActive(true);
+        setTimeout(() => aiPromptInputRef.current?.focus(), 50);
+      } else {
+        setAiCommandType(item.commandType || "general");
+        streamAiGenerate(item.commandType || "general", "");
       }
-      setAiPromptValue("");
-      setIsAiPromptActive(true);
-      setTimeout(() => aiPromptInputRef.current?.focus(), 50);
       return;
     }
 
-    // Combine operations into a single atomic transaction chain
     let chain = editor.chain().focus().deleteRange({ from, to });
 
     if (item.type === "format") {
       if (item.id === "h1") chain = chain.toggleHeading({ level: 1 });
       else if (item.id === "h2") chain = chain.toggleHeading({ level: 2 });
+      else if (item.id === "h3") chain = chain.toggleHeading({ level: 3 });
       else if (item.id === "bullet") chain = chain.toggleBulletList();
       else if (item.id === "number") chain = chain.toggleOrderedList();
       else if (item.id === "quote") chain = chain.toggleBlockquote();
       else if (item.id === "divider") chain = chain.setHorizontalRule();
       else if (item.id === "code") chain = chain.toggleCodeBlock();
       else if (item.id === "strike") chain = chain.toggleStrike();
+      else if (item.id === "underline") chain = chain.toggleUnderline();
+      else if (item.id === "highlight") chain = chain.toggleHighlight();
+      else if (item.id === "align-left") chain = chain.setTextAlign("left");
+      else if (item.id === "align-center") chain = chain.setTextAlign("center");
+      else if (item.id === "align-right") chain = chain.setTextAlign("right");
+      else if (item.id === "table") chain = chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true });
+      else if (item.id === "link") {
+        chain.run();
+        const url = prompt("Masukkan URL:");
+        if (url) editor.chain().focus().setLink({ href: url }).run();
+        return;
+      }
     } else {
       chain = chain.insertContent(item.content);
     }
@@ -325,27 +312,54 @@ export default function TipTapEditor({
     chain.run();
   };
 
-  const submitAiPrompt = async () => {
-    if (!editor || !aiPromptValue.trim() || isAiLoading) return;
-    setIsAiLoading(true);
+  // ─── Streaming AI generate ────────────────────────────────────────────────────
+  const streamAiGenerate = async (commandType: string, userPrompt: string) => {
+    if (!editor || isAiStreaming) return;
+    setIsAiStreaming(true);
+
+    const currentContent = editor.getHTML();
+
     try {
-      const currentContent = editor.getHTML();
-      const resp = await fetch("/api/ai", {
+      const response = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: aiPromptValue.trim(), context: currentContent }),
+        body: JSON.stringify({
+          prompt: userPrompt,
+          context: currentContent,
+          commandType,
+          draftMeta,
+        }),
       });
-      const data = await resp.json();
-      if (data && data.output) {
-        editor.chain().focus().insertContent(data.output).run();
+
+      if (!response.ok || !response.body) throw new Error("Stream failed");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      // Ensure editor is focused and cursor is at insert position
+      editor.commands.focus();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (chunk) {
+          // Insert each streamed token directly at cursor — creates live "typing" effect
+          editor.commands.insertContent(chunk);
+        }
       }
     } catch (e) {
-      console.error("AI generate error", e);
+      console.error("AI stream error", e);
     } finally {
-      setIsAiLoading(false);
-      setIsAiPromptActive(false);
-      setAiPromptValue("");
+      setIsAiStreaming(false);
     }
+  };
+
+  const submitAiPrompt = async () => {
+    if (!editor || !aiPromptValue.trim() || isAiStreaming) return;
+    setIsAiPromptActive(false);
+    await streamAiGenerate(aiCommandType, aiPromptValue.trim());
+    setAiPromptValue("");
   };
 
   useEffect(() => {
@@ -356,63 +370,49 @@ export default function TipTapEditor({
     };
   }, [filteredItems]);
 
-  // Close slash menu popover during any page or editor scrolling event to avoid floating drift,
-  // but ignore scrolling events inside the slash menu itself.
+  // Close slash menu on scroll
   useEffect(() => {
     if (!isSlashActive) return;
     const handleScroll = (event: Event) => {
       const menuEl = document.getElementById("tiptap-slash-menu");
-      if (menuEl && menuEl.contains(event.target as Node)) {
-        return;
-      }
+      if (menuEl && menuEl.contains(event.target as Node)) return;
       setIsSlashActive(false);
     };
-
-    window.addEventListener("scroll", handleScroll, {
-      capture: true,
-      passive: true,
-    });
-    return () => {
-      window.removeEventListener("scroll", handleScroll, { capture: true });
-    };
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    return () => window.removeEventListener("scroll", handleScroll, { capture: true });
   }, [isSlashActive]);
 
-  // Close slash menu popover when clicking outside the menu
+  // Close slash menu on outside click
   useEffect(() => {
     if (!isSlashActive) return;
     const handleClickOutside = (event: MouseEvent) => {
       const menuEl = document.getElementById("tiptap-slash-menu");
-      if (menuEl && !menuEl.contains(event.target as Node)) {
-        setIsSlashActive(false);
-      }
+      if (menuEl && !menuEl.contains(event.target as Node)) setIsSlashActive(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSlashActive]);
 
-  // Auto-scroll the highlighted menu item into view when navigating via keyboard
+  // Auto-scroll selected item into view
   useEffect(() => {
     if (isSlashActive && selectedItemRef.current) {
-      selectedItemRef.current.scrollIntoView({
-        block: "nearest",
-        inline: "nearest",
-      });
+      selectedItemRef.current.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
   }, [selectedIndex, isSlashActive]);
 
   // Listen for text insertion triggers from parents
   useEffect(() => {
-    if (!editor || !insertTrigger) return;
-    editor.commands.insertContent(insertTrigger.text);
-    editor.commands.focus();
-  }, [insertTrigger, editor]);
+    if (!insertTrigger || !editor) return;
+    editor.chain().focus().insertContent(insertTrigger.text).run();
+  }, [insertTrigger]);
 
-  // Sync internal TipTap state if the parent content changes externally (e.g. Initial load)
+  // Sync external content changes (e.g., revision restore)
   useEffect(() => {
-    if (!editor || content === editor.getHTML()) return;
-    editor.commands.setContent(content, { emitUpdate: false });
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (current !== content) {
+      editor.commands.setContent(content, { emitUpdate: false });
+    }
   }, [content, editor]);
 
   if (!editor) {
@@ -423,171 +423,125 @@ export default function TipTapEditor({
     );
   }
 
-  return (
-    <div
-      ref={containerRef}
-      className="flex-1 flex flex-col overflow-hidden min-h-0 relative"
+  // ─── Toolbar button helper ────────────────────────────────────────────────────
+  const ToolbarBtn = ({
+    onClick, active = false, title, children,
+  }: { onClick: () => void; active?: boolean; title: string; children: React.ReactNode }) => (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className={[
+        "size-7 flex items-center justify-center rounded transition-colors",
+        active
+          ? "bg-primary/10 text-primary border border-primary/20"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+      ].join(" ")}
     >
-      {/* Dynamic WYSIWYG Formatting Toolbar */}
+      {children}
+    </button>
+  );
+
+  // ─── Slash menu item renderer ─────────────────────────────────────────────────
+  const renderMenuItems = (items: any[], colorClass = "text-muted-foreground/80") =>
+    items.map((item) => {
+      const itemIndex = filteredItems.indexOf(item);
+      const isSelected = itemIndex === selectedIndex;
+      const Icon = item.icon;
+      return (
+        <button
+          key={item.id}
+          ref={isSelected ? selectedItemRef : null}
+          type="button"
+          onClick={() => executeCommand(item)}
+          className={[
+            "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
+            isSelected ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:bg-muted",
+          ].join(" ")}
+        >
+          <Icon className={["size-4 shrink-0", isSelected ? "text-primary-foreground" : colorClass].join(" ")} />
+          <div className="flex-1 min-w-0">
+            <div className="truncate">{item.title}</div>
+            <div className={["text-[9px] truncate font-normal leading-tight mt-0.5", isSelected ? "text-primary-foreground/75" : "text-muted-foreground/65"].join(" ")}>
+              {item.desc}
+            </div>
+          </div>
+        </button>
+      );
+    });
+
+  return (
+    <div ref={containerRef} className="flex-1 flex flex-col overflow-hidden min-h-0 relative">
+
+      {/* ── Formatting Toolbar ───────────────────────────────────────── */}
       <div className="bg-muted/30 border-b border-border/50 px-3 py-2 flex flex-wrap items-center gap-1 shadow-inner shrink-0">
-        {/* Bold Button */}
-        <button
-          type="button"
-          title="Bold (Ctrl+B)"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("bold")
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconBold className="size-4" />
-        </button>
+        {/* Text style */}
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold (Ctrl+B)"><IconBold className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic (Ctrl+I)"><IconItalic className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline (Ctrl+U)"><IconUnderline className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title="Strikethrough"><IconStrikethrough className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive("highlight")} title="Highlight"><IconHighlight className="size-4" /></ToolbarBtn>
 
-        {/* Italic Button */}
-        <button
-          type="button"
-          title="Italic (Ctrl+I)"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("italic")
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconItalic className="size-4" />
-        </button>
+        <span className="h-4 w-px bg-border mx-1" />
 
-        {/* H1 Heading */}
-        <button
-          type="button"
-          title="Heading 1"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
-          }
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("heading", { level: 1 })
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconH1 className="size-4" />
-        </button>
+        {/* Headings */}
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Heading 1"><IconH1 className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Heading 2"><IconH2 className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Heading 3"><IconH3 className="size-4" /></ToolbarBtn>
 
-        {/* H2 Heading */}
-        <button
-          type="button"
-          title="Heading 2"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("heading", { level: 2 })
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconH2 className="size-4" />
-        </button>
+        <span className="h-4 w-px bg-border mx-1" />
 
-        {/* Bullet List */}
-        <button
-          type="button"
-          title="Bullet List"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("bulletList")
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconList className="size-4" />
-        </button>
+        {/* Lists */}
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet List"><IconList className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numbered List"><IconListNumbers className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Blockquote"><IconQuote className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} title="Code Block"><IconCode className="size-4" /></ToolbarBtn>
 
-        {/* Numbered List */}
-        <button
-          type="button"
-          title="Numbered List"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("orderedList")
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconListNumbers className="size-4" />
-        </button>
+        <span className="h-4 w-px bg-border mx-1" />
 
-        {/* Blockquote */}
-        <button
-          type="button"
-          title="Blockquote"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("blockquote")
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconQuote className="size-4" />
-        </button>
+        {/* Alignment */}
+        <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign("left").run()} active={editor.isActive({ textAlign: "left" })} title="Rata Kiri"><IconAlignLeft className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign("center").run()} active={editor.isActive({ textAlign: "center" })} title="Rata Tengah"><IconAlignCenter className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().setTextAlign("right").run()} active={editor.isActive({ textAlign: "right" })} title="Rata Kanan"><IconAlignRight className="size-4" /></ToolbarBtn>
 
-        {/* Code Block */}
-        <button
-          type="button"
-          title="Storyboard Code Block"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("codeBlock")
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconCode className="size-4" />
-        </button>
+        <span className="h-4 w-px bg-border mx-1" />
 
-        {/* Strikethrough Button */}
-        <button
-          type="button"
-          title="Strikethrough"
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={[
-            "size-7 flex items-center justify-center rounded transition-colors",
-            editor.isActive("strike")
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          ].join(" ")}
-        >
-          <IconStrikethrough className="size-4" />
-        </button>
-
-        {/* Divider (Horizontal Rule) Button */}
-        <button
-          type="button"
-          title="Divider Line"
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className="size-7 flex items-center justify-center rounded transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <IconSeparatorHorizontal className="size-4" />
-        </button>
-
-        <span className="h-4 w-px bg-border mx-2" />
+        {/* Table & extras */}
+        <ToolbarBtn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Sisipkan Tabel"><IconTable className="size-4" /></ToolbarBtn>
+        {editor.isActive("table") && (
+          <>
+            <ToolbarBtn onClick={() => editor.chain().focus().addColumnAfter().run()} title="Tambah Kolom"><IconColumnInsertRight className="size-4" /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().addRowAfter().run()} title="Tambah Baris"><IconRowInsertBottom className="size-4" /></ToolbarBtn>
+            <ToolbarBtn onClick={() => editor.chain().focus().deleteTable().run()} title="Hapus Tabel"><IconTrash className="size-4" /></ToolbarBtn>
+          </>
+        )}
+        <ToolbarBtn onClick={() => {
+          const url = prompt("Masukkan URL:");
+          if (url) editor.chain().focus().setLink({ href: url }).run();
+        }} active={editor.isActive("link")} title="Link"><IconLink className="size-4" /></ToolbarBtn>
+        <ToolbarBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider"><IconSeparatorHorizontal className="size-4" /></ToolbarBtn>
       </div>
 
-      {/* Tiptap Styled Content Area */}
-      <div className="flex-1 p-4 bg-background/30 overflow-y-auto min-h-0">
+      {/* ── Editor Content ───────────────────────────────────────────── */}
+      <div className="flex-1 p-4 bg-background/30 overflow-y-auto min-h-0 relative">
         <EditorContent editor={editor} />
+
+        {/* AI streaming indicator — small pulsing bar at bottom of content area */}
+        {isAiStreaming && (
+          <div className="sticky bottom-2 left-0 right-0 flex justify-center pointer-events-none">
+            <div className="inline-flex items-center gap-2 bg-card/90 border border-primary/30 shadow-lg rounded-full px-3 py-1.5 backdrop-blur-sm">
+              <span className="flex gap-0.5">
+                <span className="w-1 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-1 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: "120ms" }} />
+                <span className="w-1 h-3 bg-primary rounded-full animate-bounce" style={{ animationDelay: "240ms" }} />
+              </span>
+              <span className="text-[10px] text-primary font-medium">AI sedang menulis...</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* AI Inline Prompt Popup (Portal) */}
+      {/* ── AI Prompt Popup (for requiresInput commands) ─────────────── */}
       {isAiPromptActive && aiPromptCoords && typeof document !== "undefined" &&
         createPortal(
           <div
@@ -595,22 +549,37 @@ export default function TipTapEditor({
             style={{
               position: "fixed",
               top:
-                typeof window !== "undefined" && aiPromptCoords.bottom + 140 > window.innerHeight
-                  ? aiPromptCoords.top - 144
+                typeof window !== "undefined" && aiPromptCoords.bottom + 160 > window.innerHeight
+                  ? aiPromptCoords.top - 164
                   : aiPromptCoords.bottom + 6,
               left:
                 typeof window !== "undefined"
-                  ? Math.max(12, Math.min(aiPromptCoords.left, window.innerWidth - 360))
+                  ? Math.max(12, Math.min(aiPromptCoords.left, window.innerWidth - 400))
                   : aiPromptCoords.left,
             }}
-            className="fixed z-[9999] w-80 bg-card border border-primary/30 shadow-2xl rounded-xl p-3 backdrop-blur-md"
+            className="fixed z-[9999] w-96 bg-card border border-primary/30 shadow-2xl rounded-xl p-3 backdrop-blur-md"
           >
             {/* Header */}
             <div className="flex items-center gap-2 mb-2">
               <IconSparkles className="size-3.5 text-primary shrink-0" />
               <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">AI Generate</span>
-              <span className="text-[9px] text-muted-foreground ml-auto">Enter untuk generate · Esc untuk batal</span>
+              {draftMeta?.platform && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                  {draftMeta.platform}
+                </span>
+              )}
+              {draftMeta?.category && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+                  {draftMeta.category}
+                </span>
+              )}
+              <span className="text-[9px] text-muted-foreground ml-auto">Enter · Esc batal</span>
             </div>
+            {draftMeta?.title && (
+              <div className="text-[9px] text-muted-foreground/70 mb-2 px-0.5">
+                Topik: <span className="text-foreground/80 font-medium">{draftMeta.title}</span>
+              </div>
+            )}
             {/* Input */}
             <div className="flex items-center gap-2">
               <input
@@ -622,42 +591,25 @@ export default function TipTapEditor({
                   if (e.key === "Enter") { e.preventDefault(); submitAiPrompt(); }
                   if (e.key === "Escape") { setIsAiPromptActive(false); setAiPromptValue(""); editor?.commands.focus(); }
                 }}
-                placeholder="Contoh: tulis hook pembuka untuk konten travel..."
-                disabled={isAiLoading}
+                placeholder={aiPromptPlaceholder}
+                disabled={isAiStreaming}
                 className="flex-1 bg-muted/60 border border-border/50 rounded-lg px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 disabled:opacity-60 transition-all"
               />
               <button
                 type="button"
                 onClick={submitAiPrompt}
-                disabled={!aiPromptValue.trim() || isAiLoading}
+                disabled={!aiPromptValue.trim() || isAiStreaming}
                 className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
               >
-                {isAiLoading ? (
-                  <svg className="animate-spin size-3.5" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
-                ) : (
-                  <IconSparkles className="size-3.5" />
-                )}
+                <IconSparkles className="size-3.5" />
               </button>
             </div>
-            {/* Loading state */}
-            {isAiLoading && (
-              <div className="mt-2 text-[9px] text-muted-foreground flex items-center gap-1.5">
-                <svg className="animate-spin size-3" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                </svg>
-                Generating dengan AI...
-              </div>
-            )}
           </div>,
           document.body,
         )
       }
 
-      {/* Slash Command Floating Menu Popover (Rendered globally using React Portal) */}
+      {/* ── Slash Command Menu (Portal) ───────────────────────────────── */}
       {isSlashActive &&
         slashCoords &&
         filteredItems.length > 0 &&
@@ -670,173 +622,33 @@ export default function TipTapEditor({
               top:
                 typeof window !== "undefined" &&
                 slashCoords.bottom + 260 > window.innerHeight
-                  ? slashCoords.top -
-                    Math.min(260, filteredItems.length * 40 + 20) -
-                    4
+                  ? slashCoords.top - Math.min(260, filteredItems.length * 40 + 20) - 4
                   : slashCoords.bottom + 4,
               left:
                 typeof window !== "undefined"
-                  ? Math.max(
-                      12,
-                      Math.min(slashCoords.left, window.innerWidth - 270),
-                    )
+                  ? Math.max(12, Math.min(slashCoords.left, window.innerWidth - 270))
                   : slashCoords.left,
             }}
-            className="fixed z-[9999] w-64 bg-card/95 border border-border shadow-2xl rounded-xl p-2 max-h-[260px] overflow-y-auto backdrop-blur-md flex flex-col focus:outline-none scrollbar-none"
+            className="fixed z-[9999] w-64 bg-card/95 border border-border shadow-2xl rounded-xl p-2 max-h-[300px] overflow-y-auto backdrop-blur-md flex flex-col focus:outline-none scrollbar-none"
           >
-            {/* Render Formatting Category if any matching formatting items are present */}
             {filteredItems.some((i) => i.type === "format") && (
               <div className="flex flex-col">
-                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
-                  Format Teks
-                </div>
-                {filteredItems
-                  .filter((i) => i.type === "format")
-                  .map((item) => {
-                    const itemIndex = filteredItems.indexOf(item);
-                    const isSelected = itemIndex === selectedIndex;
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        ref={isSelected ? selectedItemRef : null}
-                        type="button"
-                        onClick={() => executeCommand(item)}
-                        className={[
-                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
-                          isSelected
-                            ? "bg-primary text-primary-foreground font-semibold"
-                            : "text-foreground hover:bg-muted",
-                        ].join(" ")}
-                      >
-                        <Icon
-                          className={[
-                            "size-4 shrink-0",
-                            isSelected
-                              ? "text-primary-foreground"
-                              : "text-muted-foreground/80",
-                          ].join(" ")}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="truncate">{item.title}</div>
-                          <div
-                            className={[
-                              "text-[9px] truncate font-normal leading-tight mt-0.5",
-                              isSelected
-                                ? "text-primary-foreground/75"
-                                : "text-muted-foreground/65",
-                            ].join(" ")}
-                          >
-                            {item.desc}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">Format Teks</div>
+                {renderMenuItems(filteredItems.filter((i) => i.type === "format"), "text-muted-foreground/80")}
               </div>
             )}
 
-            {/* Render AI Commands Category */}
             {filteredItems.some((i) => i.type === "ai") && (
               <div className="flex flex-col mt-1 pt-1 border-t border-border/40">
-                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
-                  AI Commands
-                </div>
-                {filteredItems
-                  .filter((i) => i.type === "ai")
-                  .map((item) => {
-                    const itemIndex = filteredItems.indexOf(item);
-                    const isSelected = itemIndex === selectedIndex;
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        ref={isSelected ? selectedItemRef : null}
-                        type="button"
-                        onClick={() => executeCommand(item)}
-                        className={[
-                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
-                          isSelected
-                            ? "bg-primary text-primary-foreground font-semibold"
-                            : "text-foreground hover:bg-muted",
-                        ].join(" ")}
-                      >
-                        <Icon
-                          className={[
-                            "size-4 shrink-0",
-                            isSelected
-                              ? "text-primary-foreground"
-                              : "text-primary",
-                          ].join(" ")}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="truncate">{item.title}</div>
-                          <div
-                            className={[
-                              "text-[9px] truncate font-normal leading-tight mt-0.5",
-                              isSelected
-                                ? "text-primary-foreground/75"
-                                : "text-muted-foreground/65",
-                            ].join(" ")}
-                          >
-                            {item.desc}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">AI Commands</div>
+                {renderMenuItems(filteredItems.filter((i) => i.type === "ai"), "text-primary")}
               </div>
             )}
 
-            {/* Render Aset Siap Pakai Category if any matching snippet items are present */}
             {filteredItems.some((i) => i.type === "snippet") && (
               <div className="flex flex-col mt-1 pt-1 border-t border-border/40">
-                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">
-                  Aset Siap Pakai
-                </div>
-                {filteredItems
-                  .filter((i) => i.type === "snippet")
-                  .map((item) => {
-                    const itemIndex = filteredItems.indexOf(item);
-                    const isSelected = itemIndex === selectedIndex;
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        ref={isSelected ? selectedItemRef : null}
-                        type="button"
-                        onClick={() => executeCommand(item)}
-                        className={[
-                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer select-none",
-                          isSelected
-                            ? "bg-primary text-primary-foreground font-semibold"
-                            : "text-foreground hover:bg-muted",
-                        ].join(" ")}
-                      >
-                        <Icon
-                          className={[
-                            "size-4 shrink-0",
-                            isSelected
-                              ? "text-primary-foreground"
-                              : "text-primary",
-                          ].join(" ")}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="truncate">{item.title}</div>
-                          <div
-                            className={[
-                              "text-[9px] truncate font-normal leading-tight mt-0.5",
-                              isSelected
-                                ? "text-primary-foreground/75"
-                                : "text-muted-foreground/65",
-                            ].join(" ")}
-                          >
-                            {item.desc}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                <div className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground/60 px-3 py-1.5 select-none">Aset Siap Pakai</div>
+                {renderMenuItems(filteredItems.filter((i) => i.type === "snippet"), "text-primary")}
               </div>
             )}
           </div>,
