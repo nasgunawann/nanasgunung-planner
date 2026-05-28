@@ -15,7 +15,11 @@ import {
 } from "date-fns";
 import { id } from "date-fns/locale";
 import { useDrafts } from "@/lib/drafts";
-import { platformColorMap } from "@/lib/platform-map";
+import {
+  normalizeStatus,
+  platformColorMap,
+  statusAccentMap,
+} from "@/lib/platform-map";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -23,83 +27,9 @@ import {
   IconBrandTiktok,
   IconBrandYoutube,
   IconBrandLinkedin,
-  IconPhoto,
 } from "@tabler/icons-react";
 
 const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-const mayMockDrafts = [
-  {
-    id: "mock-2026-05-03-1",
-    title: "Teaser Reel",
-    platform: "Instagram",
-    status: "Draft",
-    date: "2026-05-03",
-  },
-  {
-    id: "mock-2026-05-03-2",
-    title: "Carousel Hook",
-    platform: "TikTok",
-    status: "In review",
-    date: "2026-05-03",
-  },
-  {
-    id: "mock-2026-05-08-1",
-    title: "Behind the scenes",
-    platform: "Instagram",
-    status: "Scheduled",
-    date: "2026-05-08",
-  },
-  {
-    id: "mock-2026-05-08-2",
-    title: "Promo caption",
-    platform: "Instagram",
-    status: "Draft",
-    date: "2026-05-08",
-  },
-  {
-    id: "mock-2026-05-08-3",
-    title: "Story sequence",
-    platform: "Instagram",
-    status: "Needs edit",
-    date: "2026-05-08",
-  },
-  {
-    id: "mock-2026-05-14-1",
-    title: "Launch post",
-    platform: "LinkedIn",
-    status: "Ready",
-    date: "2026-05-14",
-  },
-  {
-    id: "mock-2026-05-14-2",
-    title: "Short-form cut",
-    platform: "TikTok",
-    status: "Draft",
-    date: "2026-05-14",
-  },
-  {
-    id: "mock-2026-05-20-1",
-    title: "Q&A prompt",
-    platform: "Instagram",
-    status: "Planned",
-    date: "2026-05-20",
-  },
-  {
-    id: "mock-2026-05-26-1",
-    title: "Monthly recap",
-    platform: "YouTube",
-    status: "Draft",
-    date: "2026-05-26",
-  },
-  {
-    id: "mock-2026-05-26-2",
-    title: "Thumbnail idea",
-    platform: "YouTube",
-    status: "In progress",
-    date: "2026-05-26",
-  },
-];
 
 export default function CalendarPage() {
   const { drafts, addDraft } = useDrafts();
@@ -125,15 +55,9 @@ export default function CalendarPage() {
   function itemsForDate(date: Date) {
     const key = format(date, "yyyy-MM-dd");
 
-    const liveDrafts = Array.isArray(drafts)
+    return Array.isArray(drafts)
       ? drafts.filter((draft) => draft.date === key)
       : [];
-    const mockDrafts =
-      currentMonth.getFullYear() === 2026 && currentMonth.getMonth() === 4
-        ? mayMockDrafts.filter((draft) => draft.date === key)
-        : [];
-
-    return [...mockDrafts, ...liveDrafts];
   }
 
   const platformIconMap: Record<string, any> = {
@@ -235,37 +159,45 @@ export default function CalendarPage() {
                     </div>
 
                     <div className="space-y-1">
-                      {items.slice(0, 1).map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-md bg-muted/40 px-2 py-1 text-[11px] leading-tight"
-                        >
-                          {(() => {
-                            const Icon = platformIconMap[item.platform ?? ""];
-                            return (
-                              <div className="flex items-center gap-2">
-                                {Icon ? (
-                                  <span
-                                    className={[
-                                      "inline-flex items-center justify-center rounded-full p-1",
-                                      platformColorMap[
-                                        item.platform ?? "Default"
-                                      ],
-                                    ].join(" ")}
-                                    aria-hidden
-                                  >
-                                    <Icon className="h-4 w-4" />
-                                  </span>
-                                ) : null}
+                      {items.slice(0, 1).map((item) => {
+                        const status = normalizeStatus(item.status);
+                        const statusTheme =
+                          statusAccentMap[status] ?? statusAccentMap.Default;
+                        const Icon = platformIconMap[item.platform ?? ""];
 
+                        return (
+                          <div
+                            key={item.id}
+                            className={[
+                              "rounded-md px-2 py-1 text-[11px] leading-tight",
+                              statusTheme.bg,
+                              statusTheme.chipText,
+                            ].join(" ")}
+                          >
+                            <div className="flex items-center gap-2">
+                              {Icon ? (
+                                <span
+                                  className={[
+                                    "inline-flex items-center justify-center rounded-full p-1",
+                                    platformColorMap[
+                                      item.platform ?? "Default"
+                                    ],
+                                  ].join(" ")}
+                                  aria-hidden
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                              ) : null}
+
+                              <div className="min-w-0 flex-1">
                                 <div className="truncate whitespace-nowrap font-medium">
                                   {item.title}
                                 </div>
                               </div>
-                            );
-                          })()}
-                        </div>
-                      ))}
+                            </div>
+                          </div>
+                        );
+                      })}
 
                       {items.length > 1 ? (
                         <div className="px-2 text-[10px] font-medium text-muted-foreground md:hidden">
@@ -273,36 +205,45 @@ export default function CalendarPage() {
                         </div>
                       ) : null}
 
-                      {items.slice(1, 2).map((item) => (
-                        <div
-                          key={item.id}
-                          className="hidden rounded-md bg-muted/40 px-2 py-1 text-[11px] leading-tight md:block"
-                        >
-                          {(() => {
-                            const Icon = platformIconMap[item.platform ?? ""];
-                            return (
-                              <div className="flex items-center gap-2">
-                                {Icon ? (
-                                  <span
-                                    className={[
-                                      "inline-flex items-center justify-center rounded-full p-1",
-                                      platformColorMap[
-                                        item.platform ?? "Default"
-                                      ],
-                                    ].join(" ")}
-                                    aria-hidden
-                                  >
-                                    <Icon className="h-4 w-4" />
-                                  </span>
-                                ) : null}
+                      {items.slice(1, 2).map((item) => {
+                        const status = normalizeStatus(item.status);
+                        const statusTheme =
+                          statusAccentMap[status] ?? statusAccentMap.Default;
+                        const Icon = platformIconMap[item.platform ?? ""];
+
+                        return (
+                          <div
+                            key={item.id}
+                            className={[
+                              "hidden rounded-md px-2 py-1 text-[11px] leading-tight md:block",
+                              statusTheme.bg,
+                              statusTheme.chipText,
+                            ].join(" ")}
+                          >
+                            <div className="flex items-center gap-2">
+                              {Icon ? (
+                                <span
+                                  className={[
+                                    "inline-flex items-center justify-center rounded-full p-1",
+                                    platformColorMap[
+                                      item.platform ?? "Default"
+                                    ],
+                                  ].join(" ")}
+                                  aria-hidden
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                              ) : null}
+
+                              <div className="min-w-0 flex-1">
                                 <div className="truncate whitespace-nowrap font-medium">
                                   {item.title}
                                 </div>
                               </div>
-                            );
-                          })()}
-                        </div>
-                      ))}
+                            </div>
+                          </div>
+                        );
+                      })}
 
                       {items.length > 2 ? (
                         <div className="hidden px-2 text-[10px] font-medium text-muted-foreground md:block">
