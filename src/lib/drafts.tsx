@@ -296,7 +296,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
   function addIdea(idea: Omit<Idea, "id" | "createdAt">) {
     const now = new Date();
     const newIdea: Idea = {
-      id: `idea-${now.getTime()}`,
+      id: `idea-${now.getTime()}-${Math.random().toString(36).substring(2, 9)}`,
       createdAt: format(now, "PP"),
       title: idea.title,
       platform: idea.platform,

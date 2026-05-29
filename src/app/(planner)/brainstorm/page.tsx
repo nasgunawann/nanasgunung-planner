@@ -5,6 +5,7 @@ import { useDrafts, type Idea } from "@/lib/drafts";
 import { platformColorMap } from "@/lib/platform-map";
 import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
+import { toast } from "sonner";
 import {
   IconBrandInstagram,
   IconBrandTiktok,
@@ -25,6 +26,43 @@ const platformIconMap: Record<string, any> = {
   LinkedIn: IconBrandLinkedin,
 };
 
+function parseAngles(text: string): { title: string; hook: string; outline: string }[] {
+  const angles: { title: string; hook: string; outline: string }[] = [];
+  const sections = text.split(/=== ANGLE \d+ ===/g);
+
+  for (const section of sections) {
+    if (!section.trim()) continue;
+
+    const titleMatch = section.match(/TITLE:\s*(.+)/i);
+    const hookMatch = section.match(/HOOK:\s*(.+)/i);
+    const outlineIndex = section.indexOf("OUTLINE:");
+
+    let title = "";
+    let hook = "";
+    let outline = "";
+
+    if (titleMatch) {
+      title = titleMatch[1].trim().replace(/^["'*]+|["'*]+$/g, "");
+    }
+    if (hookMatch) {
+      hook = hookMatch[1].trim().replace(/^["'*]+|["'*]+$/g, "");
+    }
+    if (outlineIndex !== -1) {
+      outline = section.substring(outlineIndex + 8).trim();
+    }
+
+    if (title || hook || outline) {
+      angles.push({
+        title: title || "Ide Konten Baru",
+        hook: hook || "Hook tidak tersedia.",
+        outline: outline || "Outline tidak tersedia.",
+      });
+    }
+  }
+
+  return angles;
+}
+
 export default function BrainstormPage() {
   const { ideas, addIdea, deleteIdea, addDraft } = useDrafts();
 
@@ -37,66 +75,65 @@ export default function BrainstormPage() {
   // Promotion Dialog State
   const [promotingIdea, setPromotingIdea] = useState<Idea | null>(null);
 
-  // Simulated AI Engine
-  function handleGenerate(e: React.FormEvent) {
+  // Real AI Engine (Multi-Angle Content Briefs)
+  async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
     if (!topic.trim()) return;
 
     setIsGenerating(true);
 
-    // Simulate Agent processing delay for immersive UX
-    setTimeout(() => {
-      const defaultHooks: Record<string, string[]> = {
-        TikTok: [
-          "This 1 trick saved me 100 hours of struggle...",
-          "Stop doing this if you want to grow in 2026!",
-          "I was today years old when I found this out...",
-          "The lazy way to build beautiful user interfaces.",
-        ],
-        Instagram: [
-          "How we scaled our side project without spending a single dollar.",
-          "The brutal truth about being a solo developer.",
-          "3 subtle design mistakes ruining your conversions.",
-          "Why we deleted Tailwind and went back to vanilla CSS.",
-        ],
-        YouTube: [
-          "I rebuilt this popular software in exactly 24 hours.",
-          "The ultimate workspace setup for high-speed output.",
-          "Is this new tool the death of manual coding?",
-          "The complete guide to React Context in 5 minutes.",
-        ],
-        LinkedIn: [
-          "PostgreSQL is great, but we built our MVP using browser storage first. Here's why.",
-          "The biggest lie you've been told about technical planning.",
-          "A junior developer wrote this code. I didn't refactor it. Here's why.",
-          "Leadership isn't about issuing tickets. It's about reducing friction.",
-        ],
-      };
-
-      const hooks = defaultHooks[platform] || defaultHooks.Instagram;
-      const selectedHook = hooks[Math.floor(Math.random() * hooks.length)];
-
-      const outlines: Record<string, string> = {
-        TikTok: "0:00 - Dynamic visual hook (laptop reveal)\n0:03 - Introduce the main blocker\n0:07 - Step-by-step resolution screen-cast\n0:12 - Actionable CTA ('Tap follow')",
-        Instagram: "Slide 1: Grab attention with selected hook headline\nSlide 2: Show metrics / evidence\nSlide 3: Visual guide of the solution\nSlide 4: Key takeaways recap\nSlide 5: Call to action: Save for reference!",
-        YouTube: "0:00 - Cinematic workflow teaser\n1:15 - Breaking down the core obstacle\n3:00 - Coding phase (with high-tempo lofi audio)\n7:30 - Final live benchmark results\n9:00 - Outro & review request",
-        LinkedIn: "Hook statement\n\n- Real-world context of our creation\n- The critical mistake we encountered\n- The lightweight fix we implemented\n- The numbers: 40% speed gain\n\nWhat are your thoughts on this? 👇",
-      };
-
-      const selectedOutline = outlines[platform] || outlines.Instagram;
-
-      // Add to our drafts/ideas context state
-      addIdea({
-        title: topic.trim(),
-        platform,
-        hook: selectedHook,
-        outline: selectedOutline,
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: topic,
+          commandType: "brainstorm",
+          draftMeta: {
+            platform: platform,
+            status: tone, // We map 'tone' to status which buildPrompt formats in the metadata
+          },
+        }),
       });
 
-      // Clear input and stop generating loader
+      if (!response.ok || !response.body) {
+        throw new Error("Gagal memanggil AI Agent.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        accumulatedText += decoder.decode(value, { stream: true });
+      }
+
+      const parsedAngles = parseAngles(accumulatedText);
+
+      if (parsedAngles.length === 0) {
+        throw new Error("Format respons AI tidak sesuai. Pastikan API mengembalikan struktur ANGLE.");
+      }
+
+      // Add each idea in reverse order to preserve listing order (newest on top)
+      for (let i = parsedAngles.length - 1; i >= 0; i--) {
+        addIdea({
+          title: parsedAngles[i].title,
+          platform,
+          hook: parsedAngles[i].hook,
+          outline: parsedAngles[i].outline,
+        });
+      }
+
       setTopic("");
+      toast.success("AI berhasil merancang 3 sudut pandang kreatif!");
+    } catch (err: any) {
+      console.error("Brainstorm AI Error:", err);
+      toast.error(err.message || "Terjadi kesalahan saat menghubungi AI.");
+    } finally {
       setIsGenerating(false);
-    }, 900);
+    }
   }
 
   // Promote Idea to Calendar
@@ -237,8 +274,31 @@ export default function BrainstormPage() {
               </span>
             </h3>
 
-            {ideas.length > 0 ? (
+            {ideas.length > 0 || isGenerating ? (
               <div className="w-full max-h-[550px] overflow-y-auto pr-1">
+                {isGenerating && (
+                  <div className="space-y-4 pb-4 animate-pulse">
+                    {[1, 2, 3].map((n) => (
+                      <div key={n} className="rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 w-2/3">
+                            <div className="size-5 rounded-full bg-muted shrink-0" />
+                            <div className="h-4 bg-muted rounded w-full" />
+                          </div>
+                          <div className="h-3 bg-muted rounded w-12" />
+                        </div>
+                        <div className="bg-muted/15 border-l-2 border-primary/20 p-2 space-y-2 rounded-r-md">
+                          <div className="h-2 bg-muted rounded w-16" />
+                          <div className="h-3 bg-muted rounded w-5/6" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-2 bg-muted rounded w-24" />
+                          <div className="h-10 bg-muted rounded w-full" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <AnimatePresence initial={false}>
                   {ideas.map((idea) => {
                   const PlatformIcon = platformIconMap[idea.platform] || IconSparkles;
@@ -304,14 +364,14 @@ export default function BrainstormPage() {
                           className="flex items-center gap-1 text-red-500 hover:bg-red-500/5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all"
                         >
                           <IconTrash className="size-3.5" />
-                          Dismiss
+                          Hapus Ide
                         </button>
                         <button
                           type="button"
                           onClick={() => setPromotingIdea(idea)}
                           className="flex items-center gap-1 bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded text-xs font-bold transition-all"
                         >
-                          Schedule Draft
+                          Tambahkan ke Draft
                           <IconArrowRight className="size-3.5" />
                         </button>
                       </div>
