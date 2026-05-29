@@ -400,12 +400,12 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Antrean Konten Terdekat (Upcoming Content) */}
+            {/* Jadwal Konten Mendatang (Upcoming Content) */}
             <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold flex items-center gap-1.5">
                   <IconCalendarEvent className="size-4.5 text-primary" />
-                  Antrean Konten Terdekat
+                  Jadwal Konten Mendatang
                 </CardTitle>
                 <CardDescription className="text-[11px]">
                   Konten yang telah Anda jadwalkan dan siap rilis terdekat.
@@ -426,6 +426,24 @@ export default function DashboardPage() {
                             minute: "2-digit",
                           })
                         : "Tidak ada tanggal";
+
+                      // Calculate days left helper
+                      const getDaysLeft = (targetDateStr?: string) => {
+                        if (!targetDateStr) return "";
+                        const datePart = targetDateStr.split("T")[0];
+                        const [year, month, day] = datePart.split("-").map(Number);
+                        const targetDate = new Date(year, month - 1, day);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const diffTime = targetDate.getTime() - today.getTime();
+                        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays < 0) return "Lampau";
+                        if (diffDays === 0) return "Hari ini";
+                        if (diffDays === 1) return "1 hari lagi";
+                        return `${diffDays} hari lagi`;
+                      };
+
                       return (
                         <div
                           key={d.id}
@@ -439,8 +457,8 @@ export default function DashboardPage() {
                                 <Icon className="size-5 shrink-0" />
                                 {d.platform}
                               </div>
-                              <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                                Ready
+                              <span className="text-[10px] font-bold text-primary">
+                                {getDaysLeft(d.date)}
                               </span>
                             </div>
                             <h4 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-relaxed">

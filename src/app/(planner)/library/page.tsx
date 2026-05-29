@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useDrafts } from "@/lib/drafts";
 import { platformColorMap } from "@/lib/platform-map";
+import { defaultTemplates } from "@/lib/library-seed";
+import { useLibraryData } from "./hooks/use-library-data";
 import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
 import { toast } from "sonner";
@@ -31,453 +30,62 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-type Template = {
-  title: string;
-  type: string;
-  usage: string;
-  platform: string;
-  category: string;
-  description: string;
-  blueprint: string;
-  isCustom?: boolean;
-};
-
-// Seed data for templates - Upgraded to beautiful HTML to render flawlessly in TipTap!
-const defaultTemplates: Template[] = [
-  {
-    title: "Launch Teaser Blueprint",
-    type: "Short Video",
-    usage: "4 kali digunakan",
-    platform: "Instagram",
-    category: "Reels",
-    description:
-      "Cocok untuk membangun rasa penasaran audiens sebelum merilis fitur atau produk baru.",
-    isCustom: true,
-    blueprint: `<h3><strong>[OUTLINE STORYBOARD VIDEO]</strong></h3>
-<p></p>
-<ul>
-  <li><strong>0:00 - Hook Visual:</strong> Tampilkan layar hitam dengan tulisan <em>"Kami lelah dengan Google Calendar..."</em></li>
-  <li><strong>0:03 - Masalah Utama:</strong> Tunjukkan kebingungan mengatur jadwal secara manual di sidebar.</li>
-  <li><strong>0:07 - Solusi Nyata:</strong> Tampilkan mockup live planner baru dengan transisi kilat.</li>
-  <li><strong>0:12 - Call-To-Action (CTA):</strong> Ajak penonton klik link di bio untuk mendapatkan akses awal gratis! 🎉</li>
-</ul>`,
-  },
-  {
-    title: "Educational Carousel Blueprint",
-    type: "Carousel Slides",
-    usage: "7 kali digunakan",
-    platform: "LinkedIn",
-    category: "Post",
-    description:
-      "Membagi tips teknis mendalam menggunakan struktur slide yang informatif dan memiliki tingkat simpan tinggi.",
-    isCustom: true,
-    blueprint: `<h3><strong>[STRUKTUR SLIDE CAROUSEL]</strong></h3>
-<p></p>
-<ol>
-  <li><strong>Slide 1:</strong> Headline menarik & provokatif (cth: <em>"Jangan pakai database berat untuk MVP Anda!"</em>)</li>
-  <li><strong>Slide 2:</strong> Tunjukkan fakta/angka kelemahan cara lama (loading lambat, biaya setup mahal).</li>
-  <li><strong>Slide 3:</strong> Jelaskan alternatif cara baru (contoh penggunaan browser LocalStorage).</li>
-  <li><strong>Slide 4:</strong> Berikan cuplikan kode / snippet implementasi sederhana.</li>
-  <li><strong>Slide 5:</strong> Ringkasan singkat keuntungan + Ajakan untuk <strong>SIMPAN / SAVE</strong> postingan ini!</li>
-</ol>`,
-  },
-  {
-    title: "Interactive Story Seq Blueprint",
-    type: "Stories Sequence",
-    usage: "11 kali digunakan",
-    platform: "Instagram",
-    category: "Stories",
-    description:
-      "Membangun interaksi personal menggunakan urutan stiker jajak pendapat (Poll) atau Q&A.",
-    isCustom: true,
-    blueprint: `<h3><strong>[URUTAN INSTAGRAM STORIES]</strong></h3>
-<p></p>
-<ul>
-  <li><strong>Story 1:</strong> Gunakan stiker <strong>POLL / Jajak Pendapat</strong>.<br/>Tanya: <em>"Apakah kalian sering merasa burn-out mengelola jadwal konten?"</em> (Pilihan: Ya / Banget!)</li>
-  <li><strong>Story 2:</strong> Respon hasil polling & validasi keresahan mereka.<br/>Teks: <em>"Ternyata 80% dari kita merasakan hal yang sama. Inilah alasan kami mendesain UI baru ini..."</em></li>
-  <li><strong>Story 3:</strong> <strong>CTA Tautan Link</strong>.<br/>Ajak mereka klik link sticker untuk bergabung ke waiting-list eksklusif.</li>
-</ul>`,
-  },
-];
-
-type Snippet = {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  tags: string[];
-};
-
-// Seed data for reusable text snippets
-const defaultSnippets: Snippet[] = [
-  {
-    id: "snip-1",
-    title: "CTA Follow Standard",
-    content:
-      "Jangan lupa untuk follow @nanasgunung untuk tips menarik seputar Web Development & Design setiap hari! 🚀",
-    category: "CTA",
-    tags: ["Promo", "Instagram"],
-  },
-  {
-    id: "snip-2",
-    title: "Kumpulan Hashtag Tech",
-    content:
-      "#nextjs #typescript #programmerindonesia #webdev #codinglife #belajarcoding",
-    category: "Hashtags",
-    tags: ["Hashtags", "Tech"],
-  },
-  {
-    id: "snip-3",
-    title: "Closing Post LinkedIn",
-    content:
-      "Bagaimana dengan workflow tim Anda saat membangun MVP? Mari diskusi di kolom komentar! 👇",
-    category: "Stories",
-    tags: ["Launch", "LinkedIn"],
-  },
-];
-
-const defaultCategories = ["CTA", "Hashtags", "Stories", "Intro", "UGC", "FAQ"];
-
 export default function LibraryPage() {
-  const { addDraft } = useDrafts();
-  const router = useRouter();
-
-  // Tab State
-  const [activeTab, setActiveTab] = useState<
-    "templates" | "snippets" | "history"
-  >("templates");
-
-  // Reusable Snippets State
-  const [snippets, setSnippets] = useState<Snippet[]>([]);
-  const [snippetTitle, setSnippetTitle] = useState("");
-  const [snippetContent, setSnippetContent] = useState("");
-  const [snippetCategory, setSnippetCategory] = useState("CTA");
-  const [snippetTagsInput, setSnippetTagsInput] = useState("");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  // Dynamic Categories State
-  const [categories, setCategories] = useState<string[]>(defaultCategories);
-  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
-
-  // Filtering State
-  const [selectedTagFilter, setSelectedTagFilter] = useState<string>("All");
-  const [selectedCategoryFilter, setSelectedCategoryFilter] =
-    useState<string>("All");
-
-  // Inline Editing State
-  const [editingSnippetId, setEditingSnippetId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editContent, setEditContent] = useState("");
-  const [editCategory, setEditCategory] = useState("");
-  const [editTagsInput, setEditTagsInput] = useState("");
-
-  // Closable Tip state
-  const [isSnippetTipOpen, setIsSnippetTipOpen] = useState(true);
-
-  // Template Accordion State
-  const [expandedTemplates, setExpandedTemplates] = useState<string[]>([]);
-
-  // Deletable templates state
-  const [templates, setTemplates] = useState<Template[]>([]);
-
-  // Confirmation Dialog and Undo states
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{
-    id: string;
-    title: string;
-    type: "template" | "snippet";
-  } | null>(null);
-
-  const toggleTemplateExpand = (title: string) => {
-    setExpandedTemplates((prev) =>
-      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
-    );
-  };
-
-  // Hydrate Snippets & Categories & Templates from LocalStorage
-  useEffect(() => {
-    try {
-      const storedSnippets = localStorage.getItem("nanas_snippets");
-      if (storedSnippets) {
-        setSnippets(JSON.parse(storedSnippets));
-      } else {
-        setSnippets(defaultSnippets);
-        localStorage.setItem("nanas_snippets", JSON.stringify(defaultSnippets));
-      }
-
-      const storedCategories = localStorage.getItem("nanas_snippet_categories");
-      if (storedCategories) {
-        setCategories(JSON.parse(storedCategories));
-      } else {
-        localStorage.setItem(
-          "nanas_snippet_categories",
-          JSON.stringify(defaultCategories),
-        );
-      }
-
-      const storedCustomTemplates = localStorage.getItem(
-        "nanas_custom_templates",
-      );
-      if (storedCustomTemplates) {
-        setTemplates(JSON.parse(storedCustomTemplates));
-      } else {
-        setTemplates(defaultTemplates);
-        localStorage.setItem(
-          "nanas_custom_templates",
-          JSON.stringify(defaultTemplates),
-        );
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, []);
-
-  const saveSnippets = (newSnippets: Snippet[]) => {
-    setSnippets(newSnippets);
-    try {
-      localStorage.setItem("nanas_snippets", JSON.stringify(newSnippets));
-    } catch (e) {
-      // ignore
-    }
-  };
-
-  const saveCategories = (newCategories: string[]) => {
-    setCategories(newCategories);
-    try {
-      localStorage.setItem(
-        "nanas_snippet_categories",
-        JSON.stringify(newCategories),
-      );
-    } catch (e) {
-      // ignore
-    }
-  };
-
-  const handleAddCategory = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!newCategoryName.trim()) return;
-
-    const formatted = newCategoryName.trim();
-    if (!categories.includes(formatted)) {
-      const updated = [...categories, formatted];
-      saveCategories(updated);
-      setSnippetCategory(formatted);
-    }
-    setNewCategoryName("");
-    setIsAddingNewCategory(false);
-  };
-
-  const handleAddSnippet = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!snippetTitle.trim() || !snippetContent.trim()) return;
-
-    const tagsArray = snippetTagsInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter((t) => t !== "");
-
-    const newSnip: Snippet = {
-      id: `snip-${Date.now()}`,
-      title: snippetTitle.trim(),
-      content: snippetContent.trim(),
-      category: snippetCategory,
-      tags: tagsArray,
-    };
-
-    saveSnippets([newSnip, ...snippets]);
-    setSnippetTitle("");
-    setSnippetContent("");
-    setSnippetTagsInput("");
-  };
-
-  const saveCustomTemplates = (newCust: Template[]) => {
-    setTemplates(newCust);
-    try {
-      localStorage.setItem("nanas_custom_templates", JSON.stringify(newCust));
-    } catch (e) {
-      // ignore
-    }
-  };
-
-  const confirmDelete = (
-    id: string,
-    title: string,
-    type: "template" | "snippet",
-  ) => {
-    setItemToDelete({ id, title, type });
-    setDeleteDialogOpen(true);
-  };
-
-  const handleUndo = (itemToRestore: {
-    type: "template" | "snippet";
-    data: any;
-    index: number;
-  }) => {
-    const { type, data, index } = itemToRestore;
-
-    if (type === "template") {
-      setTemplates((prev) => {
-        const updated = [...prev];
-        updated.splice(index, 0, data);
-        try {
-          localStorage.setItem(
-            "nanas_custom_templates",
-            JSON.stringify(updated),
-          );
-        } catch (e) {}
-        return updated;
-      });
-      toast.success(`Templat "${data.title}" berhasil dipulihkan!`);
-    } else if (type === "snippet") {
-      setSnippets((prev) => {
-        const updated = [...prev];
-        updated.splice(index, 0, data);
-        try {
-          localStorage.setItem("nanas_snippets", JSON.stringify(updated));
-        } catch (e) {}
-        return updated;
-      });
-      toast.success(`Snippet "${data.title}" berhasil dipulihkan!`);
-    }
-  };
-
-  const executeDelete = () => {
-    if (!itemToDelete) return;
-
-    const { id, title, type } = itemToDelete;
-
-    if (type === "template") {
-      setTemplates((prev) => {
-        const index = prev.findIndex((t) => t.title === id);
-        if (index === -1) return prev;
-        const deletedObj = prev[index];
-        const updated = prev.filter((t) => t.title !== id);
-
-        try {
-          localStorage.setItem(
-            "nanas_custom_templates",
-            JSON.stringify(updated),
-          );
-        } catch (e) {}
-
-        toast.success(`Templat "${title}" berhasil dihapus!`, {
-          action: {
-            label: "Undo",
-            onClick: () => handleUndo({ type, data: deletedObj, index }),
-          },
-        });
-
-        return updated;
-      });
-    } else if (type === "snippet") {
-      setSnippets((prev) => {
-        const index = prev.findIndex((s) => s.id === id);
-        if (index === -1) return prev;
-        const deletedObj = prev[index];
-        const updated = prev.filter((s) => s.id !== id);
-
-        try {
-          localStorage.setItem("nanas_snippets", JSON.stringify(updated));
-        } catch (e) {}
-
-        if (editingSnippetId === id) setEditingSnippetId(null);
-
-        toast.success(`Snippet "${title}" berhasil dihapus!`, {
-          action: {
-            label: "Undo",
-            onClick: () => handleUndo({ type, data: deletedObj, index }),
-          },
-        });
-
-        return updated;
-      });
-    }
-
-    setDeleteDialogOpen(false);
-    setItemToDelete(null);
-  };
-
-  const handleDeleteTemplate = (title: string) => {
-    confirmDelete(title, title, "template");
-  };
-
-  const handleDeleteSnippet = (id: string) => {
-    const snip = snippets.find((s) => s.id === id);
-    if (!snip) return;
-    confirmDelete(id, snip.title, "snippet");
-  };
-
-  const handleStartEdit = (snip: Snippet) => {
-    setEditingSnippetId(snip.id);
-    setEditTitle(snip.title);
-    setEditContent(snip.content);
-    setEditCategory(snip.category ?? "CTA");
-    setEditTagsInput(snip.tags ? snip.tags.join(", ") : "");
-  };
-
-  const handleSaveEdit = (id: string) => {
-    if (!editTitle.trim() || !editContent.trim()) return;
-
-    const tagsArray = editTagsInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter((t) => t !== "");
-
-    const updated = snippets.map((s) =>
-      s.id === id
-        ? {
-            ...s,
-            title: editTitle.trim(),
-            content: editContent.trim(),
-            category: editCategory,
-            tags: tagsArray,
-          }
-        : s,
-    );
-
-    saveSnippets(updated);
-    setEditingSnippetId(null);
-  };
-
-  const handleCopy = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 1500);
-  };
-
-  const handleUseTemplate = (template: Template) => {
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-      2,
-      "0",
-    )}-${String(now.getDate()).padStart(2, "0")}T08:00`;
-
-    const newId = addDraft({
-      title: `Konsep ${template.title}`,
-      platform: template.platform,
-      category: template.category,
-      status: "Draft",
-      content: template.blueprint,
-      date: dateStr,
-    });
-
-    router.push(`/drafts/${newId}`);
-  };
-
-  // Compute all unique tags from active snippets to render the Tag Cloud dynamically!
-  const allUniqueTags = Array.from(
-    new Set(snippets.flatMap((s) => s.tags ?? [])),
-  );
-
-  // Filter snippets based on dynamic search controls
-  const filteredSnippets = snippets.filter((s) => {
-    const matchesCategory =
-      selectedCategoryFilter === "All" || s.category === selectedCategoryFilter;
-    const matchesTag =
-      selectedTagFilter === "All" || (s.tags ?? []).includes(selectedTagFilter);
-    return matchesCategory && matchesTag;
-  });
+export default function LibraryPage() {
+  const {
+    activeTab,
+    setActiveTab,
+    snippets,
+    snippetTitle,
+    setSnippetTitle,
+    snippetContent,
+    setSnippetContent,
+    snippetCategory,
+    setSnippetCategory,
+    snippetTagsInput,
+    setSnippetTagsInput,
+    copiedId,
+    setCopiedId,
+    categories,
+    isAddingNewCategory,
+    setIsAddingNewCategory,
+    newCategoryName,
+    setNewCategoryName,
+    selectedTagFilter,
+    setSelectedTagFilter,
+    selectedCategoryFilter,
+    setSelectedCategoryFilter,
+    editingSnippetId,
+    setEditingSnippetId,
+    editTitle,
+    setEditTitle,
+    editContent,
+    setEditContent,
+    editCategory,
+    setEditCategory,
+    editTagsInput,
+    setEditTagsInput,
+    isSnippetTipOpen,
+    setIsSnippetTipOpen,
+    expandedTemplates,
+    toggleTemplateExpand,
+    templates,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    itemToDelete,
+    setItemToDelete,
+    handleAddCategory,
+    handleAddSnippet,
+    executeDelete,
+    handleDeleteTemplate,
+    handleDeleteSnippet,
+    handleStartEdit,
+    handleSaveEdit,
+    handleCopy,
+    handleUseTemplate,
+    allUniqueTags,
+    filteredSnippets,
+  } = useLibraryData();
 
   return (
     <PageTransition>
