@@ -335,145 +335,179 @@
 }
 
 /* Notion Task List & Checkbox styling */
-.ProseMirror ul[data-type="taskList"] {
-  list-style: none;
-  padding: 0;
-  margin: 0.5rem 0;
+.tiptap.ProseMirror ul[data-type="taskList"] {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0.5rem 0 !important;
 }
 
-.ProseMirror li[data-type="taskItem"] {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 0.4rem;
+.tiptap.ProseMirror li[data-type="taskItem"] {
+  display: flex !important;
+  align-items: flex-start !important;
+  margin-bottom: 0.4rem !important;
 }
 
-.ProseMirror li[data-type="taskItem"] > label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-  margin-right: 0.6rem;
-  margin-top: 0.2rem;
+.tiptap.ProseMirror li[data-type="taskItem"] > label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  user-select: none !important;
+  margin-right: 0.6rem !important;
+  margin-top: 0.2rem !important;
 }
 
 /* Custom premium checkbox design */
-.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background-color: var(--background);
-  margin: 0;
-  font: inherit;
-  color: currentColor;
-  width: 15px;
-  height: 15px;
-  border: 1.5px solid color-mix(in oklch, var(--foreground) 25%, transparent);
-  border-radius: 4px;
-  display: grid;
-  place-content: center;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-color: var(--background) !important;
+  margin: 0 !important;
+  font: inherit !important;
+  color: currentColor !important;
+  width: 15px !important;
+  height: 15px !important;
+  border: 1.5px solid color-mix(in oklch, var(--foreground) 25%, transparent) !important;
+  border-radius: 4px !important;
+  display: grid !important;
+  place-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:hover {
-  border-color: var(--primary);
-  background-color: color-mix(in oklch, var(--primary) 6%, transparent);
+.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:hover {
+  border-color: var(--primary) !important;
+  background-color: color-mix(in oklch, var(--primary) 6%, transparent) !important;
 }
 
-.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  transform: scale(0);
-  transition: 120ms transform cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: inset 1em 1em var(--primary-foreground);
-  background-color: var(--primary-foreground);
-  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]::before {
+  content: "" !important;
+  width: 8px !important;
+  height: 8px !important;
+  transform: scale(0) !important;
+  transition: 120ms transform cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  box-shadow: inset 1em 1em var(--primary-foreground) !important;
+  background-color: var(--primary-foreground) !important;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%) !important;
 }
 
-.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:checked {
-  background-color: var(--primary);
-  border-color: var(--primary);
+.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:checked {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
 }
 
-.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:checked::before {
-  transform: scale(1);
+.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:checked::before {
+  transform: scale(1) !important;
 }
 
-.ProseMirror li[data-type="taskItem"] > div {
-  flex: 1;
-  min-width: 0;
+.tiptap.ProseMirror li[data-type="taskItem"] > div {
+  flex: 1 !important;
+  min-width: 0 !important;
 }
 
-.ProseMirror li[data-type="taskItem"] > div > p {
-  margin: 0;
-  transition: all 0.2s ease;
+.tiptap.ProseMirror li[data-type="taskItem"] > div > p {
+  margin: 0 !important;
+  transition: all 0.2s ease !important;
 }
 
-.ProseMirror li[data-type="taskItem"][data-checked="true"] > div > p {
-  text-decoration: line-through;
-  color: color-mix(in oklch, var(--foreground) 40%, transparent);
+.tiptap.ProseMirror li[data-type="taskItem"][data-checked="true"] > div > p {
+  text-decoration: line-through !important;
+  color: color-mix(in oklch, var(--foreground) 40%, transparent) !important;
 }
 
 /* Nesting inside task list */
-.ProseMirror li[data-type="taskItem"] > ul[data-type="taskList"] {
-  margin-left: 1.5rem;
-  margin-top: 0.35rem;
+.tiptap.ProseMirror li[data-type="taskItem"] > ul[data-type="taskList"] {
+  margin-left: 1.5rem !important;
+  margin-top: 0.35rem !important;
 }
 
 /* Notion Callout Box styling */
-.ProseMirror div[data-type="callout"] {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.8rem;
-  padding: 0.75rem 1rem;
-  margin: 0.8rem 0;
-  border-radius: 8px;
-  border: 1px solid color-mix(in oklch, var(--primary) 12%, transparent);
-  background-color: color-mix(in oklch, var(--primary) 5%, transparent);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease;
+.tiptap.ProseMirror div[data-type="callout"] {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 0.8rem !important;
+  padding: 0.75rem 1rem !important;
+  margin: 0.8rem 0 !important;
+  border-radius: 8px !important;
+  border: 1px solid color-mix(in oklch, var(--primary) 12%, transparent) !important;
+  background-color: color-mix(in oklch, var(--primary) 5%, transparent) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s ease !important;
 }
 
-.dark .ProseMirror div[data-type="callout"] {
-  background-color: color-mix(in oklch, var(--primary) 8%, transparent);
-  border-color: color-mix(in oklch, var(--primary) 18%, transparent);
+.dark .tiptap.ProseMirror div[data-type="callout"] {
+  background-color: color-mix(in oklch, var(--primary) 8%, transparent) !important;
+  border-color: color-mix(in oklch, var(--primary) 18%, transparent) !important;
 }
 
-.ProseMirror div[data-type="callout"]:hover {
-  border-color: color-mix(in oklch, var(--primary) 20%, transparent);
-  background-color: color-mix(in oklch, var(--primary) 7%, transparent);
+.tiptap.ProseMirror div[data-type="callout"]:hover {
+  border-color: color-mix(in oklch, var(--primary) 20%, transparent) !important;
+  background-color: color-mix(in oklch, var(--primary) 7%, transparent) !important;
 }
 
-.dark .ProseMirror div[data-type="callout"]:hover {
-  background-color: color-mix(in oklch, var(--primary) 10%, transparent);
-  border-color: color-mix(in oklch, var(--primary) 25%, transparent);
+.dark .tiptap.ProseMirror div[data-type="callout"]:hover {
+  background-color: color-mix(in oklch, var(--primary) 10%, transparent) !important;
+  border-color: color-mix(in oklch, var(--primary) 25%, transparent) !important;
 }
 
-.ProseMirror div[data-type="callout"] .callout-emoji {
-  font-size: 1.2rem;
-  line-height: 1.1;
-  user-select: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+.tiptap.ProseMirror div[data-type="callout"] .callout-emoji {
+  font-size: 1.2rem !important;
+  line-height: 1.1 !important;
+  user-select: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 2px !important;
+  border-radius: 4px !important;
+  transition: background-color 0.2s ease !important;
 }
 
-.ProseMirror div[data-type="callout"] .callout-emoji:hover {
-  background-color: color-mix(in oklch, var(--primary) 15%, transparent);
+.tiptap.ProseMirror div[data-type="callout"] .callout-emoji:hover {
+  background-color: color-mix(in oklch, var(--primary) 15%, transparent) !important;
 }
 
-.ProseMirror div[data-type="callout"] .callout-content {
-  flex: 1;
-  min-width: 0;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: color-mix(in oklch, var(--foreground) 90%, transparent);
+.tiptap.ProseMirror div[data-type="callout"] .callout-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+  font-size: 0.8rem !important;
+  line-height: 1.6 !important;
+  color: color-mix(in oklch, var(--foreground) 90%, transparent) !important;
 }
 
-.ProseMirror div[data-type="callout"] .callout-content > p {
-  margin: 0;
+.tiptap.ProseMirror div[data-type="callout"] .callout-content > p {
+  margin: 0 !important;
 }
+
+/* ─── Immersive Zen Focus Mode (Zen Mode) ─────────────────────────────────── */
+.editor-focus-mode {
+  overflow-y: auto !important;
+}
+
+.editor-focus-mode .simple-editor-content {
+  max-width: 820px !important;
+  margin: 0 auto !important;
+  border-left: 1px solid color-mix(in oklch, var(--border) 40%, transparent) !important;
+  border-right: 1px solid color-mix(in oklch, var(--border) 40%, transparent) !important;
+  background-color: var(--card) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.08) !important;
+  height: auto !important;
+  min-height: calc(100vh - 12rem) !important;
+  flex: none !important;
+}
+
+.dark .editor-focus-mode .simple-editor-content {
+  box-shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.3) !important;
+}
+
+.editor-focus-mode .tiptap-toolbar {
+  max-width: 820px !important;
+  margin: 0 auto 1.5rem !important;
+  border: 1px solid color-mix(in oklch, var(--border) 60%, transparent) !important;
+  border-radius: 8px !important;
+  background-color: var(--card) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 0.4rem 0.6rem !important;
+  flex-wrap: wrap !important;
+}
+

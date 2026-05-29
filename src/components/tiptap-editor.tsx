@@ -85,7 +85,7 @@ import AiPromptPopup from "./editor/ai-prompt-popup";
 import TableBubble from "./editor/table-bubble";
 import { BlockReorder } from "./editor/block-reorder";
 import DragHandle from "./editor/drag-handle";
-import { IconSparkles } from "@tabler/icons-react";
+import { IconSparkles, IconMaximize, IconMinimize } from "@tabler/icons-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TipTapEditorProps = {
@@ -159,11 +159,15 @@ const MainToolbarContent = ({
   onLinkClick,
   onAiClick,
   isMobile,
+  isFullscreen,
+  onFullscreenToggle,
 }: {
   onHighlighterClick: () => void;
   onLinkClick: () => void;
   onAiClick: () => void;
   isMobile: boolean;
+  isFullscreen: boolean;
+  onFullscreenToggle: () => void;
 }) => (
   <>
     {/* AI Button */}
@@ -221,11 +225,26 @@ const MainToolbarContent = ({
       <TextAlignButton align="right" />
     </ToolbarGroup>
 
-    {/* <ToolbarSeparator />
-
-    <ToolbarGroup>
-      <ImageUploadButton text="Gambar" />
-    </ToolbarGroup> */}
+    {/* Zen Focus Mode Button */}
+    {!isMobile && (
+      <>
+        <ToolbarSeparator />
+        <ToolbarGroup>
+          <Button
+            onClick={onFullscreenToggle}
+            variant="ghost"
+            className="size-7 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            title={isFullscreen ? "Keluar Mode Fokus (Esc)" : "Mode Fokus Fullscreen (Zen)"}
+          >
+            {isFullscreen ? (
+              <IconMinimize className="size-4 shrink-0 text-primary" />
+            ) : (
+              <IconMaximize className="size-4 shrink-0" />
+            )}
+          </Button>
+        </ToolbarGroup>
+      </>
+    )}
   </>
 );
 
@@ -273,6 +292,7 @@ export default function TipTapEditor({
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main",
   );
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // ── Slash Command States ────────────────────────────────────────────────────
   const [isSlashActive, setIsSlashActive] = useState(false);
@@ -851,6 +871,16 @@ export default function TipTapEditor({
       editor.commands.setContent(content, { emitUpdate: false });
   }, [content, editor]);
 
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isFullscreen]);
+
   if (!editor) {
     return (
       <div className="flex-1 flex items-center justify-center p-8 text-xs font-mono text-muted-foreground/60">
@@ -862,7 +892,11 @@ export default function TipTapEditor({
   return (
     <div
       ref={containerRef}
-      className="relative flex-1 flex flex-col min-h-0 overflow-hidden"
+      className={
+        isFullscreen
+          ? "fixed inset-0 z-[9990] bg-background flex flex-col p-4 md:p-8 animate-in fade-in zoom-in-98 duration-200 editor-focus-mode"
+          : "relative flex-1 flex flex-col min-h-0 overflow-hidden"
+      }
     >
       <EditorContext.Provider value={{ editor }}>
         {/* ── Template Toolbar ───────────────────────────────────────────── */}
@@ -878,6 +912,8 @@ export default function TipTapEditor({
               onLinkClick={() => setMobileView("link")}
               onAiClick={handleAiToolbarClick}
               isMobile={isMobile}
+              isFullscreen={isFullscreen}
+              onFullscreenToggle={() => setIsFullscreen(!isFullscreen)}
             />
           ) : (
             <MobileToolbarContent
