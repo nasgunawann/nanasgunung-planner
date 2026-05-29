@@ -10,8 +10,10 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
 import React, { useEffect, useState, useRef } from "react";
-import { Mark, mergeAttributes } from "@tiptap/core";
+import { Mark, Node, mergeAttributes } from "@tiptap/core";
 import { IconSparkles } from "@tabler/icons-react";
 
 // Import Modular Components & Configurations
@@ -27,6 +29,8 @@ import ActionBar from "./editor/action-bar";
 import SlashMenu from "./editor/slash-menu";
 import AiPromptPopup from "./editor/ai-prompt-popup";
 import TableBubble from "./editor/table-bubble";
+import { BlockReorder } from "./editor/block-reorder";
+import DragHandle from "./editor/drag-handle";
 
 type TipTapEditorProps = {
   content: string;
@@ -60,6 +64,49 @@ const AiHighlight = Mark.create({
     return ["span", mergeAttributes({ "data-ai-highlight": "" }, this.options.HTMLAttributes, HTMLAttributes), 0];
   },
 });
+
+// ─── Custom Callout Node Extension ──────────────────────────────────
+const Callout = Node.create({
+  name: "callout",
+  group: "block",
+  content: "inline*",
+  defining: true,
+
+  addAttributes() {
+    return {
+      emoji: {
+        default: "💡",
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "div[data-type='callout']",
+      },
+    ];
+  },
+
+  renderHTML({ node, HTMLAttributes }: any) {
+    return [
+      "div",
+      mergeAttributes(HTMLAttributes, { "data-type": "callout" }),
+      ["span", { class: "callout-emoji select-none" }, node.attrs.emoji],
+      ["div", { class: "callout-content" }, 0],
+    ];
+  },
+
+  addCommands() {
+    return {
+      setCallout:
+        (attributes: any) =>
+        ({ commands }: any) => {
+          return commands.toggleNode(this.name, "paragraph", attributes);
+        },
+    };
+  },
+} as any);
 
 export default function TipTapEditor({
   content,
@@ -105,6 +152,7 @@ export default function TipTapEditor({
   const selectedItemRef = useRef<HTMLButtonElement>(null);
   const slashTriggerPosRef = useRef<number | null>(null);
   const escapedTriggerPosRef = useRef<number | null>(null);
+  const draggedPosRef = useRef<number | null>(null);
 
   // Setup refs to bypass stale React closures in useEditor handleKeyDown hook
   const isSlashActiveRef = useRef(isSlashActive);
@@ -122,12 +170,18 @@ export default function TipTapEditor({
       Underline,
       Highlight.configure({ multicolor: false }),
       AiHighlight,
+      Callout,
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Link.configure({ openOnClick: false, HTMLAttributes: { class: "text-primary underline cursor-pointer" } }),
       Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
       TableCell,
+      BlockReorder,
     ],
     content: content,
     immediatelyRender: false,
@@ -143,6 +197,65 @@ export default function TipTapEditor({
       attributes: {
         class:
           "focus:outline-none min-h-[420px] text-xs text-foreground/90 leading-relaxed p-4 font-sans ProseMirror",
+      },
+      handleClickOn: (view: any, pos: number, node: any, nodePos: number, event: MouseEvent) => {
+        if (node.type.name === "callout") {
+          const target = event.target as HTMLElement;
+          if (target.classList.contains("callout-emoji") || target.closest(".callout-emoji")) {
+            event.preventDefault();
+            const currentEmoji = node.attrs.emoji || "💡";
+            const newEmoji = prompt("Ubah emoji callout:", currentEmoji);
+            if (newEmoji !== null) {
+              const trimmed = Array.from(newEmoji.trim()).slice(0, 2).join("");
+              view.dispatch(
+                view.state.tr.setNodeMarkup(nodePos, undefined, {
+                  ...node.attrs,
+                  emoji: trimmed || "💡",
+                })
+              );
+            }
+            return true;
+          }
+        }
+        return false;
+      },
+      handleDrop: (view: any, event: any) => {
+        if (draggedPosRef.current !== null) {
+          event.preventDefault();
+          const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+          if (coordinates) {
+            const dropPos = coordinates.pos;
+            const fromPos = draggedPosRef.current;
+            const node = view.state.doc.nodeAt(fromPos);
+            if (node) {
+              const nodeSize = node.nodeSize;
+              const tr = view.state.tr;
+
+              // If dropping inside itself, cancel
+              if (dropPos >= fromPos && dropPos <= fromPos + nodeSize) {
+                draggedPosRef.current = null;
+                return true;
+              }
+
+              // Adjust insertion position if dropping after fromPos
+              let insertPos = dropPos;
+              if (dropPos > fromPos) {
+                insertPos = dropPos - nodeSize;
+              }
+
+              insertPos = Math.max(0, Math.min(insertPos, tr.doc.content.size));
+
+              tr.delete(fromPos, fromPos + nodeSize);
+              tr.insert(insertPos, node);
+
+              tr.setSelection(view.state.selection.constructor.near(view.state.tr.doc.resolve(insertPos)));
+              view.dispatch(tr);
+            }
+          }
+          draggedPosRef.current = null;
+          return true;
+        }
+        return false;
       },
       handleKeyDown: (view, event) => {
         if (!isSlashActiveRef.current) return false;
@@ -466,7 +579,7 @@ export default function TipTapEditor({
     if (!isSlashActive) return;
     const handleScroll = (event: Event) => {
       const menuEl = document.getElementById("tiptap-slash-menu");
-      if (menuEl && menuEl.contains(event.target as Node)) return;
+      if (menuEl && menuEl.contains(event.target as HTMLElement)) return;
       setIsSlashActive(false);
     };
     window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
@@ -478,7 +591,7 @@ export default function TipTapEditor({
     if (!isSlashActive) return;
     const handleClickOutside = (event: MouseEvent) => {
       const menuEl = document.getElementById("tiptap-slash-menu");
-      if (menuEl && !menuEl.contains(event.target as Node)) setIsSlashActive(false);
+      if (menuEl && !menuEl.contains(event.target as HTMLElement)) setIsSlashActive(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -580,6 +693,11 @@ export default function TipTapEditor({
       <TableBubble
         editor={editor}
         isAiStreaming={isAiStreaming}
+      />
+
+      <DragHandle
+        editor={editor}
+        draggedPosRef={draggedPosRef}
       />
     </div>
   );

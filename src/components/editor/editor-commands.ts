@@ -21,6 +21,8 @@ import {
   IconColumnInsertRight,
   IconRowInsertBottom,
   IconTrash,
+  IconSquareCheck,
+  IconBulb,
 } from "@tabler/icons-react";
 
 export type DraftMeta = {
@@ -50,7 +52,9 @@ export const formatCommands: EditorCommandItem[] = [
   { id: "h3", title: "Heading 3", desc: "Judul ukuran kecil (H3)", icon: IconH3, action: (ed: any) => ed.chain().focus().toggleHeading({ level: 3 }).run() },
   { id: "bullet", title: "Bulleted List", desc: "Daftar bulatan sederhana", icon: IconList, action: (ed: any) => ed.chain().focus().toggleBulletList().run() },
   { id: "number", title: "Numbered List", desc: "Daftar urutan angka", icon: IconListNumbers, action: (ed: any) => ed.chain().focus().toggleOrderedList().run() },
+  { id: "todo", title: "To-Do List", desc: "Daftar tugas interaktif dengan checkbox", icon: IconSquareCheck, action: (ed: any) => ed.chain().focus().toggleTaskList().run() },
   { id: "quote", title: "Quote / Kutipan", desc: "Blok kutipan teks/visual", icon: IconQuote, action: (ed: any) => ed.chain().focus().toggleBlockquote().run() },
+  { id: "callout", title: "Callout", desc: "Kotak catatan dengan ikon emoji", icon: IconBulb, action: (ed: any) => ed.chain().focus().setCallout().run() },
   { id: "divider", title: "Divider (Garis)", desc: "Garis pembatas horizontal", icon: IconSeparatorHorizontal, action: (ed: any) => ed.chain().focus().setHorizontalRule().run() },
   { id: "code", title: "Storyboard Block", desc: "Blok kode storyboard", icon: IconCode, action: (ed: any) => ed.chain().focus().toggleCodeBlock().run() },
   { id: "strike", title: "Strikethrough", desc: "Coretan teks draf", icon: IconStrikethrough, action: (ed: any) => ed.chain().focus().toggleStrike().run() },
