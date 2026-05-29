@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/dialog";
 
 export default function LibraryPage() {
-export default function LibraryPage() {
   const {
     activeTab,
     setActiveTab,
@@ -70,6 +69,7 @@ export default function LibraryPage() {
     expandedTemplates,
     toggleTemplateExpand,
     templates,
+    setTemplates,
     deleteDialogOpen,
     setDeleteDialogOpen,
     itemToDelete,
