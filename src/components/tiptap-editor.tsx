@@ -373,12 +373,36 @@ export default function TipTapEditor({
       const endPos = editor.state.selection.from;
       try {
         const coords = editor.view.coordsAtPos(endPos);
-        const barTop = typeof window !== "undefined" && coords.bottom + 60 > window.innerHeight
-          ? coords.top - 52
-          : coords.bottom + 8;
-        const barLeft = typeof window !== "undefined"
-          ? Math.max(12, Math.min(coords.left, window.innerWidth - 360))
-          : coords.left;
+        
+        let barTop = coords.bottom + 8;
+        
+        // Auto-scroll logic if the cursor is near the bottom of the viewport
+        const scrollContainer = containerRef.current?.querySelector('.overflow-y-auto');
+        if (scrollContainer) {
+          const minBottomSpace = 80; // space needed for the action bar
+          const overflow = (coords.bottom + minBottomSpace) - window.innerHeight;
+          if (overflow > 0) {
+            scrollContainer.scrollTop += overflow;
+            barTop -= overflow; // adjust position for scroll displacement
+          }
+        }
+        
+        // Horizontal clamping logic
+        let barLeft = coords.left;
+        const containerRect = containerRef.current?.getBoundingClientRect();
+        if (containerRect && typeof window !== "undefined") {
+          const isMobile = window.innerWidth < 640;
+          const barWidth = isMobile ? 250 : 450;
+          const padding = 16;
+          const minLeft = containerRect.left + padding;
+          const maxLeft = containerRect.right - barWidth - padding;
+          
+          barLeft = Math.max(minLeft, Math.min(coords.left, Math.max(minLeft, maxLeft)));
+        } else if (typeof window !== "undefined") {
+          // Fallback if containerRect is not available
+          barLeft = Math.max(12, Math.min(coords.left, window.innerWidth - 360));
+        }
+
         setAiActionBar({ startPos, endPos, commandType, prompt: userPrompt, coords: { top: barTop, left: barLeft } });
       } catch (e) {
         // coords unavailable — still show action bar at fallback position
@@ -435,6 +459,19 @@ export default function TipTapEditor({
     editor.on("update", handler);
     return () => { editor.off("update", handler); };
   }, [editor, aiActionBar]);
+
+  // Dismiss action bar on scroll (they are scrolling away)
+  useEffect(() => {
+    if (!aiActionBar) return;
+    const handleScroll = () => {
+      setAiActionBar(null);
+    };
+    const scrollContainer = containerRef.current?.querySelector('.overflow-y-auto');
+    scrollContainer?.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      scrollContainer?.removeEventListener("scroll", handleScroll);
+    };
+  }, [aiActionBar]);
 
   // Close slash menu on scroll
   useEffect(() => {
@@ -589,7 +626,7 @@ export default function TipTapEditor({
       </div>
 
       {/* ── Editor Content ───────────────────────────────────────────── */}
-      <div className="flex-1 p-4 bg-background/30 overflow-y-auto min-h-0 relative">
+      <div className="flex-1 p-4 pb-32 bg-background/30 overflow-y-auto min-h-0 relative">
         <EditorContent editor={editor} />
 
         {/* AI streaming indicator — small pulsing bar at bottom of content area */}
@@ -685,29 +722,29 @@ export default function TipTapEditor({
               top: aiActionBar.coords.top,
               left: aiActionBar.coords.left,
             }}
-            className="fixed z-[9998] flex items-center gap-1.5 bg-card border border-border shadow-xl rounded-xl px-3 py-2 backdrop-blur-md animate-in fade-in slide-in-from-bottom-1 duration-150"
+            className="fixed z-[9998] flex items-center gap-1 sm:gap-1.5 bg-card border border-border shadow-xl rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 backdrop-blur-md animate-in fade-in slide-in-from-bottom-1 duration-150"
           >
             {/* Command label */}
-            <div className="flex items-center gap-1.5 mr-1">
+            <div className="flex items-center gap-1 sm:gap-1.5 mr-0.5 sm:mr-1">
               <IconSparkles className="size-3 text-primary shrink-0" />
-              <span className="text-[10px] font-medium text-foreground/80 max-w-[180px] truncate">
+              <span className="text-[10px] font-medium text-foreground/80 max-w-[100px] sm:max-w-[180px] truncate">
                 {aiActionBar.commandType === "general" && aiActionBar.prompt
                   ? `"${aiActionBar.prompt.length > 28 ? aiActionBar.prompt.slice(0, 28) + "…" : aiActionBar.prompt}"`
                   : AI_COMMAND_LABELS[aiActionBar.commandType] ?? "AI Generate"}
               </span>
             </div>
 
-            <span className="w-px h-4 bg-border/60 mx-0.5" />
+            <span className="w-px h-4 bg-border/60 mx-0.5 sm:mx-1" />
 
             {/* Accept */}
             <button
               type="button"
               onClick={handleAiAccept}
               title="Simpan hasil AI"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors shrink-0"
             >
-              <svg viewBox="0 0 16 16" fill="none" className="size-3"><path d="M3 8l3.5 3.5L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Simpan
+              <svg viewBox="0 0 16 16" fill="none" className="size-3 shrink-0"><path d="M3 8l3.5 3.5L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span className="hidden sm:inline">Simpan</span>
             </button>
 
             {/* Retry */}
@@ -715,10 +752,10 @@ export default function TipTapEditor({
               type="button"
               onClick={handleAiRetry}
               title="Coba lagi dengan instruksi yang sama"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
             >
-              <svg viewBox="0 0 16 16" fill="none" className="size-3"><path d="M13.5 2.5A6.5 6.5 0 1 1 9 2.07" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M13.5 2.5V6h-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Coba Lagi
+              <svg viewBox="0 0 16 16" fill="none" className="size-3 shrink-0"><path d="M13.5 2.5A6.5 6.5 0 1 1 9 2.07" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M13.5 2.5V6h-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span className="hidden sm:inline">Coba Lagi</span>
             </button>
 
             {/* Discard */}
@@ -726,10 +763,10 @@ export default function TipTapEditor({
               type="button"
               onClick={handleAiDiscard}
               title="Buang hasil AI"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
             >
-              <svg viewBox="0 0 16 16" fill="none" className="size-3"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-              Buang
+              <svg viewBox="0 0 16 16" fill="none" className="size-3 shrink-0"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              <span className="hidden sm:inline">Buang</span>
             </button>
           </div>,
           document.body,
