@@ -1,5 +1,6 @@
 allowBuilds:
   '@google/genai': false
+  '@parcel/watcher': true
   msw: true
   protobufjs: false
   sharp: true

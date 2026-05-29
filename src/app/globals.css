@@ -2,6 +2,38 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* TipTap Simple Editor Template Styles */
+@import '../styles/_variables.scss';
+@import '../styles/_keyframe-animations.scss';
+
+/* ─── Override simple-editor template layout to fit inside embedded container ─
+   The template is designed as a standalone full-page editor (100vw/100vh).
+   We override it to fill its flex parent instead. */
+.simple-editor-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Remove the centered 648px column — let the card container define width */
+.simple-editor-content {
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Reduce excessive bottom padding (30vh → more reasonable for embedded view) */
+.simple-editor-content .tiptap.ProseMirror.simple-editor {
+  padding: 1.5rem 2rem 8rem !important;
+}
+
+@media screen and (max-width: 480px) {
+  .simple-editor-content .tiptap.ProseMirror.simple-editor {
+    padding: 1rem 1rem 8rem !important;
+  }
+}
+
+
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -139,96 +171,102 @@
 }
 
 /* Tiptap / ProseMirror editor styles */
-.ProseMirror {
+.tiptap.ProseMirror {
   outline: none;
   min-height: 420px;
+  font-family: inherit !important;
 }
-.ProseMirror h1 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
-  color: var(--foreground);
-  border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent);
-  padding-bottom: 0.25rem;
+.tiptap.ProseMirror h1 {
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid color-mix(in oklch, var(--border) 40%, transparent) !important;
+  padding-bottom: 0.25rem !important;
 }
-.ProseMirror h2 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin-top: 0.9rem;
-  margin-bottom: 0.35rem;
-  color: var(--foreground);
+.tiptap.ProseMirror h2 {
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  margin-top: 0.9rem !important;
+  margin-bottom: 0.35rem !important;
+  color: var(--foreground) !important;
 }
-.ProseMirror p {
-  margin-top: 0.35rem;
-  margin-bottom: 0.35rem;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  color: color-mix(in oklch, var(--foreground) 90%, transparent);
+.tiptap.ProseMirror p {
+  margin-top: 0.35rem !important;
+  margin-bottom: 0.35rem !important;
+  font-size: 0.8rem !important;
+  line-height: 1.6 !important;
+  color: color-mix(in oklch, var(--foreground) 90%, transparent) !important;
 }
-.ProseMirror blockquote {
-  border-left: 3px solid var(--primary);
-  background-color: color-mix(in oklch, var(--primary) 6%, transparent);
-  padding: 0.5rem 0.8rem;
-  margin: 0.75rem 0;
-  font-style: italic;
-  border-radius: 0 6px 6px 0;
-  color: var(--foreground);
+.tiptap.ProseMirror blockquote {
+  border-left: 3px solid var(--primary) !important;
+  background-color: color-mix(in oklch, var(--primary) 6%, transparent) !important;
+  padding: 0.5rem 0.8rem !important;
+  margin: 0.75rem 0 !important;
+  font-style: italic !important;
+  border-radius: 0 6px 6px 0 !important;
+  color: var(--foreground) !important;
 }
-.ProseMirror hr {
-  border: none;
-  border-top: 2px dashed color-mix(in oklch, var(--primary) 20%, transparent);
-  margin: 1.5rem 0;
+.tiptap.ProseMirror blockquote::before {
+  display: none !important; /* Hide template blockquote bar overlay */
 }
-.ProseMirror ul {
-  list-style-type: disc;
-  padding-left: 1.25rem;
-  margin: 0.25rem 0;
+.tiptap.ProseMirror hr {
+  border: none !important;
+  border-top: 2px dashed color-mix(in oklch, var(--primary) 20%, transparent) !important;
+  margin: 1.5rem 0 !important;
 }
-.ProseMirror ol {
-  list-style-type: decimal;
-  padding-left: 1.25rem;
-  margin: 0.25rem 0;
+.tiptap.ProseMirror ul {
+  list-style-type: disc !important;
+  padding-left: 1.25rem !important;
+  margin: 0.25rem 0 !important;
 }
-.ProseMirror pre {
-  background-color: var(--muted);
-  border: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-family: var(--font-mono), monospace;
-  font-size: 11px;
-  margin: 0.5rem 0;
-  overflow-x: auto;
-  white-space: pre-wrap;
+.tiptap.ProseMirror ol {
+  list-style-type: decimal !important;
+  padding-left: 1.25rem !important;
+  margin: 0.25rem 0 !important;
 }
-.ProseMirror code {
-  font-family: var(--font-mono), monospace;
-  background-color: var(--muted);
-  padding: 0.1rem 0.25rem;
-  border-radius: 3px;
-  font-size: 0.9em;
+.tiptap.ProseMirror pre {
+  background-color: var(--muted) !important;
+  border: 1px solid color-mix(in oklch, var(--border) 60%, transparent) !important;
+  padding: 0.5rem !important;
+  border-radius: 4px !important;
+  font-family: var(--font-mono), monospace !important;
+  font-size: 11px !important;
+  margin: 0.5rem 0 !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
 }
-.ProseMirror h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-top: 0.75rem;
-  margin-bottom: 0.25rem;
-  color: var(--foreground);
+.tiptap.ProseMirror code {
+  font-family: var(--font-mono), monospace !important;
+  background-color: var(--muted) !important;
+  padding: 0.1rem 0.25rem !important;
+  border-radius: 3px !important;
+  font-size: 0.9em !important;
+  color: inherit !important;
+  border: none !important;
+}
+.tiptap.ProseMirror h3 {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.25rem !important;
+  color: var(--foreground) !important;
 }
 /* Highlight (mark) */
-.ProseMirror mark {
-  background-color: color-mix(in oklch, #facc15 45%, transparent);
-  border-radius: 2px;
-  padding: 0 2px;
+.tiptap.ProseMirror mark {
+  background-color: color-mix(in oklch, #facc15 45%, transparent) !important;
+  border-radius: 2px !important;
+  padding: 0 2px !important;
 }
 /* Link */
-.ProseMirror a {
-  color: var(--primary);
-  text-decoration: underline;
-  cursor: pointer;
+.tiptap.ProseMirror a {
+  color: var(--primary) !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
 }
-.ProseMirror a:hover {
-  opacity: 0.8;
+.tiptap.ProseMirror a:hover {
+  opacity: 0.8 !important;
 }
 /* Table */
 .ProseMirror table {
