@@ -277,3 +277,21 @@
 .ProseMirror [style*="text-align: center"] { text-align: center; }
 .ProseMirror [style*="text-align: right"] { text-align: right; }
 .ProseMirror [style*="text-align: left"] { text-align: left; }
+
+/* AI Highlight Running Rainbow styles */
+.ai-processing {
+  background: linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #10b981, #f59e0b, #ec4899);
+  background-size: 200% auto;
+  color: white !important;
+  animation: rainbow-glow 2s linear infinite;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+}
+
+@keyframes rainbow-glow {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}

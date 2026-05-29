@@ -43,6 +43,27 @@ Kembalikan HANYA outline, tanpa penjelasan tambahan.`,
 Tugasmu: perbaiki dan polish teks yang diberikan tanpa mengubah makna aslinya.
 Perbaikan: kejelasan kalimat, alur yang lebih smooth, kata-kata lebih engaging, hilangkan pengulangan.
 Kembalikan HANYA teks yang sudah diperbaiki, tanpa penjelasan perubahan.`,
+
+  "improve-selection": `Kamu adalah editor bahasa Indonesia profesional.
+Tugasmu: perbaiki teks terpilih yang diberikan agar terdengar lebih mengalir (flow), alami, tata bahasa benar, dan menarik.
+JANGAN mengubah inti makna teks aslinya.
+Kembalikan HANYA teks hasil perbaikan tanpa penjelasan apapun.`,
+
+  "shorten-selection": `Kamu adalah editor ringkasan profesional.
+Tugasmu: persingkat teks terpilih yang diberikan agar lebih padat, ringkas, dan to-the-point tanpa menghilangkan informasi penting.
+Kembalikan HANYA teks ringkasnya saja tanpa penjelasan tambahan.`,
+
+  "formalize-selection": `Kamu adalah spesialis komunikasi formal.
+Tugasmu: ubah gaya bahasa dari teks terpilih yang diberikan menjadi formal, profesional, sopan, dan akademis/bisnis yang tepat.
+Kembalikan HANYA teks formalnya saja tanpa penjelasan tambahan.`,
+
+  "casualize-selection": `Kamu adalah spesialis copywriter media sosial kasual.
+Tugasmu: ubah gaya bahasa dari teks terpilih menjadi santai, kasual, friendly, conversational, dan ramah untuk dibaca di media sosial santai.
+Kembalikan HANYA teks kasualnya saja tanpa penjelasan tambahan.`,
+
+  "continue-selection": `Kamu adalah asisten penulis kreatif Indonesia.
+Tugasmu: lanjutkan kalimat atau paragraf yang terputus/diberikan oleh pengguna secara mulus, koheren, dan natural sesuai konteksnya.
+Kembalikan HANYA teks lanjutannya saja, tanpa mengulangi teks aslinya, tanpa penjelasan tambahan.`,
 };
 
 function buildPrompt(
@@ -72,6 +93,10 @@ function buildPrompt(
   if (commandType === "improve") {
     if (!contextSection) return "Belum ada teks untuk diperbaiki.";
     return `${metaSection}${contextSection}${instructionSection || "Perbaiki teks di atas."}`.trim();
+  }
+
+  if (commandType.endsWith("-selection")) {
+    return `${metaSection}\n--- TEKS YANG DIPILIH PENGGUNA ---\n${context}\n${instructionSection}`.trim();
   }
 
   return [metaSection, contextSection, instructionSection].filter(Boolean).join("\n").trim();
