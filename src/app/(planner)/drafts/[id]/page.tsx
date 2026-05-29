@@ -2,28 +2,24 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import React from "react";
+import { useDrafts } from "@/lib/drafts";
 import {
-  useDrafts,
-  type Draft,
-  type DraftRevision,
-  getRevisions,
-  saveRevision,
-} from "@/lib/drafts";
-import {
-  IconArrowLeft,
-  IconSparkles,
-  IconTrash,
-  IconDeviceFloppy,
   IconTags,
   IconHistory,
-  IconClockHour4,
+  IconDeviceFloppy,
   IconX,
+  IconArrowLeft,
+  IconTrash,
+  IconClockHour4,
 } from "@tabler/icons-react";
 import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
 import { toast } from "sonner";
+import MetadataSidebar from "./components/metadata-sidebar";
+import AssetsDrawer from "./components/assets-drawer";
+import HistoryDrawer from "./components/history-drawer";
 import {
   Dialog,
   DialogContent,
@@ -40,8 +36,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import useDraftWorkspace from "./hooks/use-draft-workspace";
 
-// Dynamic import for TipTap Editor Hub (Client-only / SSR Safe)
 const TipTapEditor = dynamic(() => import("@/components/tiptap-editor"), {
   ssr: false,
   loading: () => (
@@ -51,169 +47,39 @@ const TipTapEditor = dynamic(() => import("@/components/tiptap-editor"), {
   ),
 });
 
-// Helper to extract text from HTML string safely (Next.js SSR safe)
-const getTextFromHtml = (html: string) => {
-  if (!html) return "";
-  return html.replace(/<[^>]*>/g, " "); // Replace HTML tags with spaces
-};
-
 export default function DraftWorkspacePage() {
   const params = useParams();
   const router = useRouter();
-  const { drafts, updateDraft, deleteDraft } = useDrafts();
+  const { deleteDraft } = useDrafts();
 
   const id = params?.id as string;
-  const draft = drafts.find((d) => d.id === id);
-
-  // Local input buffers for Debouncing
-  const [localTitle, setLocalTitle] = useState("");
-  const [localContent, setLocalContent] = useState("");
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving">("saved");
-
-  // Collapsible Library Snippets State
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [snippets, setSnippets] = useState<
-    { id: string; title: string; content: string; category?: string; tags?: string[] }[]
-  >([]);
-  const [snippetSearchQuery, setSnippetSearchQuery] = useState("");
-  const [selectedSnippetCategory, setSelectedSnippetCategory] = useState("All");
-  const [insertTrigger, setInsertTrigger] = useState<{
-    text: string;
-    time: number;
-  } | null>(null);
-  const [revisions, setRevisions] = useState<DraftRevision[]>([]);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("nanas_snippets");
-      if (stored) {
-        setSnippets(JSON.parse(stored));
-      } else {
-        const defaultSnippets = [
-          {
-            id: "snip-1",
-            title: "CTA Follow Standard",
-            content:
-              "Jangan lupa untuk follow @nanasgunung untuk tips menarik seputar Web Development & Design setiap hari! 🚀",
-          },
-          {
-            id: "snip-2",
-            title: "Kumpulan Hashtag Tech",
-            content:
-              "#nextjs #typescript #programmerindonesia #webdev #codinglife #belajarcoding",
-          },
-          {
-            id: "snip-3",
-            title: "Closing Post LinkedIn",
-            content:
-              "Bagaimana dengan workflow tim Anda saat membangun MVP? Mari diskusi di kolom komentar! 👇",
-          },
-        ];
-        setSnippets(defaultSnippets);
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, []);
-
-  // Note: Snippets are now inserted inline directly into TipTap editor via insertTrigger state
-
-  const handleCreateManualBackup = () => {
-    if (!draft) return;
-    const updated = saveRevision(draft.id, draft.title, localContent);
-    setRevisions(updated);
-    toast.success("Cadangan versi draf berhasil dibuat!");
-  };
-
-  const handleRestoreRevision = (rev: DraftRevision) => {
-    if (!draft) return;
-    // Save current state first so they can undo the restore
-    saveRevision(draft.id, draft.title, localContent);
-
-    // Update local state and persist
-    setLocalContent(rev.content);
-    updateDraft(draft.id, { content: rev.content });
-
-    // Reload revision list
-    const updated = getRevisions(draft.id);
-    setRevisions(updated);
-
-    toast.success(
-      `Draf dipulihkan ke versi (${new Date(rev.timestamp).toLocaleTimeString()})!`,
-    );
-  };
-
-  // Initial Sync from drafts context state
-  useEffect(() => {
-    if (draft) {
-      setLocalTitle(draft.title);
-      setLocalContent(draft.content ?? "");
-    }
-  }, [id, draft]); // Trigger when draft ID or draft context object loads/changes
-
-  // Load and initialize version history revisions for this draft session
-  useEffect(() => {
-    if (!draft) return;
-
-    // Load existing revisions
-    const existingRevisions = getRevisions(draft.id);
-    setRevisions(existingRevisions);
-
-    // Save initial session snapshot if there's content and we don't have it as the latest checkpoint
-    if (draft.content) {
-      const updated = saveRevision(draft.id, draft.title, draft.content);
-      setRevisions(updated);
-    }
-  }, [id, draft?.id]);
-
-  // Auto-Redirect if draft is deleted
-  useEffect(() => {
-    if (!draft && drafts.length > 0) {
-      router.push("/drafts");
-    }
-  }, [draft, drafts, router]);
-
-  // 1. Debounce Pipeline for Content / Script (600ms idle timer)
-  useEffect(() => {
-    if (!draft || localContent === (draft.content ?? "")) return;
-
-    setSaveStatus("saving");
-    const timer = setTimeout(() => {
-      updateDraft(draft.id, { content: localContent });
-      setSaveStatus("saved");
-    }, 600);
-
-    return () => clearTimeout(timer); // Wipes out timer if user presses another key
-  }, [localContent, draft?.id]);
-
-  // 2. Debounce Pipeline for Title (600ms idle timer)
-  useEffect(() => {
-    if (!draft || localTitle === draft.title) return;
-
-    setSaveStatus("saving");
-    const timer = setTimeout(() => {
-      updateDraft(draft.id, { title: localTitle });
-      setSaveStatus("saved");
-    }, 600);
-
-    return () => clearTimeout(timer);
-  }, [localTitle, draft?.id]);
-
-  // Compute unique categories and filtered snippets dynamically for the sidebar drawer
-  const snippetCategories = Array.from(
-    new Set(snippets.map((s) => s.category).filter(Boolean))
-  );
-
-  const filteredSnippets = snippets.filter((s) => {
-    const matchesCategory =
-      selectedSnippetCategory === "All" || s.category === selectedSnippetCategory;
-    const matchesSearch =
-      s.title.toLowerCase().includes(snippetSearchQuery.toLowerCase()) ||
-      s.content.toLowerCase().includes(snippetSearchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const {
+    draft,
+    localTitle,
+    setLocalTitle,
+    localContent,
+    setLocalContent,
+    saveStatus,
+    isLibraryOpen,
+    setIsLibraryOpen,
+    isHistoryOpen,
+    setIsHistoryOpen,
+    isDeleteOpen,
+    setIsDeleteOpen,
+    snippets,
+    snippetSearchQuery,
+    setSnippetSearchQuery,
+    selectedSnippetCategory,
+    setSelectedSnippetCategory,
+    snippetCategories,
+    filteredSnippets,
+    insertTrigger,
+    setInsertTrigger,
+    revisions,
+    handleCreateManualBackup,
+    handleRestoreRevision,
+    handleDropdownChange,
+  } = useDraftWorkspace(id);
 
   if (!draft) {
     return (
@@ -232,179 +98,29 @@ export default function DraftWorkspacePage() {
     );
   }
 
-  // Live Statistics metrics (using our safe text parser)
-  const plainText = getTextFromHtml(localContent);
+  const plainText = (localContent || "").replace(/<[^>]*>/g, " ");
   const wordCount =
     plainText.trim() === "" ? 0 : plainText.trim().split(/\s+/).length;
   const charCount = plainText.trim().length;
 
-  // Metadata dropdown selections (saved instantly as they are click events)
-  const handleDropdownChange = (
-    field: keyof Omit<Draft, "id" | "updatedAt">,
-    value: string,
-  ) => {
-    setSaveStatus("saving");
-    updateDraft(draft.id, { [field]: value });
-    setTimeout(() => {
-      setSaveStatus("saved");
-    }, 400);
-  };
-
   return (
     <PageTransition>
       <div className="space-y-4">
-        {/* Two-Column Editor Layout - Contained Height on Desktop */}
         <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:h-[calc(100vh-120px)] lg:min-h-0 lg:overflow-hidden">
-          {/* Left Column: Metadata Sidebar - Scrolling only inside */}
           <aside className="space-y-4 lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pr-1 select-none flex flex-col shrink-0">
-            <div className="bg-card border border-border/60 p-4 rounded-xl shadow-sm space-y-4">
-              {/* Embedded Stationary Navigation Header */}
-              <div className="border-b border-border/60 pb-3 space-y-2">
-                <Link
-                  href="/drafts"
-                  className="w-full flex items-center justify-center gap-2 h-9 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold transition-all shadow-sm"
-                >
-                  <IconArrowLeft className="size-4" />
-                  Kembali ke Drafts
-                </Link>
-
-                {/* Delete Action button */}
-                <button
-                  type="button"
-                  onClick={() => setIsDeleteOpen(true)}
-                  className="w-full flex items-center justify-center gap-1.5 h-9 rounded-md border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-500 text-xs font-bold transition-all cursor-pointer"
-                >
-                  <IconTrash className="size-4" />
-                  Delete Draft
-                </button>
-              </div>
-
-              {/* Title Field (Debounced Input) */}
-              <div className="grid gap-1">
-                <label
-                  htmlFor="ws-title"
-                  className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Title
-                </label>
-                <Input
-                  id="ws-title"
-                  type="text"
-                  value={localTitle}
-                  onChange={(e) => setLocalTitle(e.target.value)}
-                  className="h-9 text-xs bg-background"
-                />
-              </div>
-
-              {/* Platform Dropdown */}
-              <div className="grid gap-1">
-                <label
-                  htmlFor="ws-platform"
-                  className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Platform
-                </label>
-                <Select
-                  value={draft.platform ?? "Instagram"}
-                  onValueChange={(val) => handleDropdownChange("platform", val)}
-                >
-                  <SelectTrigger
-                    id="ws-platform"
-                    className="h-9 text-xs bg-background cursor-pointer"
-                  >
-                    <SelectValue placeholder="Platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Instagram">Instagram</SelectItem>
-                    <SelectItem value="TikTok">TikTok</SelectItem>
-                    <SelectItem value="YouTube">YouTube</SelectItem>
-                    <SelectItem value="LinkedIn">LinkedIn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Category Dropdown */}
-              <div className="grid gap-1">
-                <label
-                  htmlFor="ws-category"
-                  className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Format / Category
-                </label>
-                <Select
-                  value={draft.category ?? "none"}
-                  onValueChange={(val) =>
-                    handleDropdownChange("category", val === "none" ? "" : val)
-                  }
-                >
-                  <SelectTrigger
-                    id="ws-category"
-                    className="h-9 text-xs bg-background cursor-pointer"
-                  >
-                    <SelectValue placeholder="No Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Category</SelectItem>
-                    <SelectItem value="Stories">Stories</SelectItem>
-                    <SelectItem value="Reels">Reels</SelectItem>
-                    <SelectItem value="Post">Post</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status Dropdown */}
-              <div className="grid gap-1">
-                <label
-                  htmlFor="ws-status"
-                  className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Workflow Status
-                </label>
-                <Select
-                  value={draft.status ?? "Draft"}
-                  onValueChange={(val) => handleDropdownChange("status", val)}
-                >
-                  <SelectTrigger
-                    id="ws-status"
-                    className="h-9 text-xs bg-background cursor-pointer"
-                  >
-                    <SelectValue placeholder="Workflow Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Draft">Draft</SelectItem>
-                    <SelectItem value="In progress">In progress</SelectItem>
-                    <SelectItem value="Published">Published</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Schedule Date */}
-              <div className="grid gap-1">
-                <label
-                  htmlFor="ws-date"
-                  className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Schedule Date & Time
-                </label>
-                <Input
-                  id="ws-date"
-                  type="datetime-local"
-                  value={formatToDatetimeLocalValue(draft.date)}
-                  onChange={(e) => handleDropdownChange("date", e.target.value)}
-                  className="h-9 text-xs bg-background"
-                />
-              </div>
-            </div>
+            <MetadataSidebar
+              draft={draft}
+              localTitle={localTitle}
+              setLocalTitle={setLocalTitle}
+              setIsDeleteOpen={setIsDeleteOpen}
+              handleDropdownChange={handleDropdownChange}
+            />
           </aside>
 
-          {/* Right Column: Immersive Creative Canvas - Completely Contained */}
           <section className="lg:h-full lg:overflow-hidden flex flex-row lg:min-h-0 min-h-[520px] flex-1 gap-4 relative overflow-hidden">
             <div className="bg-card border border-border/60 rounded-xl shadow-sm flex flex-col h-full overflow-hidden flex-1">
-              {/* Editor Hub Header: Title & Stationary Save State */}
               <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 shrink-0">
-                {/* Left Header Title & Compact Disk Status */}
                 <div className="flex items-center gap-4">
-                  {/* Floppy Disk Status badge */}
                   <div className="flex items-center gap-1.5 text-xs">
                     {saveStatus === "saving" ? (
                       <span className="flex items-center gap-1 text-amber-500 font-semibold animate-pulse">
@@ -420,9 +136,7 @@ export default function DraftWorkspacePage() {
                   </div>
                 </div>
 
-                {/* Right Header: Toggles for Library & Version History */}
                 <div className="flex items-center gap-2">
-                  {/* Aset Siap Pakai Button */}
                   <button
                     type="button"
                     onClick={() => {
@@ -441,8 +155,6 @@ export default function DraftWorkspacePage() {
                     <span className="inline sm:hidden">Aset</span>
                     <span className="hidden sm:inline">Aset Siap Pakai</span>
                   </button>
-
-                  {/* Riwayat Versi Button */}
                   <button
                     type="button"
                     onClick={() => {
@@ -464,11 +176,10 @@ export default function DraftWorkspacePage() {
                 </div>
               </div>
 
-              {/* Direct TipTap Editor rendering (WYSIWYG) */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 <TipTapEditor
                   content={localContent}
-                  onChange={(val) => setLocalContent(val)}
+                  onChange={(val: string) => setLocalContent(val)}
                   insertTrigger={insertTrigger}
                   snippets={snippets}
                   draftMeta={{
@@ -480,7 +191,6 @@ export default function DraftWorkspacePage() {
                 />
               </div>
 
-              {/* Immersive Creative Canvas Footer (Word & Char counts) */}
               <div className="border-t border-border/60 px-4 py-2 bg-muted/20 flex items-center justify-between text-[10px] text-muted-foreground shrink-0 rounded-b-xl">
                 <div className="flex items-center gap-3 font-mono font-semibold">
                   <span>{wordCount} words</span>
@@ -490,11 +200,9 @@ export default function DraftWorkspacePage() {
               </div>
             </div>
 
-            {/* Library Snippets Sidebar Drawer (Floating overlay) */}
             <AnimatePresence>
               {isLibraryOpen && (
                 <>
-                  {/* Backdrop overlay */}
                   <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -513,140 +221,26 @@ export default function DraftWorkspacePage() {
                     }}
                     className="fixed top-0 right-0 z-50 w-[290px] border-l border-border bg-card flex flex-col h-full overflow-hidden shadow-2xl"
                   >
-                    {/* Header */}
-                    <div className="p-3.5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/10">
-                      <span className="font-heading text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <IconTags className="size-3.5 text-primary" />
-                        Aset Siap Pakai
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setIsLibraryOpen(false)}
-                        className="p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-all cursor-pointer"
-                      >
-                        <IconX className="size-3.5" />
-                      </button>
-                    </div>
- 
-                    {/* Search & Category Filter Section */}
-                    <div className="p-3 border-b border-border/40 space-y-2 shrink-0 bg-background/50 select-none">
-                      {/* Search Input */}
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={snippetSearchQuery}
-                          onChange={(e) => setSnippetSearchQuery(e.target.value)}
-                          placeholder="Cari aset..."
-                          className="w-full h-7 rounded border border-border bg-background px-2.5 pr-7 text-[11px] outline-none focus:border-primary/50"
-                        />
-                        {snippetSearchQuery && (
-                          <button
-                            onClick={() => setSnippetSearchQuery("")}
-                            className="absolute right-2 top-1.5 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 cursor-pointer"
-                          >
-                            <IconX className="size-2.5" />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Category Pill Filters */}
-                      {snippetCategories.length > 0 && (
-                        <div className="flex gap-1 overflow-x-auto scrollbar-none flex-nowrap py-0.5 text-[9px]">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedSnippetCategory("All")}
-                            className={[
-                              "px-1.5 py-0.5 rounded transition-all cursor-pointer whitespace-nowrap font-bold shrink-0",
-                              selectedSnippetCategory === "All"
-                                ? "bg-primary/20 text-primary border border-primary/20"
-                                : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent",
-                            ].join(" ")}
-                          >
-                            Semua
-                          </button>
-                          {snippetCategories.map((cat) => (
-                            <button
-                              key={cat}
-                              type="button"
-                              onClick={() => setSelectedSnippetCategory(cat as string)}
-                              className={[
-                                "px-1.5 py-0.5 rounded transition-all cursor-pointer whitespace-nowrap font-bold shrink-0",
-                                selectedSnippetCategory === cat
-                                  ? "bg-primary/20 text-primary border border-primary/20"
-                                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent",
-                              ].join(" ")}
-                            >
-                              {cat}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* List of snippets with instant copy/insert */}
-                    <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                      {filteredSnippets.length > 0 ? (
-                        filteredSnippets.map((snip) => (
-                          <div
-                            key={snip.id}
-                            className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
-                          >
-                            <div className="flex justify-between items-center gap-2">
-                              <span className="font-bold text-foreground truncate max-w-[130px]">
-                                {snip.title}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  // Save a revision before applying snippet so they can undo it!
-                                  if (draft) {
-                                    const updated = saveRevision(
-                                      draft.id,
-                                      draft.title,
-                                      localContent,
-                                    );
-                                    setRevisions(updated);
-                                  }
-                                  setInsertTrigger({
-                                    text: snip.content,
-                                    time: Date.now(),
-                                  });
-                                  toast.success(
-                                    `Aset "${snip.title}" disisipkan!`,
-                                  );
-                                }}
-                                className="flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all cursor-pointer select-none"
-                              >
-                                <IconSparkles className="size-2.5 text-primary" />
-                                Apply
-                              </button>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground leading-relaxed bg-muted/15 p-2 rounded whitespace-pre-wrap select-all border border-border/20 max-h-[85px] overflow-y-auto font-mono">
-                              {snip.content}
-                            </p>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-10 text-muted-foreground space-y-1">
-                          <p className="text-xs font-bold">
-                            Aset Tidak Ditemukan
-                          </p>
-                          <p className="text-[10px] max-w-[200px] mx-auto leading-relaxed font-sans mt-1">
-                            Coba ubah kata kunci pencarian atau bersihkan filter kategori Anda.
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                    <AssetsDrawer
+                      snippets={snippets}
+                      snippetSearchQuery={snippetSearchQuery}
+                      setSnippetSearchQuery={setSnippetSearchQuery}
+                      snippetCategories={snippetCategories}
+                      selectedSnippetCategory={selectedSnippetCategory}
+                      setSelectedSnippetCategory={setSelectedSnippetCategory}
+                      filteredSnippets={filteredSnippets}
+                      setInsertTrigger={setInsertTrigger}
+                      setIsLibraryOpen={setIsLibraryOpen}
+                      handleCreateManualBackup={handleCreateManualBackup}
+                    />
                   </m.aside>
                 </>
               )}
             </AnimatePresence>
 
-            {/* Version History Sidebar Drawer (Floating overlay) */}
             <AnimatePresence>
               {isHistoryOpen && (
                 <>
-                  {/* Backdrop overlay */}
                   <m.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -665,109 +259,18 @@ export default function DraftWorkspacePage() {
                     }}
                     className="fixed top-0 right-0 z-50 w-[290px] border-l border-border bg-card flex flex-col h-full overflow-hidden shadow-2xl"
                   >
-                    {/* Header */}
-                    <div className="p-3.5 border-b border-border/60 flex items-center justify-between shrink-0 bg-muted/10">
-                      <span className="font-heading text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <IconHistory className="size-3.5 text-primary" />
-                        Riwayat Versi
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setIsHistoryOpen(false)}
-                        className="p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-all cursor-pointer"
-                      >
-                        <IconX className="size-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="p-3 border-b border-border/40 bg-muted/5 flex items-center justify-between shrink-0">
-                      <span className="text-[10px] text-muted-foreground font-semibold">
-                        Penyimpanan Lokal (Offline)
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleCreateManualBackup}
-                        className="flex items-center gap-1 px-2 py-1 rounded text-[9px] font-bold border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-all cursor-pointer select-none"
-                      >
-                        <IconDeviceFloppy className="size-2.5" />
-                        Buat Cadangan
-                      </button>
-                    </div>
-
-                    {/* List of revisions */}
-                    <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                      <p className="text-[10px] text-muted-foreground leading-relaxed px-1 font-sans">
-                        Sistem mencatat maksimal 5 versi terakhir secara
-                        otomatis. Mengembalikan versi akan mencadangkan status
-                        saat ini.
-                      </p>
-
-                      {revisions.length > 0 ? (
-                        revisions.map((rev, index) => {
-                          const dateObj = new Date(rev.timestamp);
-                          const timeStr = dateObj.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          });
-                          const dateStr = dateObj.toLocaleDateString([], {
-                            month: "short",
-                            day: "numeric",
-                          });
-                          const isInitial = index === revisions.length - 1;
-
-                          return (
-                            <div
-                              key={rev.id}
-                              className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
-                            >
-                              <div className="flex justify-between items-start gap-2">
-                                <div className="space-y-0.5">
-                                  <div className="font-bold text-foreground flex items-center gap-1">
-                                    <IconClockHour4 className="size-3 text-primary/70" />
-                                    <span>{timeStr}</span>
-                                  </div>
-                                  <div className="text-[9px] text-muted-foreground font-mono">
-                                    {dateStr}{" "}
-                                    {isInitial && (
-                                      <span className="text-emerald-500 font-bold ml-1">
-                                        (Awal Sesi)
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRestoreRevision(rev)}
-                                  className="flex items-center gap-0.5 px-2 py-0.5 rounded text-[9px] font-bold border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer select-none"
-                                >
-                                  Restore
-                                </button>
-                              </div>
-                              <p className="text-[10px] text-muted-foreground leading-relaxed bg-muted/15 p-2 rounded truncate max-h-[35px] overflow-hidden border border-border/20 font-mono">
-                                {getTextFromHtml(rev.content) ||
-                                  "(Teks Kosong)"}
-                              </p>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div className="text-center py-10 text-muted-foreground font-sans">
-                          <p className="text-xs font-bold">Belum Ada Riwayat</p>
-                          <p className="text-[10px] max-w-[200px] mx-auto leading-relaxed mt-1">
-                            Cadangan versi draf otomatis akan terekam saat Anda
-                            mulai mengetik atau menyisipkan aset baru!
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                    <HistoryDrawer
+                      revisions={revisions}
+                      handleCreateManualBackup={handleCreateManualBackup}
+                      handleRestoreRevision={handleRestoreRevision}
+                      setIsHistoryOpen={setIsHistoryOpen}
+                    />
                   </m.aside>
                 </>
               )}
             </AnimatePresence>
           </section>
 
-          {/* Dialog Confirmation: Delete Draft */}
           <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
             <DialogContent className="max-w-sm">
               <DialogHeader>
