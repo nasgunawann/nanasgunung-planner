@@ -154,7 +154,7 @@ type DraftsContextValue = {
   deleteDrafts: (ids: string[]) => void;
   ideas: Idea[];
   addIdea: (idea: Omit<Idea, "id" | "createdAt">) => void;
-  deleteIdea: (id: string) => void;
+  deleteIdea: (id: string, silent?: boolean) => void;
 };
 
 const DraftsContext = createContext<DraftsContextValue | undefined>(undefined);
@@ -308,9 +308,9 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     toast.success(`Ide "${idea.title}" disimpan ke Funnel!`);
   }
 
-  function deleteIdea(id: string) {
+  function deleteIdea(id: string, silent = false) {
     const found = ideas.find((i) => i.id === id);
-    if (found) {
+    if (found && !silent) {
       toast.error(`Ide "${found.title}" telah dihapus.`);
     }
     setIdeas((currentIdeas) => currentIdeas.filter((idea) => idea.id !== id));

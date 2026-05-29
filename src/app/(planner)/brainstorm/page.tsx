@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useDrafts, type Idea } from "@/lib/drafts";
 import { platformColorMap } from "@/lib/platform-map";
 import PageTransition from "@/components/page-transition";
@@ -68,6 +69,7 @@ function parseAngles(
 
 export default function BrainstormPage() {
   const { ideas, addIdea, deleteIdea, addDraft } = useDrafts();
+  const router = useRouter();
 
   // Inputs
   const [topic, setTopic] = useState("");
@@ -228,22 +230,28 @@ export default function BrainstormPage() {
     const status = (form.elements.namedItem("status") as HTMLSelectElement)
       .value;
 
-    if (!date) return;
-
     const scriptText = `[AI GENERATED BRIEF & HOOK]\nHook: "${promotingIdea.hook}"\n\n[SCRIPT OUTLINE]\n${promotingIdea.outline}`;
 
-    // Add to scheduled drafts
-    addDraft({
+    // Add to drafts silently to handle custom toast layout
+    const draftId = addDraft({
       title: promotingIdea.title,
       platform: promotingIdea.platform,
       category,
       status,
-      date,
+      date: date ? date : undefined,
       content: scriptText,
+    }, true);
+
+    // Custom premium success toast with redirect action button!
+    toast.success(`Ide "${promotingIdea.title}" berhasil dijadikan draf!`, {
+      action: {
+        label: "Lihat Draft",
+        onClick: () => router.push(`/drafts/${draftId}`),
+      },
     });
 
-    // Delete from ideas funnel
-    deleteIdea(promotingIdea.id);
+    // Delete from ideas funnel silently to prevent overlap error toast
+    deleteIdea(promotingIdea.id, true);
     setPromotingIdea(null);
   }
 
@@ -657,7 +665,7 @@ export default function BrainstormPage() {
                     htmlFor="promote-date"
                     className="text-xs font-semibold text-muted-foreground"
                   >
-                    Schedule Date (yyyy-MM-dd)
+                    Tanggal Penjadwalan (Opsional)
                   </label>
                   <input
                     id="promote-date"
