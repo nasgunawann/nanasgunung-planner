@@ -26,6 +26,7 @@ import SelectionBubble from "./editor/selection-bubble";
 import ActionBar from "./editor/action-bar";
 import SlashMenu from "./editor/slash-menu";
 import AiPromptPopup from "./editor/ai-prompt-popup";
+import TableBubble from "./editor/table-bubble";
 
 type TipTapEditorProps = {
   content: string;
@@ -574,6 +575,11 @@ export default function TipTapEditor({
         isBubbleAiActive={isBubbleAiActive}
         setIsBubbleAiActive={setIsBubbleAiActive}
         handleSelectionAi={handleSelectionAi}
+      />
+
+      <TableBubble
+        editor={editor}
+        isAiStreaming={isAiStreaming}
       />
     </div>
   );

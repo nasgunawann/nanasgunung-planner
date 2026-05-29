@@ -1,7 +1,7 @@
 export const navItems = [
   { href: "/calendar", label: "Calendar", iconName: "IconCalendarEvent" },
-  { href: "/drafts", label: "Drafts", iconName: "IconPencil" },
   { href: "/brainstorm", label: "Brainstorm", iconName: "IconSparkles" },
+  { href: "/drafts", label: "Drafts", iconName: "IconPencil" },
   { href: "/library", label: "Library", iconName: "IconBooks" },
 ];
 
