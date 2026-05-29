@@ -10,10 +10,12 @@ import {
   statusAccentMap,
 } from "@/lib/platform-map";
 import {
-  IconBrandInstagram,
-  IconBrandLinkedin,
-  IconBrandTiktok,
-  IconBrandYoutube,
+  BrandInstagramIcon,
+  BrandTiktokIcon,
+  BrandYoutubeIcon,
+  BrandLinkedinIcon,
+} from "@/components/brand-icons";
+import {
   IconSearch,
   IconTrash,
   IconPlus,
@@ -51,10 +53,10 @@ import {
 } from "@/components/ui/dialog";
 
 const platformIconMap: Record<string, ComponentType<{ className?: string }>> = {
-  Instagram: IconBrandInstagram,
-  LinkedIn: IconBrandLinkedin,
-  TikTok: IconBrandTiktok,
-  YouTube: IconBrandYoutube,
+  Instagram: BrandInstagramIcon,
+  LinkedIn: BrandLinkedinIcon,
+  TikTok: BrandTiktokIcon,
+  YouTube: BrandYoutubeIcon,
 };
 
 export default function DraftsPage() {
@@ -346,14 +348,7 @@ export default function DraftsPage() {
                     </div>
 
                     {Icon ? (
-                      <span
-                        className={[
-                          "inline-flex size-6 items-center justify-center rounded-full shrink-0",
-                          platformColorMap[d.platform ?? "Default"],
-                        ].join(" ")}
-                      >
-                        <Icon className="h-3.5 w-3.5 text-white" />
-                      </span>
+                      <Icon className="size-6 shrink-0" />
                     ) : null}
 
                     {/* Truncated Title for perfect spacing */}

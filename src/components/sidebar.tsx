@@ -16,7 +16,10 @@ export default function Sidebar() {
 
   return (
     <aside className="sticky top-0 hidden lg:fixed lg:left-0 lg:top-0 lg:h-screen h-screen w-[220px] shrink-0 border-r border-border/70 bg-card px-4 py-6 lg:flex lg:flex-col">
-      <div className="flex items-center gap-3">
+      <Link
+        href="/dashboard"
+        className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+      >
         <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <IconLayoutDashboard className="size-5" />
         </div>
@@ -24,7 +27,7 @@ export default function Sidebar() {
           <p className="font-heading text-sm font-semibold">Nanasgunung</p>
           <p className="text-xs text-muted-foreground">Planner</p>
         </div>
-      </div>
+      </Link>
 
       <nav className="mt-6 flex flex-col gap-2">
         {navItems.map((item) => {

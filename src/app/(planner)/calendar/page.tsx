@@ -22,12 +22,14 @@ import {
   statusAccentMap,
 } from "@/lib/platform-map";
 import {
+  BrandInstagramIcon,
+  BrandTiktokIcon,
+  BrandYoutubeIcon,
+  BrandLinkedinIcon,
+} from "@/components/brand-icons";
+import {
   IconChevronLeft,
   IconChevronRight,
-  IconBrandInstagram,
-  IconBrandTiktok,
-  IconBrandYoutube,
-  IconBrandLinkedin,
 } from "@tabler/icons-react";
 import QuickAddModal from "@/components/quick-add-modal";
 import PageTransition from "@/components/page-transition";
@@ -52,15 +54,15 @@ export default function CalendarPage() {
   function itemsForDate(date: Date) {
     const key = format(date, "yyyy-MM-dd");
     return Array.isArray(drafts)
-      ? drafts.filter((draft) => draft.date === key)
+      ? drafts.filter((draft) => draft.date && draft.date.startsWith(key))
       : [];
   }
 
   const platformIconMap: Record<string, any> = {
-    Instagram: IconBrandInstagram,
-    TikTok: IconBrandTiktok,
-    YouTube: IconBrandYoutube,
-    LinkedIn: IconBrandLinkedin,
+    Instagram: BrandInstagramIcon,
+    TikTok: BrandTiktokIcon,
+    YouTube: BrandYoutubeIcon,
+    LinkedIn: BrandLinkedinIcon,
   };
 
   const categoryOptions = ["Stories", "Reels", "Post"];
@@ -186,17 +188,9 @@ export default function CalendarPage() {
                           statusTheme.border,
                         ].join(" ")}
                       >
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 min-w-0">
                           {Icon ? (
-                            <span
-                              className={[
-                                "inline-flex items-center justify-center rounded-full p-0.5 scale-75",
-                                platformColorMap[item.platform ?? "Default"],
-                              ].join(" ")}
-                              aria-hidden
-                            >
-                              <Icon className="h-3 w-3 text-white" />
-                            </span>
+                            <Icon className="size-3.5 shrink-0" aria-hidden />
                           ) : null}
                           <span className="truncate flex-1">{item.title}</span>
                         </div>

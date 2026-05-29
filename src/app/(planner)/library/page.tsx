@@ -6,6 +6,7 @@ import { useDrafts } from "@/lib/drafts";
 import { platformColorMap } from "@/lib/platform-map";
 import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
+import { toast } from "sonner";
 import {
   IconBooks,
   IconClockHour4,
@@ -21,9 +22,28 @@ import {
   IconEdit,
   IconX,
 } from "@tabler/icons-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+type Template = {
+  title: string;
+  type: string;
+  usage: string;
+  platform: string;
+  category: string;
+  description: string;
+  blueprint: string;
+  isCustom?: boolean;
+};
 
 // Seed data for templates - Upgraded to beautiful HTML to render flawlessly in TipTap!
-const templates = [
+const defaultTemplates: Template[] = [
   {
     title: "Launch Teaser Blueprint",
     type: "Short Video",
@@ -32,6 +52,7 @@ const templates = [
     category: "Reels",
     description:
       "Cocok untuk membangun rasa penasaran audiens sebelum merilis fitur atau produk baru.",
+    isCustom: true,
     blueprint: `<h3><strong>[OUTLINE STORYBOARD VIDEO]</strong></h3>
 <p></p>
 <ul>
@@ -49,6 +70,7 @@ const templates = [
     category: "Post",
     description:
       "Membagi tips teknis mendalam menggunakan struktur slide yang informatif dan memiliki tingkat simpan tinggi.",
+    isCustom: true,
     blueprint: `<h3><strong>[STRUKTUR SLIDE CAROUSEL]</strong></h3>
 <p></p>
 <ol>
@@ -67,6 +89,7 @@ const templates = [
     category: "Stories",
     description:
       "Membangun interaksi personal menggunakan urutan stiker jajak pendapat (Poll) atau Q&A.",
+    isCustom: true,
     blueprint: `<h3><strong>[URUTAN INSTAGRAM STORIES]</strong></h3>
 <p></p>
 <ul>
@@ -155,13 +178,24 @@ export default function LibraryPage() {
   // Template Accordion State
   const [expandedTemplates, setExpandedTemplates] = useState<string[]>([]);
 
+  // Deletable templates state
+  const [templates, setTemplates] = useState<Template[]>([]);
+
+  // Confirmation Dialog and Undo states
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: string;
+    title: string;
+    type: "template" | "snippet";
+  } | null>(null);
+
   const toggleTemplateExpand = (title: string) => {
     setExpandedTemplates((prev) =>
       prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
     );
   };
 
-  // Hydrate Snippets & Categories from LocalStorage
+  // Hydrate Snippets & Categories & Templates from LocalStorage
   useEffect(() => {
     try {
       const storedSnippets = localStorage.getItem("nanas_snippets");
@@ -179,6 +213,19 @@ export default function LibraryPage() {
         localStorage.setItem(
           "nanas_snippet_categories",
           JSON.stringify(defaultCategories),
+        );
+      }
+
+      const storedCustomTemplates = localStorage.getItem(
+        "nanas_custom_templates",
+      );
+      if (storedCustomTemplates) {
+        setTemplates(JSON.parse(storedCustomTemplates));
+      } else {
+        setTemplates(defaultTemplates);
+        localStorage.setItem(
+          "nanas_custom_templates",
+          JSON.stringify(defaultTemplates),
         );
       }
     } catch (e) {
@@ -244,9 +291,121 @@ export default function LibraryPage() {
     setSnippetTagsInput("");
   };
 
+  const saveCustomTemplates = (newCust: Template[]) => {
+    setTemplates(newCust);
+    try {
+      localStorage.setItem("nanas_custom_templates", JSON.stringify(newCust));
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const confirmDelete = (
+    id: string,
+    title: string,
+    type: "template" | "snippet",
+  ) => {
+    setItemToDelete({ id, title, type });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleUndo = (itemToRestore: {
+    type: "template" | "snippet";
+    data: any;
+    index: number;
+  }) => {
+    const { type, data, index } = itemToRestore;
+
+    if (type === "template") {
+      setTemplates((prev) => {
+        const updated = [...prev];
+        updated.splice(index, 0, data);
+        try {
+          localStorage.setItem(
+            "nanas_custom_templates",
+            JSON.stringify(updated),
+          );
+        } catch (e) {}
+        return updated;
+      });
+      toast.success(`Templat "${data.title}" berhasil dipulihkan!`);
+    } else if (type === "snippet") {
+      setSnippets((prev) => {
+        const updated = [...prev];
+        updated.splice(index, 0, data);
+        try {
+          localStorage.setItem("nanas_snippets", JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
+      toast.success(`Snippet "${data.title}" berhasil dipulihkan!`);
+    }
+  };
+
+  const executeDelete = () => {
+    if (!itemToDelete) return;
+
+    const { id, title, type } = itemToDelete;
+
+    if (type === "template") {
+      setTemplates((prev) => {
+        const index = prev.findIndex((t) => t.title === id);
+        if (index === -1) return prev;
+        const deletedObj = prev[index];
+        const updated = prev.filter((t) => t.title !== id);
+
+        try {
+          localStorage.setItem(
+            "nanas_custom_templates",
+            JSON.stringify(updated),
+          );
+        } catch (e) {}
+
+        toast.success(`Templat "${title}" berhasil dihapus!`, {
+          action: {
+            label: "Undo",
+            onClick: () => handleUndo({ type, data: deletedObj, index }),
+          },
+        });
+
+        return updated;
+      });
+    } else if (type === "snippet") {
+      setSnippets((prev) => {
+        const index = prev.findIndex((s) => s.id === id);
+        if (index === -1) return prev;
+        const deletedObj = prev[index];
+        const updated = prev.filter((s) => s.id !== id);
+
+        try {
+          localStorage.setItem("nanas_snippets", JSON.stringify(updated));
+        } catch (e) {}
+
+        if (editingSnippetId === id) setEditingSnippetId(null);
+
+        toast.success(`Snippet "${title}" berhasil dihapus!`, {
+          action: {
+            label: "Undo",
+            onClick: () => handleUndo({ type, data: deletedObj, index }),
+          },
+        });
+
+        return updated;
+      });
+    }
+
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+  };
+
+  const handleDeleteTemplate = (title: string) => {
+    confirmDelete(title, title, "template");
+  };
+
   const handleDeleteSnippet = (id: string) => {
-    saveSnippets(snippets.filter((s) => s.id !== id));
-    if (editingSnippetId === id) setEditingSnippetId(null);
+    const snip = snippets.find((s) => s.id === id);
+    if (!snip) return;
+    confirmDelete(id, snip.title, "snippet");
   };
 
   const handleStartEdit = (snip: Snippet) => {
@@ -287,7 +446,7 @@ export default function LibraryPage() {
     setTimeout(() => setCopiedId(null), 1500);
   };
 
-  const handleUseTemplate = (template: (typeof templates)[0]) => {
+  const handleUseTemplate = (template: Template) => {
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
       2,
@@ -403,7 +562,8 @@ export default function LibraryPage() {
           {/* Right: Small, super-compact Aset & Statistik Row */}
           <div className="flex items-center gap-3.5 text-[10px] font-mono font-bold text-muted-foreground pr-3 select-none">
             <span className="flex items-center gap-1 bg-muted/40 px-2 py-1 rounded border border-border/35 shadow-sm">
-              <span className="text-foreground">3</span> Templat
+              <span className="text-foreground">{templates.length}</span>{" "}
+              Templat
             </span>
             <span className="text-border/60">|</span>
             <span className="flex items-center gap-1 bg-muted/40 px-2 py-1 rounded border border-border/35 shadow-sm">
@@ -430,120 +590,168 @@ export default function LibraryPage() {
                 transition={{ duration: 0.15 }}
                 className="space-y-4"
               >
-                <div className="grid gap-4">
-                  {templates.map((template) => {
-                    const isExpanded = expandedTemplates.includes(
-                      template.title,
-                    );
+                {templates.length > 0 ? (
+                  <div className="grid gap-4">
+                    {templates.map((template) => {
+                      const isExpanded = expandedTemplates.includes(
+                        template.title,
+                      );
 
-                    return (
-                      <article
-                        key={template.title}
-                        className="rounded-xl border border-border/60 bg-card p-5 shadow-sm space-y-3"
-                      >
-                        {/* Title Header */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/40 pb-3">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={[
-                                  "px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider",
-                                  platformColorMap[template.platform] ??
-                                    "bg-primary",
-                                ].join(" ")}
-                              >
-                                {template.platform}
-                              </span>
-                              <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-semibold uppercase">
-                                {template.type}
-                              </span>
-                            </div>
-                            <h3 className="font-heading text-lg font-bold text-foreground">
-                              {template.title}
-                            </h3>
-                          </div>
-                          <span className="text-[11px] text-muted-foreground font-semibold bg-muted/40 border border-border/30 px-2 py-1 rounded">
-                            {template.usage}
-                          </span>
-                        </div>
-
-                        {/* Description */}
-                        <p className="text-xs text-muted-foreground leading-relaxed pb-1">
-                          {template.description}
-                        </p>
-
-                        {/* Accordion Expand Button */}
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => toggleTemplateExpand(template.title)}
-                            className="flex items-center gap-1 text-[11px] font-bold text-primary hover:underline cursor-pointer select-none"
-                          >
-                            <span>
-                              {isExpanded
-                                ? "Sembunyikan Skema Blueprint"
-                                : "Lihat Skema Blueprint Outline"}
-                            </span>
-                            <svg
-                              className={[
-                                "size-3.5 fill-none stroke-current stroke-[2.5px] transition-transform duration-200",
-                                isExpanded ? "rotate-180" : "",
-                              ].join(" ")}
-                              viewBox="0 0 24 24"
-                            >
-                              <polyline points="6 9 12 15 18 9" />
-                            </svg>
-                          </button>
-                        </div>
-
-                        {/* HTML Rich-Text Accordion Drawer */}
-                        <AnimatePresence initial={false}>
-                          {isExpanded && (
-                            <m.div
-                              initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                              animate={{
-                                height: "auto",
-                                opacity: 1,
-                                marginTop: 8,
-                              }}
-                              exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                              transition={{
-                                type: "tween",
-                                ease: [0.16, 1, 0.3, 1],
-                                duration: 0.22,
-                              }}
-                              className="overflow-hidden w-full"
-                            >
-                              <div className="space-y-1.5 border-t border-border/40 pt-3">
-                                <span className="text-[9px] uppercase tracking-wider font-bold text-primary block">
-                                  Blueprint Template Outline (HTML Rendered):
+                      return (
+                        <article
+                          key={template.title}
+                          className="rounded-xl border border-border/60 bg-card p-5 shadow-sm space-y-3"
+                        >
+                          {/* Title Header */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/40 pb-3">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={[
+                                    "px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider",
+                                    platformColorMap[template.platform] ??
+                                      "bg-primary",
+                                  ].join(" ")}
+                                >
+                                  {template.platform}
                                 </span>
-                                <div
-                                  dangerouslySetInnerHTML={{
-                                    __html: template.blueprint,
-                                  }}
-                                  className="bg-background border border-border/40 p-4 rounded-lg text-xs leading-relaxed text-muted-foreground/80 font-sans max-w-none space-y-2 prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:ml-4 select-all shadow-inner"
-                                />
+                                <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded text-[10px] font-semibold uppercase">
+                                  {template.type}
+                                </span>
                               </div>
-                            </m.div>
-                          )}
-                        </AnimatePresence>
+                              <h3 className="font-heading text-lg font-bold text-foreground">
+                                {template.title}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-2 select-none">
+                              <span className="text-[11px] text-muted-foreground font-semibold bg-muted/40 border border-border/30 px-2 py-1 rounded">
+                                {template.usage}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteTemplate(template.title)
+                                }
+                                className="p-1 rounded text-muted-foreground/35 hover:text-red-500 hover:bg-red-500/5 transition-all cursor-pointer"
+                                title="Hapus Templat"
+                              >
+                                <IconTrash className="size-4" />
+                              </button>
+                            </div>
+                          </div>
 
-                        {/* Use Template Action Button */}
-                        <div className="flex justify-end pt-2 border-t border-border/20">
-                          <button
-                            type="button"
-                            onClick={() => handleUseTemplate(template)}
-                            className="flex h-8 items-center gap-1.5 bg-primary hover:bg-primary/95 text-primary-foreground px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm animate-in fade-in"
-                          >
-                            Gunakan Templat Konten
-                            <IconArrowRight className="size-3.5" />
-                          </button>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
+                          {/* Description */}
+                          <p className="text-xs text-muted-foreground leading-relaxed pb-1">
+                            {template.description}
+                          </p>
+
+                          {/* Accordion Expand Button */}
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                toggleTemplateExpand(template.title)
+                              }
+                              className="flex items-center gap-1 text-[11px] font-bold text-primary hover:underline cursor-pointer select-none"
+                            >
+                              <span>
+                                {isExpanded
+                                  ? "Sembunyikan Skema Blueprint"
+                                  : "Lihat Skema Blueprint Outline"}
+                              </span>
+                              <svg
+                                className={[
+                                  "size-3.5 fill-none stroke-current stroke-[2.5px] transition-transform duration-200",
+                                  isExpanded ? "rotate-180" : "",
+                                ].join(" ")}
+                                viewBox="0 0 24 24"
+                              >
+                                <polyline points="6 9 12 15 18 9" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          {/* HTML Rich-Text Accordion Drawer */}
+                          <AnimatePresence initial={false}>
+                            {isExpanded && (
+                              <m.div
+                                initial={{
+                                  height: 0,
+                                  opacity: 0,
+                                  marginTop: 0,
+                                }}
+                                animate={{
+                                  height: "auto",
+                                  opacity: 1,
+                                  marginTop: 8,
+                                }}
+                                exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                transition={{
+                                  type: "tween",
+                                  ease: [0.16, 1, 0.3, 1],
+                                  duration: 0.22,
+                                }}
+                                className="overflow-hidden w-full"
+                              >
+                                <div className="space-y-1.5 border-t border-border/40 pt-3">
+                                  <span className="text-[9px] uppercase tracking-wider font-bold text-primary block">
+                                    Blueprint Template Outline (HTML Rendered):
+                                  </span>
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: template.blueprint,
+                                    }}
+                                    className="bg-background border border-border/40 p-4 rounded-lg text-xs leading-relaxed text-muted-foreground/80 font-sans max-w-none space-y-2 prose prose-sm dark:prose-invert prose-p:my-1 prose-ul:list-disc prose-ol:list-decimal prose-li:ml-4 select-all shadow-inner"
+                                  />
+                                </div>
+                              </m.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Use Template Action Button */}
+                          <div className="flex justify-end pt-2 border-t border-border/20">
+                            <button
+                              type="button"
+                              onClick={() => handleUseTemplate(template)}
+                              className="flex h-8 items-center gap-1.5 bg-primary hover:bg-primary/95 text-primary-foreground px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm animate-in fade-in"
+                            >
+                              Gunakan Templat Konten
+                              <IconArrowRight className="size-3.5" />
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border/80 bg-card/40 p-8 text-center space-y-4 max-w-md mx-auto mt-6">
+                    <IconListDetails className="size-10 text-muted-foreground/35 mx-auto animate-pulse" />
+                    <div className="space-y-1">
+                      <h3 className="font-heading text-sm font-bold text-foreground">
+                        Belum ada templat kustom
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                        Gunakan AI Blueprint Generator untuk generate kerangka
+                        konten kustom, atau pulihkan templat bawaan awal.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTemplates(defaultTemplates);
+                        localStorage.setItem(
+                          "nanas_custom_templates",
+                          JSON.stringify(defaultTemplates),
+                        );
+                        toast.success("Templat bawaan berhasil dipulihkan!");
+                      }}
+                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 text-xs font-bold transition-all shadow-sm cursor-pointer select-none mx-auto"
+                    >
+                      <IconRecycle className="size-4" />
+                      Muat Ulang Templat Bawaan
+                    </button>
+                  </div>
+                )}
               </m.div>
             )}
 
@@ -1112,6 +1320,44 @@ export default function LibraryPage() {
             )}
           </AnimatePresence>
         </div>
+        {/* Sleek Dialog Konfirmasi Hapus Shadcn/ui */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent className="w-full max-w-sm p-6 rounded-xl border border-border bg-background shadow-lg outline-none">
+            <DialogHeader className="space-y-2">
+              <DialogTitle className="font-heading text-base font-bold text-foreground">
+                Konfirmasi Penghapusan
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+                Apakah Anda yakin ingin menghapus{" "}
+                <strong className="text-foreground font-semibold">
+                  "{itemToDelete?.title}"
+                </strong>
+                ? Tindakan ini dapat dibatalkan sementara melalui tombol "Undo"
+                pada toast pemberitahuan setelah dihapus.
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter className="flex justify-end gap-2 border-t border-border/40 pt-4 mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteDialogOpen(false);
+                  setItemToDelete(null);
+                }}
+                className="h-9 px-4 rounded-md border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer text-foreground"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={executeDelete}
+                className="h-9 px-4 rounded-md bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                Hapus
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </PageTransition>
   );

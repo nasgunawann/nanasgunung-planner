@@ -75,8 +75,10 @@ export default function DraftWorkspacePage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [snippets, setSnippets] = useState<
-    { id: string; title: string; content: string }[]
+    { id: string; title: string; content: string; category?: string; tags?: string[] }[]
   >([]);
+  const [snippetSearchQuery, setSnippetSearchQuery] = useState("");
+  const [selectedSnippetCategory, setSelectedSnippetCategory] = useState("All");
   const [insertTrigger, setInsertTrigger] = useState<{
     text: string;
     time: number;
@@ -198,6 +200,20 @@ export default function DraftWorkspacePage() {
 
     return () => clearTimeout(timer);
   }, [localTitle, draft?.id]);
+
+  // Compute unique categories and filtered snippets dynamically for the sidebar drawer
+  const snippetCategories = Array.from(
+    new Set(snippets.map((s) => s.category).filter(Boolean))
+  );
+
+  const filteredSnippets = snippets.filter((s) => {
+    const matchesCategory =
+      selectedSnippetCategory === "All" || s.category === selectedSnippetCategory;
+    const matchesSearch =
+      s.title.toLowerCase().includes(snippetSearchQuery.toLowerCase()) ||
+      s.content.toLowerCase().includes(snippetSearchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   if (!draft) {
     return (
@@ -511,11 +527,66 @@ export default function DraftWorkspacePage() {
                         <IconX className="size-3.5" />
                       </button>
                     </div>
+ 
+                    {/* Search & Category Filter Section */}
+                    <div className="p-3 border-b border-border/40 space-y-2 shrink-0 bg-background/50 select-none">
+                      {/* Search Input */}
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={snippetSearchQuery}
+                          onChange={(e) => setSnippetSearchQuery(e.target.value)}
+                          placeholder="Cari aset..."
+                          className="w-full h-7 rounded border border-border bg-background px-2.5 pr-7 text-[11px] outline-none focus:border-primary/50"
+                        />
+                        {snippetSearchQuery && (
+                          <button
+                            onClick={() => setSnippetSearchQuery("")}
+                            className="absolute right-2 top-1.5 p-0.5 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted/80 cursor-pointer"
+                          >
+                            <IconX className="size-2.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Category Pill Filters */}
+                      {snippetCategories.length > 0 && (
+                        <div className="flex gap-1 overflow-x-auto scrollbar-none flex-nowrap py-0.5 text-[9px]">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSnippetCategory("All")}
+                            className={[
+                              "px-1.5 py-0.5 rounded transition-all cursor-pointer whitespace-nowrap font-bold shrink-0",
+                              selectedSnippetCategory === "All"
+                                ? "bg-primary/20 text-primary border border-primary/20"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent",
+                            ].join(" ")}
+                          >
+                            Semua
+                          </button>
+                          {snippetCategories.map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setSelectedSnippetCategory(cat as string)}
+                              className={[
+                                "px-1.5 py-0.5 rounded transition-all cursor-pointer whitespace-nowrap font-bold shrink-0",
+                                selectedSnippetCategory === cat
+                                  ? "bg-primary/20 text-primary border border-primary/20"
+                                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent",
+                              ].join(" ")}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
                     {/* List of snippets with instant copy/insert */}
                     <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                      {snippets.length > 0 ? (
-                        snippets.map((snip) => (
+                      {filteredSnippets.length > 0 ? (
+                        filteredSnippets.map((snip) => (
                           <div
                             key={snip.id}
                             className="rounded-lg border border-border bg-background/50 p-2.5 space-y-2 text-[11px]"
@@ -558,11 +629,10 @@ export default function DraftWorkspacePage() {
                       ) : (
                         <div className="text-center py-10 text-muted-foreground space-y-1">
                           <p className="text-xs font-bold">
-                            Aset Siap Pakai Kosong
+                            Aset Tidak Ditemukan
                           </p>
                           <p className="text-[10px] max-w-[200px] mx-auto leading-relaxed font-sans mt-1">
-                            Tambahkan templat tulisan, tanda tangan, atau aset
-                            baru di tab **Library** agar muncul di sini!
+                            Coba ubah kata kunci pencarian atau bersihkan filter kategori Anda.
                           </p>
                         </div>
                       )}

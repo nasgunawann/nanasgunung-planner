@@ -18,47 +18,37 @@ export default function MobileNav({ onQuickAdd }: { onQuickAdd: () => void }) {
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card lg:hidden">
       <div className="relative mx-auto max-w-[820px] px-2 pb-2 pt-2">
         <div className="grid grid-cols-5 items-end gap-1 rounded-xl bg-card px-1 py-1">
-          {[0, 1, 2, 3, 4].map((slot) => {
-            const placement =
-              slot === 2
-                ? null
-                : slot < 2
-                  ? navItems[slot]
-                  : navItems[slot - 1];
-
-            if (!placement) {
-              return <div key={`slot-${slot}`} />;
-            }
-
-            const Icon = iconMap[placement.iconName as keyof typeof iconMap];
+          {navItems.map((item) => {
+            const Icon = iconMap[item.iconName as keyof typeof iconMap];
 
             return (
               <Link
-                key={placement.href}
-                href={placement.href}
+                key={item.href}
+                href={item.href}
                 className={cn(
                   "flex flex-col items-center gap-1 px-1 py-1 text-[11px] font-medium",
-                  isActive(placement.href)
-                    ? "text-foreground"
-                    : "text-muted-foreground",
+                  isActive(item.href)
+                    ? "text-primary font-bold"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon className="size-5" />
-                {placement.label}
+                {item.label}
               </Link>
             );
           })}
         </div>
-
-        <button
-          type="button"
-          onClick={onQuickAdd}
-          className="absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground w-14 h-14 shadow-lg ring-2 ring-border/20"
-          aria-label="Quick add content"
-        >
-          <IconPlus className="size-6" />
-        </button>
       </div>
+
+      {/* Floating Action Button (FAB) on mobile, positioned just above the mobile navigation bar */}
+      <button
+        type="button"
+        onClick={onQuickAdd}
+        className="fixed bottom-18 right-4 flex items-center justify-center rounded-full bg-primary text-primary-foreground w-12 h-12 shadow-lg ring-2 ring-border/20 z-50 animate-in fade-in"
+        aria-label="Quick add content"
+      >
+        <IconPlus className="size-5.5" />
+      </button>
     </div>
   );
 }

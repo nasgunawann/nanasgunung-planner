@@ -113,9 +113,9 @@ export default function SelectionBubble({
             <button
               type="button"
               onClick={() => setIsBubbleAiActive(true)}
-              className="h-7 flex items-center gap-1 px-2 rounded bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-semibold text-[10px] transition-all active:scale-95 cursor-pointer"
+              className="h-7 flex items-center gap-1 px-2 rounded bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-[10px] transition-all active:scale-95 cursor-pointer shadow-sm"
             >
-              <IconSparkles className="size-3.5" />
+              <IconSparkles className="size-3.5 animate-pulse" />
               Tanya AI
             </button>
           </div>

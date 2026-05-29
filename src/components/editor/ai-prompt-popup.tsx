@@ -92,7 +92,7 @@ export default function AiPromptPopup({
           type="button"
           onClick={submitAiPrompt}
           disabled={!aiPromptValue.trim() || isAiStreaming}
-          className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors cursor-pointer"
+          className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
         >
           <IconSparkles className="size-3.5" />
         </button>

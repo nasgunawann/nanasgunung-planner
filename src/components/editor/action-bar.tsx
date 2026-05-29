@@ -54,7 +54,7 @@ export default function ActionBar({
         type="button"
         onClick={handleAiAccept}
         title="Simpan hasil AI"
-        className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors shrink-0 cursor-pointer"
+        className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white transition-all shrink-0 cursor-pointer shadow-sm"
       >
         <svg viewBox="0 0 16 16" fill="none" className="size-3 shrink-0">
           <path d="M3 8l3.5 3.5L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

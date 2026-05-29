@@ -8,10 +8,12 @@ import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
 import { toast } from "sonner";
 import {
-  IconBrandInstagram,
-  IconBrandTiktok,
-  IconBrandYoutube,
-  IconBrandLinkedin,
+  BrandInstagramIcon,
+  BrandTiktokIcon,
+  BrandYoutubeIcon,
+  BrandLinkedinIcon,
+} from "@/components/brand-icons";
+import {
   IconSparkles,
   IconCalendarEvent,
   IconTrash,
@@ -19,40 +21,49 @@ import {
   IconArrowRight,
   IconInfoCircle,
   IconX,
+  IconBooks,
 } from "@tabler/icons-react";
 
 const platformIconMap: Record<string, any> = {
-  Instagram: IconBrandInstagram,
-  TikTok: IconBrandTiktok,
-  YouTube: IconBrandYoutube,
-  LinkedIn: IconBrandLinkedin,
+  Instagram: BrandInstagramIcon,
+  TikTok: BrandTiktokIcon,
+  YouTube: BrandYoutubeIcon,
+  LinkedIn: BrandLinkedinIcon,
 };
 
 function parseAngles(
   text: string,
 ): { title: string; hook: string; outline: string }[] {
   const angles: { title: string; hook: string; outline: string }[] = [];
-  const sections = text.split(/=== ANGLE \d+ ===/g);
+  
+  // Robust case-insensitive splitter for all ANGLE heading variations
+  const sections = text.split(/={2,}\s*ANGLE\s*\d+\s*={2,}/gi);
 
   for (const section of sections) {
     if (!section.trim()) continue;
 
-    const titleMatch = section.match(/TITLE:\s*(.+)/i);
-    const hookMatch = section.match(/HOOK:\s*(.+)/i);
-    const outlineIndex = section.indexOf("OUTLINE:");
+    // Support case-insensitive title, hook, and outline labels (indonesian or english)
+    const titleMatch = section.match(/(?:TITLE|Title|Judul):\s*(.+)/i);
+    const hookMatch = section.match(/(?:HOOK|Hook|Opening):\s*(.+)/i);
+    const outlineMatch = section.match(/(?:OUTLINE|Outline|Struktur|Storyboard):\s*/i);
+    
+    const outlineIndex = outlineMatch && outlineMatch.index !== undefined ? outlineMatch.index : -1;
+    const outlineLength = outlineMatch ? outlineMatch[0].length : 8;
 
     let title = "";
     let hook = "";
     let outline = "";
 
     if (titleMatch) {
-      title = titleMatch[1].trim().replace(/^["'*]+|["'*]+$/g, "");
+      title = titleMatch[1].trim().replace(/^["'*#\s]+|["'*#\s]+$/g, "");
     }
     if (hookMatch) {
-      hook = hookMatch[1].trim().replace(/^["'*]+|["'*]+$/g, "");
+      hook = hookMatch[1].trim().replace(/^["'*#\s]+|["'*#\s]+$/g, "");
     }
     if (outlineIndex !== -1) {
-      outline = section.substring(outlineIndex + 8).trim();
+      outline = section.substring(outlineIndex + outlineLength).trim();
+      // Clean leading and trailing markdown stars, brackets, hashes, or quotes
+      outline = outline.replace(/^["'*#\s]+|["'*#\s]+$/g, "");
     }
 
     if (title || hook || outline) {
@@ -91,6 +102,65 @@ export default function BrainstormPage() {
       // ignore
     }
   }, []);
+
+  // Read URL query parameter for Raw Idea funnel integration
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const ideaParam = params.get("idea");
+      if (ideaParam) {
+        setTopic(decodeURIComponent(ideaParam));
+        toast.info("Mengimpor ide mentah dari perpustakaan untuk dikembangkan!");
+        
+        // Clean the URL parameter silently without reload
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    }
+  }, []);
+
+  function handleSaveAsTemplate(idea: Idea) {
+    try {
+      const stored = localStorage.getItem("nanas_custom_templates");
+      const currentTemplates = stored ? JSON.parse(stored) : [];
+
+      const blueprintHtml = `<h3><strong>[OUTLINE STORYBOARD VIDEO]</strong></h3>
+<p></p>
+<ul>
+  <li><strong>Hook:</strong> ${idea.hook}</li>
+  <li><strong>Outline / Storyboard:</strong></li>
+</ul>
+<pre><code>${idea.outline}</code></pre>`;
+
+      const newTemplate = {
+        title: idea.title,
+        type: "Custom Outline",
+        usage: "0 kali digunakan",
+        platform: idea.platform,
+        category: "Post",
+        description: `Templat kustom yang dibuat dari hasil brainstorm ide: "${idea.title}"`,
+        blueprint: blueprintHtml,
+        isCustom: true,
+      };
+
+      if (currentTemplates.some((t: any) => t.title === idea.title)) {
+        toast.error("Templat dengan nama yang sama sudah ada di Library!");
+        return;
+      }
+
+      const updated = [newTemplate, ...currentTemplates];
+      localStorage.setItem("nanas_custom_templates", JSON.stringify(updated));
+
+      toast.success(`Ide "${idea.title}" berhasil disimpan sebagai Templat Kustom di Library!`, {
+        action: {
+          label: "Buka Library",
+          onClick: () => router.push("/library"),
+        },
+      });
+    } catch (e) {
+      toast.error("Gagal menyimpan templat kustom.");
+    }
+  }
 
   const handleCloseIntro = () => {
     setShowIntro(false);
@@ -375,7 +445,7 @@ export default function BrainstormPage() {
                 <button
                   type="submit"
                   disabled={isGenerating || !topic.trim()}
-                  className="w-full h-10 flex items-center justify-center gap-2 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground text-sm font-semibold transition-colors disabled:opacity-50"
+                  className="w-full h-10 flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-semibold transition-all disabled:opacity-50 shadow-md shadow-purple-500/10 cursor-pointer"
                 >
                   {isGenerating ? (
                     <>
@@ -556,16 +626,7 @@ export default function BrainstormPage() {
                               {/* Header Title / Platform */}
                               <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span
-                                    className={[
-                                      "inline-flex items-center justify-center rounded-full p-1 scale-90",
-                                      platformColorMap[
-                                        idea.platform ?? "Default"
-                                      ],
-                                    ].join(" ")}
-                                  >
-                                    <PlatformIcon className="size-3.5 text-white" />
-                                  </span>
+                                  <PlatformIcon className="size-5 shrink-0" />
                                   <h4 className="font-heading font-bold text-sm truncate text-foreground">
                                     {idea.title}
                                   </h4>
@@ -596,7 +657,7 @@ export default function BrainstormPage() {
                               </div>
 
                               {/* Actions */}
-                              <div className="flex justify-end gap-2 border-t border-border/40 pt-2.5">
+                              <div className="flex justify-end gap-2 border-t border-border/40 pt-2.5 flex-wrap">
                                 <button
                                   type="button"
                                   onClick={() => deleteIdea(idea.id)}
@@ -604,6 +665,14 @@ export default function BrainstormPage() {
                                 >
                                   <IconTrash className="size-3.5" />
                                   Hapus Ide
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveAsTemplate(idea)}
+                                  className="flex items-center gap-1 bg-muted hover:bg-muted/80 text-foreground border border-border px-2.5 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer"
+                                >
+                                  <IconBooks className="size-3.5 text-primary animate-pulse" />
+                                  Simpan Sebagai Templat
                                 </button>
                                 <button
                                   type="button"
