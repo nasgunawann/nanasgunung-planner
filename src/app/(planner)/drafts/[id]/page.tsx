@@ -388,13 +388,8 @@ export default function DraftWorkspacePage() {
               <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 shrink-0">
                 {/* Left Header Title & Compact Disk Status */}
                 <div className="flex items-center gap-4">
-                  <h3 className="font-heading text-sm font-bold flex items-center gap-2">
-                    <IconSparkles className="size-4 text-primary animate-pulse" />
-                    Dokumen Draf
-                  </h3>
-
                   {/* Floppy Disk Status badge */}
-                  <div className="flex items-center gap-1.5 text-xs border-l border-border/60 pl-4">
+                  <div className="flex items-center gap-1.5 text-xs">
                     {saveStatus === "saving" ? (
                       <span className="flex items-center gap-1 text-amber-500 font-semibold animate-pulse">
                         <IconDeviceFloppy className="size-4 text-amber-500" />

@@ -54,11 +54,11 @@ export default function DragHandle({ editor, draggedPosRef }: DragHandleProps) {
       const blockDOM = view.nodeDOM(blockStart) as HTMLElement;
       if (!blockDOM) return;
 
-      // Calculate coordinates relative to the editor viewport parent
+      // Calculate coordinates relative to the absolute positioning parent of the DragHandle (which is the .relative container of the editor)
       const rect = blockDOM.getBoundingClientRect();
-      const editorParent = editorDOM.parentElement;
-      if (!editorParent) return;
-      const parentRect = editorParent.getBoundingClientRect();
+      const relativeParent = editorDOM.closest(".relative");
+      if (!relativeParent) return;
+      const parentRect = relativeParent.getBoundingClientRect();
 
       // Position the grip handle perfectly in the left margin of the block
       setCoords({

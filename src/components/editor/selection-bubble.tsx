@@ -14,6 +14,8 @@ import {
   IconBulb,
 } from "@tabler/icons-react";
 
+const BubbleMenuAny = BubbleMenu as any;
+
 type SelectionBubbleProps = {
   editor: Editor;
   isAiStreaming: boolean;
@@ -30,9 +32,13 @@ export default function SelectionBubble({
   handleSelectionAi,
 }: SelectionBubbleProps) {
   return (
-    <BubbleMenu
+    <BubbleMenuAny
       editor={editor}
-      shouldShow={({ editor: ed, from, to }) => {
+      tippyOptions={{
+        appendTo: () => document.body,
+        zIndex: 9999,
+      }}
+      shouldShow={({ editor: ed, from, to }: { editor: any; from: number; to: number }) => {
         // Only show bubble menu when there is an active selection (not a single cursor)
         // and the editor is focused, and we are not currently streaming
         return from !== to && ed.isFocused && !isAiStreaming;
@@ -171,6 +177,6 @@ export default function SelectionBubble({
           </div>
         )}
       </div>
-    </BubbleMenu>
+    </BubbleMenuAny>
   );
 }

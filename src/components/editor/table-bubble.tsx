@@ -9,6 +9,8 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 
+const BubbleMenuAny = BubbleMenu as any;
+
 type TableBubbleProps = {
   editor: Editor;
   isAiStreaming: boolean;
@@ -16,9 +18,13 @@ type TableBubbleProps = {
 
 export default function TableBubble({ editor, isAiStreaming }: TableBubbleProps) {
   return (
-    <BubbleMenu
+    <BubbleMenuAny
       editor={editor}
-      shouldShow={({ editor: ed, from, to }) => {
+      tippyOptions={{
+        appendTo: () => document.body,
+        zIndex: 9999,
+      }}
+      shouldShow={({ editor: ed, from, to }: { editor: any; from: number; to: number }) => {
         // Only show this bubble menu when the cursor is inside a table cell,
         // and we are not currently streaming AI content
         return ed.isActive("table") && !isAiStreaming;
@@ -112,6 +118,6 @@ export default function TableBubble({ editor, isAiStreaming }: TableBubbleProps)
           <IconTrash className="size-4" />
         </button>
       </div>
-    </BubbleMenu>
+    </BubbleMenuAny>
   );
 }
