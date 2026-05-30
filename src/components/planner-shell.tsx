@@ -121,7 +121,7 @@ export function GlobalAiLoadingIndicator() {
   return createPortal(
     <Link
       href="/brainstorm"
-      className="ai-accent !fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-bold ring-4 ring-primary/20 transition-all select-none animate-pulse shrink-0 touch-manipulation cursor-pointer sm:text-sm lg:right-24"
+      className="ai-accent !fixed bottom-24 left-4 lg:bottom-6 lg:left-auto lg:right-24 z-40 flex items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-bold ring-4 ring-primary/20 transition-all select-none animate-pulse shrink-0 touch-manipulation cursor-pointer sm:text-sm"
     >
       <IconSparkleHighlight className="size-4 animate-spin" />
       <span>AI Agent: {Math.round(displayProgress)}%</span>
@@ -143,7 +143,7 @@ export function SpeedDialFab({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 hidden lg:block select-none">
+    <div className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-40 select-none">
       <div className="relative flex flex-col items-end gap-3">
         {/* Speed Dial Menu Actions Column */}
         <AnimatePresence>
@@ -301,7 +301,7 @@ export default function PlannerShell({
           </header>
 
           <div className="relative min-w-0 flex-1">
-            <main className="min-w-0 px-4 py-5 sm:px-6 lg:px-8">
+            <main className="min-w-0 px-2 py-3.5 sm:px-6 lg:px-8">
               {children}
             </main>
 

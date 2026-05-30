@@ -11,7 +11,6 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
-import { mergeAttributes } from "@tiptap/core";
 import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
@@ -20,9 +19,6 @@ import { TableCell } from "@tiptap/extension-table-cell";
 // ─── Template UI Primitives ───────────────────────────────────────────────────
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
 import { Toolbar } from "@/components/tiptap-ui-primitive/toolbar";
-
-// ─── Template UI Components ───────────────────────────────────────────────────
-import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
 
 // ─── Template Node Extensions ─────────────────────────────────────────────────
 import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
@@ -45,7 +41,6 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
 // ─── Our Custom Modular Components ────────────────────────────────────────────
-import { Button } from "@/components/tiptap-ui-primitive/button";
 import {
   DraftMeta,
   EditorCommandItem,
@@ -65,6 +60,13 @@ import {
   MobileToolbarContent,
 } from "@/components/editor/toolbar-content";
 
+// ─── Extracted Extensions ─────────────────────────────────────────────────────
+import AiHighlight from "@/components/editor/extensions/ai-highlight";
+import Callout from "@/components/editor/extensions/callout";
+
+// ─── Custom AI Hook ───────────────────────────────────────────────────────────
+import { useEditorAi } from "@/hooks/use-editor-ai";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TipTapEditorProps = {
   content: string;
@@ -73,10 +75,6 @@ type TipTapEditorProps = {
   snippets?: { id: string; title: string; content: string }[];
   draftMeta?: DraftMeta;
 };
-
-// Extracted extensions (AiHighlight, Callout)
-import AiHighlight from "@/components/editor/extensions/ai-highlight";
-import Callout from "@/components/editor/extensions/callout";
 
 // ─── Main TipTap Editor Component ────────────────────────────────────────────
 export default function TipTapEditor({
@@ -117,16 +115,7 @@ export default function TipTapEditor({
     "Tulis instruksi untuk AI...",
   );
   const [aiCommandType, setAiCommandType] = useState("general");
-  const [isAiStreaming, setIsAiStreaming] = useState(false);
   const [isBubbleAiActive, setIsBubbleAiActive] = useState(false);
-  const [aiActionBar, setAiActionBar] = useState<{
-    startPos: number;
-    endPos: number;
-    commandType: string;
-    prompt: string;
-    coords: { top: number; left: number };
-    originalText?: string;
-  } | null>(null);
 
   // ── Refs ────────────────────────────────────────────────────────────────────
   const aiPromptInputRef = useRef<HTMLInputElement>(null);
@@ -287,6 +276,19 @@ export default function TipTapEditor({
     },
   });
 
+  // ── Modular AI Custom Hook ──────────────────────────────────────────────────
+  const {
+    isAiStreaming,
+    aiActionBar,
+    setAiActionBar,
+    handleCancelAi,
+    streamAiGenerate,
+    handleAiAccept,
+    handleAiDiscard,
+    handleAiRetry,
+    handleAiVariation,
+  } = useEditorAi(editor, draftMeta, containerRef);
+
   const rect = useCursorVisibility({
     editor,
     overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
@@ -446,102 +448,6 @@ export default function TipTapEditor({
     setTimeout(() => aiPromptInputRef.current?.focus(), 50);
   };
 
-  // ── AI Streaming ────────────────────────────────────────────────────────────
-  const streamAiGenerate = async (
-    commandType: string,
-    userPrompt: string,
-    customContext?: string,
-  ) => {
-    if (!editor || isAiStreaming) return;
-    setIsAiStreaming(true);
-    setAiActionBar(null);
-    const currentContent = editor.getHTML();
-    let startPos = editor.state.selection.from;
-    let endPos = editor.state.selection.to;
-    const isSelection = commandType.endsWith("-selection");
-    let contextToUse = customContext || currentContent;
-    let originalText = customContext || "";
-    if (isSelection && !customContext) {
-      contextToUse = editor.state.doc.textBetween(startPos, endPos, " ");
-      originalText = contextToUse;
-      editor.chain().focus().setMark("aiHighlight").run();
-    }
-    try {
-      const response = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: userPrompt,
-          context: contextToUse,
-          commandType,
-          draftMeta,
-        }),
-      });
-      if (!response.ok || !response.body) throw new Error("Stream failed");
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      editor.commands.focus();
-      if (isSelection) {
-        editor.chain().focus().deleteSelection().run();
-        startPos = editor.state.selection.from;
-      }
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        if (chunk) editor.commands.insertContent(chunk);
-      }
-      const finalEndPos = editor.state.selection.from;
-      try {
-        const coords = editor.view.coordsAtPos(finalEndPos);
-        let barTop = coords.bottom + 8;
-        const scrollContainer = containerRef.current?.querySelector(
-          ".simple-editor-content",
-        );
-        if (scrollContainer) {
-          const minBottomSpace = 80;
-          const overflow = coords.bottom + minBottomSpace - window.innerHeight;
-          if (overflow > 0) {
-            scrollContainer.scrollTop += overflow;
-            barTop -= overflow;
-          }
-        }
-        let barLeft = coords.left;
-        const containerRect = containerRef.current?.getBoundingClientRect();
-        if (containerRect) {
-          const isMobileW = window.innerWidth < 640;
-          const barWidth = isMobileW ? 250 : 450;
-          const padding = 16;
-          barLeft = Math.max(
-            containerRect.left + padding,
-            Math.min(coords.left, containerRect.right - barWidth - padding),
-          );
-        }
-        setAiActionBar({
-          startPos,
-          endPos: finalEndPos,
-          commandType,
-          prompt: userPrompt,
-          coords: { top: barTop, left: barLeft },
-          originalText: isSelection ? originalText : undefined,
-        });
-      } catch {
-        setAiActionBar({
-          startPos,
-          endPos: finalEndPos,
-          commandType,
-          prompt: userPrompt,
-          coords: { top: 200, left: 100 },
-          originalText: isSelection ? originalText : undefined,
-        });
-      }
-    } catch (e) {
-      console.error("AI stream error", e);
-    } finally {
-      setIsAiStreaming(false);
-    }
-  };
-
   const submitAiPrompt = async () => {
     if (!editor || !aiPromptValue.trim() || isAiStreaming) return;
     setIsAiPromptActive(false);
@@ -549,52 +455,9 @@ export default function TipTapEditor({
     setAiPromptValue("");
   };
 
-  const handleAiAccept = () => {
-    setAiActionBar(null);
-    editor?.commands.focus();
-  };
-
-  const handleAiDiscard = () => {
-    if (!aiActionBar || !editor) return;
-    const { startPos, endPos, originalText } = aiActionBar;
-    if (originalText) {
-      editor
-        .chain()
-        .focus()
-        .deleteRange({ from: startPos, to: endPos })
-        .insertContentAt(startPos, originalText)
-        .run();
-    } else {
-      editor.chain().focus().deleteRange({ from: startPos, to: endPos }).run();
-    }
-    setAiActionBar(null);
-  };
-
   const handleSelectionAi = async (commandType: string) => {
     setIsBubbleAiActive(false);
     await streamAiGenerate(commandType, "");
-  };
-
-  const handleAiRetry = async () => {
-    if (!aiActionBar || !editor) return;
-    const { commandType, prompt, startPos, endPos, originalText } = aiActionBar;
-    setAiActionBar(null);
-    if (originalText) {
-      editor
-        .chain()
-        .focus()
-        .deleteRange({ from: startPos, to: endPos })
-        .insertContentAt(startPos, originalText)
-        .setTextSelection({
-          from: startPos,
-          to: startPos + originalText.length,
-        })
-        .run();
-      await streamAiGenerate(commandType, prompt);
-    } else {
-      editor.chain().focus().deleteRange({ from: startPos, to: endPos }).run();
-      await streamAiGenerate(commandType, prompt);
-    }
   };
 
   useEffect(() => {
@@ -611,7 +474,7 @@ export default function TipTapEditor({
     return () => {
       editor.off("update", handler);
     };
-  }, [editor, aiActionBar]);
+  }, [editor, aiActionBar, setAiActionBar]);
 
   useEffect(() => {
     if (!aiActionBar) return;
@@ -623,7 +486,7 @@ export default function TipTapEditor({
       passive: true,
     });
     return () => scrollContainer?.removeEventListener("scroll", handleScroll);
-  }, [aiActionBar]);
+  }, [aiActionBar, setAiActionBar]);
 
   useEffect(() => {
     if (!isSlashActive) return;
@@ -663,7 +526,7 @@ export default function TipTapEditor({
   useEffect(() => {
     if (!insertTrigger || !editor) return;
     editor.chain().focus().insertContent(insertTrigger.text).run();
-  }, [insertTrigger]);
+  }, [insertTrigger, editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -734,7 +597,7 @@ export default function TipTapEditor({
         {/* ── AI Streaming Indicator ────────────────────────────────────── */}
         {isAiStreaming && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9998] flex justify-center pointer-events-none">
-            <div className="inline-flex items-center gap-2 bg-card/90 border border-primary/30 shadow-lg rounded-full px-3 py-1.5 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2.5 bg-card/90 border border-primary/30 shadow-lg rounded-full pl-3.5 pr-2 py-1.5 backdrop-blur-sm pointer-events-auto">
               <span className="flex gap-0.5">
                 <span
                   className="w-1 h-3 bg-primary rounded-full animate-bounce"
@@ -752,6 +615,13 @@ export default function TipTapEditor({
               <span className="text-[10px] text-primary font-medium">
                 AI sedang menulis...
               </span>
+              <button
+                type="button"
+                onClick={handleCancelAi}
+                className="flex items-center justify-center bg-destructive/15 hover:bg-destructive/25 text-destructive rounded-full px-2 py-0.5 text-[9px] font-bold transition-all shrink-0 cursor-pointer"
+              >
+                Batal
+              </button>
             </div>
           </div>
         )}
@@ -776,6 +646,7 @@ export default function TipTapEditor({
           handleAiAccept={handleAiAccept}
           handleAiRetry={handleAiRetry}
           handleAiDiscard={handleAiDiscard}
+          handleAiVariation={handleAiVariation}
         />
 
         <SlashMenu

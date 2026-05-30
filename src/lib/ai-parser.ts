@@ -11,10 +11,11 @@ export function parseAngles(
     if (!section.trim()) continue;
 
     // Support case-insensitive title, hook, and outline labels (indonesian or english)
-    const titleMatch = section.match(/(?:TITLE|Title|Judul):\s*(.+)/i);
-    const hookMatch = section.match(/(?:HOOK|Hook|Opening):\s*(.+)/i);
+    // Resiliently matches optional markdown asterisks, hashes, and spacing around labels
+    const titleMatch = section.match(/(?:\*{0,2})(?:TITLE|Title|Judul)(?:\*{0,2})\s*:\s*(.+)/i);
+    const hookMatch = section.match(/(?:\*{0,2})(?:HOOK|Hook|Opening)(?:\*{0,2})\s*:\s*(.+)/i);
     const outlineMatch = section.match(
-      /(?:OUTLINE|Outline|Struktur|Storyboard):\s*/i,
+      /(?:\*{0,2})(?:OUTLINE|Outline|Struktur|Storyboard)(?:\*{0,2})\s*:\s*/i,
     );
 
     const outlineIndex =

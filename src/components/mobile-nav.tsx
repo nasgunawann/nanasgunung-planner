@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { navItems } from "@/lib/nav";
 import { iconMap } from "@/lib/icon-map";
 
-export default function MobileNav({ onQuickAdd }: { onQuickAdd: () => void }) {
+export default function MobileNav({ onQuickAdd }: { onQuickAdd?: () => void }) {
   const pathname = usePathname();
 
   const isActive = (href: string) => pathname?.startsWith(href);
@@ -39,16 +39,6 @@ export default function MobileNav({ onQuickAdd }: { onQuickAdd: () => void }) {
           })}
         </div>
       </div>
-
-      {/* Floating Action Button (FAB) on mobile, positioned just above the mobile navigation bar */}
-      <button
-        type="button"
-        onClick={onQuickAdd}
-        className="fixed bottom-18 right-4 flex items-center justify-center rounded-full bg-primary text-primary-foreground w-12 h-12 shadow-lg ring-2 ring-border/20 z-50 animate-in fade-in"
-        aria-label="Quick add content"
-      >
-        <IconPlus className="size-5.5" />
-      </button>
     </div>
   );
 }

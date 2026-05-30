@@ -165,10 +165,10 @@ export default function DraftsPage() {
   return (
     <PageTransition>
       <div className="space-y-4">
-      {/* Consolidated Control Panel - Combined filters in a single sleek row */}
-      <div className="grid gap-2 grid-cols-1 sm:grid-cols-[2fr_1.2fr_1.2fr_1.2fr_auto] items-center bg-card border border-border/60 p-2 rounded-lg shadow-sm">
+      {/* Consolidated Control Panel - Combined filters in a single sleek row, horizontally scrolling on mobile */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none sm:overflow-x-visible sm:pb-0 sm:grid sm:grid-cols-[2fr_1.2fr_1.2fr_1.2fr_auto] bg-card border border-border/60 p-2 rounded-lg shadow-sm">
         {/* Search */}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center min-w-[130px] flex-1 sm:flex-none sm:w-full shrink-0 sm:shrink">
           <IconSearch className="absolute left-2.5 size-3.5 text-muted-foreground z-10" />
           <Input
             type="text"
@@ -180,52 +180,58 @@ export default function DraftsPage() {
         </div>
 
         {/* Platform Dropdown */}
-        <Select value={selectedPlatform} onValueChange={handlePlatformChange}>
-          <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
-            <SelectValue placeholder="Semua Platform" />
-          </SelectTrigger>
-          <SelectContent>
-            {platformOptions.map((plat) => (
-              <SelectItem key={plat} value={plat} className="text-[11px]">
-                {plat === "All" ? "Semua Platform" : plat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="w-[110px] sm:w-full shrink-0">
+          <Select value={selectedPlatform} onValueChange={handlePlatformChange}>
+            <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
+              <SelectValue placeholder="Semua Platform" />
+            </SelectTrigger>
+            <SelectContent>
+              {platformOptions.map((plat) => (
+                <SelectItem key={plat} value={plat} className="text-[11px]">
+                  {plat === "All" ? "Semua Platform" : plat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Time Filter Dropdown */}
-        <Select value={timeFilter} onValueChange={handleTimeChange}>
-          <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
-            <SelectValue placeholder="Semua Waktu" />
-          </SelectTrigger>
-          <SelectContent>
-            {timeFilterOptions.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="w-[115px] sm:w-full shrink-0">
+          <Select value={timeFilter} onValueChange={handleTimeChange}>
+            <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
+              <SelectValue placeholder="Semua Waktu" />
+            </SelectTrigger>
+            <SelectContent>
+              {timeFilterOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Status Dropdown */}
-        <Select value={selectedStatus} onValueChange={handleStatusChange}>
-          <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
-            <SelectValue placeholder="Semua Status" />
-          </SelectTrigger>
-          <SelectContent>
-            {statusTabOptions.map((statusTab) => (
-              <SelectItem key={statusTab} value={statusTab} className="text-[11px]">
-                {statusTab === "All" ? "Semua Status" : statusTab}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="w-[105px] sm:w-full shrink-0">
+          <Select value={selectedStatus} onValueChange={handleStatusChange}>
+            <SelectTrigger className="h-8 text-[11px] bg-background w-full cursor-pointer border border-input">
+              <SelectValue placeholder="Semua Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusTabOptions.map((statusTab) => (
+                <SelectItem key={statusTab} value={statusTab} className="text-[11px]">
+                  {statusTab === "All" ? "Semua Status" : statusTab}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Add Draft Shortcut */}
         <button
           type="button"
           onClick={() => setIsAddModalOpen(true)}
-          className="flex h-8 items-center justify-center gap-1 rounded-md bg-primary px-3 text-[11px] font-bold text-primary-foreground hover:bg-primary/95 transition-colors cursor-pointer"
+          className="flex h-8 items-center justify-center gap-1 rounded-md bg-primary px-3 text-[11px] font-bold text-primary-foreground hover:bg-primary/95 transition-colors cursor-pointer shrink-0"
         >
           <IconPlus className="size-3" />
           Add Draft

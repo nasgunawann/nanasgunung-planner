@@ -64,18 +64,18 @@ export default function BrainstormPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="space-y-2.5 sm:space-y-6">
         {/* Intro Header */}
         <AnimatePresence>
           {showIntro && (
             <m.div
               initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-              animate={{ height: "auto", opacity: 1, marginBottom: 24 }}
+              animate={{ height: "auto", opacity: 1, marginBottom: 16 }}
               exit={{ height: 0, opacity: 0, marginBottom: 0 }}
               transition={{ type: "tween", duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="flex items-center justify-between gap-3 bg-card border border-border/60 p-4 rounded-xl shadow-sm relative pr-10">
+              <div className="flex items-center justify-between gap-3 bg-card border border-border/60 p-3 sm:p-4 rounded-xl shadow-sm relative pr-10">
                 <div className="flex items-center gap-3">
                   <IconSparkles className="size-6 text-primary shrink-0" />
                   <div className="text-sm">
@@ -104,9 +104,9 @@ export default function BrainstormPage() {
         </AnimatePresence>
 
         {/* Main Dashboard Layout */}
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.25fr]">
+        <div className="grid gap-3 sm:gap-6 lg:grid-cols-[1fr_1.25fr]">
           {/* Column 1: AI Planner Studio */}
-          <section className="space-y-4 lg:sticky lg:top-20 self-start">
+          <section className="space-y-3 sm:space-y-4 lg:sticky lg:top-20 self-start">
             {/* Prompt Studio Form Component */}
             <PromptStudioForm
               topic={topic}
@@ -121,8 +121,8 @@ export default function BrainstormPage() {
           </section>
 
           {/* Column 2: Idea Funnel (Saved Concepts) */}
-          <section className="space-y-4">
-            <div className="bg-card border border-border/60 p-5 rounded-xl shadow-sm space-y-4">
+          <section className="space-y-3 sm:space-y-4">
+            <div className="bg-card border border-border/60 p-3 sm:p-5 rounded-xl shadow-sm space-y-3 sm:space-y-4">
               <h3 className="font-heading text-base font-bold flex items-center justify-between">
                 <span>Hasil Ide Brainstorming</span>
                 <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ export default function BrainstormPage() {
                   </AnimatePresence>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 px-6 rounded-lg border border-dashed border-border/80 text-center bg-background/50">
+                <div className="flex flex-col items-center justify-center py-6 px-3 sm:py-12 sm:px-6 rounded-lg border border-dashed border-border/80 text-center bg-background/50">
                   <IconInfoCircle className="size-8 text-muted-foreground/50 mb-2" />
                   <p className="text-sm font-bold">Funnel is currently empty</p>
                   <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">

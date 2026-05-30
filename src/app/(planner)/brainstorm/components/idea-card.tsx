@@ -55,11 +55,11 @@ export default function IdeaCard({
             </span>
           </div>
 
-          <div className="bg-muted/15 border-l-2 border-primary/50 p-2 text-xs rounded-r-md">
+          <div className="bg-muted/15 border-l-2 border-primary/50 p-1.5 text-xs rounded-r-md">
             <span className="text-[9px] uppercase tracking-wider font-bold text-primary block mb-0.5">
               Suggested Hook:
             </span>
-            <p className="italic text-foreground/90 font-medium break-words whitespace-pre-wrap">
+            <p className="italic text-foreground/90 font-medium break-words whitespace-pre-wrap text-[11px] sm:text-xs">
               "{idea.hook}"
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function IdeaCard({
             <span className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground block">
               AI Structured Script Outline:
             </span>
-            <div className="bg-muted/30 border border-border/40 p-2 text-[11px] font-mono text-muted-foreground rounded whitespace-pre-wrap break-words leading-relaxed">
+            <div className="bg-muted/30 border border-border/40 p-1.5 sm:p-2 text-[10px] sm:text-[11px] font-mono text-muted-foreground rounded whitespace-pre-wrap break-words leading-relaxed max-h-[140px] overflow-y-auto">
               {idea.outline}
             </div>
           </div>
