@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
 import Link from "next/link";
@@ -15,7 +16,7 @@ import {
 import { defaultTemplates } from "@/lib/library-seed";
 import TemplateCard from "./components/template-card";
 import SnippetCard from "./components/snippet-card";
-import SnippetForm from "./components/snippet-form";
+import AddSnippetDialog from "@/components/add-snippet-dialog";
 import LibraryFilters from "./components/library-filters";
 import { useLibraryData } from "./hooks/use-library-data";
 import { useDrafts } from "@/lib/drafts";
@@ -29,6 +30,8 @@ import {
 } from "@/components/ui/dialog";
 
 export default function LibraryPage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
   const {
     activeTab,
     setActiveTab,
@@ -40,34 +43,17 @@ export default function LibraryPage() {
     categories,
     selectedCategoryFilter,
     setSelectedCategoryFilter,
-    selectedTagFilter,
-    setSelectedTagFilter,
-    allUniqueTags,
+    searchQuery,
+    setSearchQuery,
     filteredSnippets,
-    snippets,
-    snippetTitle,
-    setSnippetTitle,
-    snippetContent,
-    setSnippetContent,
-    snippetCategory,
-    setSnippetCategory,
-    snippetTagsInput,
-    setSnippetTagsInput,
-    isAddingNewCategory,
-    setIsAddingNewCategory,
-    newCategoryName,
-    setNewCategoryName,
-    handleAddCategory,
-    handleAddSnippet,
     editingSnippetId,
+    setEditingSnippetId,
     editTitle,
     setEditTitle,
     editContent,
     setEditContent,
     editCategory,
     setEditCategory,
-    editTagsInput,
-    setEditTagsInput,
     handleStartEdit,
     handleSaveEdit,
     handleDeleteSnippet,
@@ -78,6 +64,7 @@ export default function LibraryPage() {
     itemToDelete,
     executeDelete,
     setTemplates,
+    addSnippetDirect,
   } = useLibraryData();
 
   const { rawIdeas, deleteRawIdea } = useDrafts();
@@ -106,7 +93,7 @@ export default function LibraryPage() {
             { id: "templates", label: "Template", icon: IconListDetails },
             { id: "snippets", label: "Aset Siap Pakai", icon: IconTags },
             { id: "raw_ideas", label: "Ide", icon: IconBulb },
-            { id: "history", label: "Arsip & Riwayat", icon: IconRecycle },
+            // { id: "history", label: "Arsip & Riwayat", icon: IconRecycle }, //TODO nanti tambahkan fungsi
           ].map((tab) => {
             const Icon = tab.icon as any;
             const active = activeTab === tab.id;
@@ -191,97 +178,95 @@ export default function LibraryPage() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]"
+                className="space-y-4 w-full"
               >
                 <div className="space-y-4">
                   <LibraryFilters
                     categories={categories}
                     selectedCategoryFilter={selectedCategoryFilter}
                     setSelectedCategoryFilter={setSelectedCategoryFilter}
-                    allUniqueTags={allUniqueTags}
-                    selectedTagFilter={selectedTagFilter}
-                    setSelectedTagFilter={setSelectedTagFilter}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
                   />
 
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold text-foreground flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-foreground flex justify-between items-center bg-card/20 border border-border/40 p-3 rounded-lg">
                       <span>
                         Daftar Aset Siap Pakai ({filteredSnippets.length})
                       </span>
-                      {(selectedCategoryFilter !== "All" ||
-                        selectedTagFilter !== "All") && (
+                      <div className="flex items-center gap-2">
+                        {(selectedCategoryFilter !== "All" ||
+                          searchQuery !== "") && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedCategoryFilter("All");
+                              setSearchQuery("");
+                            }}
+                            className="text-[10px] text-primary hover:underline font-bold mr-2 cursor-pointer"
+                          >
+                            Reset Filter
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => {
-                            setSelectedCategoryFilter("All");
-                            setSelectedTagFilter("All");
-                          }}
-                          className="text-[10px] text-primary hover:underline font-bold"
+                          onClick={() => setIsAddDialogOpen(true)}
+                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-3.5 text-xs font-bold transition-all shadow-sm cursor-pointer select-none"
                         >
-                          Reset Filter
+                          <IconPlus className="size-3.5" />
+                          Tambah Aset
                         </button>
-                      )}
+                      </div>
                     </h3>
 
                     {filteredSnippets.length > 0 ? (
-                      <div className="w-full">
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {filteredSnippets.map((snip) => (
-                          <div key={snip.id} className="pb-3">
-                            <SnippetCard
-                              snip={snip}
-                              isEditing={editingSnippetId === snip.id}
-                              categories={categories}
-                              editTitle={editTitle}
-                              editContent={editContent}
-                              editCategory={editCategory}
-                              editTagsInput={editTagsInput}
-                              onChangeEditTitle={setEditTitle}
-                              onChangeEditContent={setEditContent}
-                              onChangeEditCategory={setEditCategory}
-                              onChangeEditTagsInput={setEditTagsInput}
-                              onStartEdit={handleStartEdit}
-                              onSaveEdit={handleSaveEdit}
-                              onCancelEdit={() => {}}
-                              onDelete={handleDeleteSnippet}
-                              onCopy={handleCopy}
-                              copiedId={copiedId}
-                            />
-                          </div>
+                          <SnippetCard
+                            key={snip.id}
+                            snip={snip}
+                            isEditing={editingSnippetId === snip.id}
+                            categories={categories}
+                            editTitle={editTitle}
+                            editContent={editContent}
+                            editCategory={editCategory}
+                            onChangeEditTitle={setEditTitle}
+                            onChangeEditContent={setEditContent}
+                            onChangeEditCategory={setEditCategory}
+                            onStartEdit={handleStartEdit}
+                            onSaveEdit={handleSaveEdit}
+                            onCancelEdit={() => setEditingSnippetId(null)}
+                            onDelete={handleDeleteSnippet}
+                            onCopy={handleCopy}
+                            copiedId={copiedId}
+                          />
                         ))}
                       </div>
                     ) : (
-                      <div className="rounded-xl border border-dashed border-border/80 p-8 text-center bg-card">
-                        <p className="text-xs font-bold text-foreground">
-                          Aset Siap Pakai tidak ditemukan
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[240px] mx-auto">
-                          Tidak ada aset dengan kombinasi filter kategori atau
-                          tag yang Anda pilih. Coba klik reset filter.
-                        </p>
+                      <div className="rounded-xl border border-dashed border-border/80 p-8 text-center bg-card/45 max-w-md mx-auto mt-6">
+                        <IconTags className="size-10 text-muted-foreground/35 mx-auto animate-pulse" />
+                        <div className="space-y-1 mt-3">
+                          <h3 className="font-heading text-sm font-bold text-foreground">
+                            Aset Siap Pakai tidak ditemukan
+                          </h3>
+                          <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                            Tidak ada aset dengan kombinasi filter kategori atau
+                            tag yang Anda pilih. Coba reset filter atau buat
+                            baru!
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsAddDialogOpen(true)}
+                          className="mt-4 inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 text-xs font-bold transition-all shadow-sm cursor-pointer select-none"
+                        >
+                          <IconPlus className="size-4" />
+                          Buat Aset Siap Pakai Baru
+                        </button>
                       </div>
                     )}
                   </div>
                 </div>
-
-                <aside className="space-y-4">
-                  <SnippetForm
-                    snippetTitle={snippetTitle}
-                    setSnippetTitle={setSnippetTitle}
-                    snippetContent={snippetContent}
-                    setSnippetContent={setSnippetContent}
-                    snippetCategory={snippetCategory}
-                    setSnippetCategory={setSnippetCategory}
-                    snippetTagsInput={snippetTagsInput}
-                    setSnippetTagsInput={setSnippetTagsInput}
-                    categories={categories}
-                    isAddingNewCategory={isAddingNewCategory}
-                    setIsAddingNewCategory={setIsAddingNewCategory}
-                    newCategoryName={newCategoryName}
-                    setNewCategoryName={setNewCategoryName}
-                    onAddCategory={handleAddCategory}
-                    onAddSnippet={handleAddSnippet}
-                  />
-                </aside>
               </m.div>
             )}
 
@@ -346,8 +331,8 @@ export default function LibraryPage() {
                           Belum ada ide tersimpan
                         </h3>
                         <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
-                          Catat ide cepat dari menu FAB (`+`) di pojok
-                          kanan bawah atau dari Quick Capture di Dashboard.
+                          Catat ide cepat dari menu FAB (`+`) di pojok kanan
+                          bawah atau dari Quick Capture di Dashboard.
                         </p>
                       </div>
                     </div>
@@ -416,6 +401,12 @@ export default function LibraryPage() {
               </div>
             </DialogContent>
           </Dialog>
+
+          <AddSnippetDialog
+            isOpen={isAddDialogOpen}
+            onClose={() => setIsAddDialogOpen(false)}
+            onSave={addSnippetDirect}
+          />
         </div>
       </div>
     </PageTransition>

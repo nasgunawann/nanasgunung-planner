@@ -62,7 +62,7 @@ export const defaultTemplates: Template[] = [
     platform: "Instagram",
     category: "Stories",
     description:
-      "Membangun interaksi personal menggunakan urutan stiker jajak pendapat (Poll) atau Q&A.",
+      "Membangun interaksi personal menggunakan urutan stiker jajak pendapat (Poll) Q&A.",
     isCustom: true,
     blueprint: `<h3><strong>[URUTAN INSTAGRAM STORIES]</strong></h3>
 <p></p>
@@ -74,6 +74,20 @@ export const defaultTemplates: Template[] = [
   },
 ];
 
+// Centralized asset categories for reuse in AddSnippetDialog, Sidebar, and Filters
+export const defaultSnippetCategories = [
+  "CTA",
+  "Hashtags",
+  "Intro",
+  "Outro",
+  "UGC",
+  "FAQ",
+  "Hook",
+  "Quotes",
+] as const;
+
+export type SnippetCategory = typeof defaultSnippetCategories[number];
+
 export const defaultSnippets: Snippet[] = [
   {
     id: "snip-1",
@@ -81,7 +95,7 @@ export const defaultSnippets: Snippet[] = [
     content:
       "Jangan lupa untuk follow @nanasgunung untuk tips menarik seputar Web Development & Design setiap hari! 🚀",
     category: "CTA",
-    tags: ["Promo", "Instagram"],
+    tags: [],
   },
   {
     id: "snip-2",
@@ -89,23 +103,23 @@ export const defaultSnippets: Snippet[] = [
     content:
       "#nextjs #typescript #programmerindonesia #webdev #codinglife #belajarcoding",
     category: "Hashtags",
-    tags: ["Hashtags", "Tech"],
+    tags: [],
   },
   {
     id: "snip-3",
-    title: "Closing Post LinkedIn",
+    title: "Intro hook edukasi",
     content:
-      "Bagaimana dengan workflow tim Anda saat membangun MVP? Mari diskusi di kolom komentar! 👇",
-    category: "Stories",
-    tags: ["Launch", "LinkedIn"],
+      "Tahukah kamu kenapa 90% MVP startup gagal di bulan pertama? Jawabannya mengejutkan...",
+    category: "Intro",
+    tags: [],
   },
 ];
 
+// Content formats for drafts / planner (kept for legacy reasons)
 export const defaultCategories = [
-  "CTA",
-  "Hashtags",
+  "Reels",
+  "Post",
   "Stories",
-  "Intro",
-  "UGC",
-  "FAQ",
+  "Video",
+  "Newsletter",
 ];

@@ -10,15 +10,18 @@ import {
   IconBulb,
   IconFilePlus,
   IconSparkles,
+  IconTags,
 } from "@tabler/icons-react";
 
 import ThemeToggle from "@/components/theme-toggle";
 import QuickAddModal from "@/components/quick-add-modal";
+import AddSnippetDialog from "@/components/add-snippet-dialog";
 import Sidebar from "@/components/sidebar";
 import MobileNav from "@/components/mobile-nav";
 import { Button } from "@/components/ui/button";
 import { pageHeaders } from "@/lib/nav";
 import { useDrafts } from "@/lib/drafts";
+import { toast } from "sonner";
 import { PlatformSelect } from "@/components/planner-selects";
 import {
   Dialog,
@@ -131,9 +134,11 @@ export function GlobalAiLoadingIndicator() {
 export function SpeedDialFab({
   onAddDraft,
   onAddIdea,
+  onAddSnippet,
 }: {
   onAddDraft: () => void;
   onAddIdea: () => void;
+  onAddSnippet: () => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -149,7 +154,7 @@ export function SpeedDialFab({
                 initial={{ opacity: 0, y: 15, scale: 0.8 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 15, scale: 0.8 }}
-                transition={{ duration: 0.15, delay: 0.05 }}
+                transition={{ duration: 0.15, delay: 0.08 }}
               >
                 <button
                   type="button"
@@ -164,7 +169,27 @@ export function SpeedDialFab({
                 </button>
               </motion.div>
 
-              {/* Action 2: Add Draft */}
+              {/* Action 2: Add Ready-to-Use Snippet */}
+              <motion.div
+                initial={{ opacity: 0, y: 15, scale: 0.8 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 15, scale: 0.8 }}
+                transition={{ duration: 0.15, delay: 0.04 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAddSnippet();
+                    setIsExpanded(false);
+                  }}
+                  className="flex items-center gap-2 bg-card hover:bg-muted text-foreground border border-border px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer pointer-events-auto shrink-0 touch-manipulation whitespace-nowrap"
+                >
+                  <IconTags className="size-4 text-emerald-500" />
+                  <span>Tambah Aset Siap Pakai</span>
+                </button>
+              </motion.div>
+
+              {/* Action 3: Add Draft */}
               <motion.div
                 initial={{ opacity: 0, y: 15, scale: 0.8 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -216,11 +241,37 @@ export default function PlannerShell({
   const pathname = usePathname();
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isAddIdeaOpen, setIsAddIdeaOpen] = useState(false);
+  const [isSnippetDialogOpen, setIsSnippetDialogOpen] = useState(false);
 
   const activePageHeader =
     Object.entries(pageHeaders).find(([route]) =>
       pathname?.startsWith(route),
     )?.[1] ?? pageHeaders["/calendar"];
+
+  const handleSaveSnippet = (newSnippet: {
+    title: string;
+    content: string;
+    category: string;
+    tags: string[];
+  }) => {
+    try {
+      const stored = localStorage.getItem("nanas_snippets");
+      const snippetsList = stored ? JSON.parse(stored) : [];
+      const updatedSnippet = {
+        id: `snip-${Date.now()}`,
+        ...newSnippet,
+      };
+      const updatedList = [updatedSnippet, ...snippetsList];
+      localStorage.setItem("nanas_snippets", JSON.stringify(updatedList));
+
+      // Trigger custom cross-component sync event
+      window.dispatchEvent(new Event("nanas-library-updated"));
+
+      toast.success(`Aset "${newSnippet.title}" berhasil ditambahkan!`);
+    } catch (e) {
+      toast.error("Gagal menambahkan aset ke Pustaka.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-transparent text-foreground">
@@ -252,6 +303,7 @@ export default function PlannerShell({
             <SpeedDialFab
               onAddDraft={() => setIsQuickAddOpen(true)}
               onAddIdea={() => setIsAddIdeaOpen(true)}
+              onAddSnippet={() => setIsSnippetDialogOpen(true)}
             />
 
             {/* Centralized Background AI progress indicator */}
@@ -270,6 +322,12 @@ export default function PlannerShell({
       <AddRawIdeaModal
         isOpen={isAddIdeaOpen}
         onClose={() => setIsAddIdeaOpen(false)}
+      />
+
+      <AddSnippetDialog
+        isOpen={isSnippetDialogOpen}
+        onClose={() => setIsSnippetDialogOpen(false)}
+        onSave={handleSaveSnippet}
       />
     </div>
   );

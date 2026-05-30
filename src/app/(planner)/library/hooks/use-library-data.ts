@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDrafts } from "@/lib/drafts";
 import { toast } from "sonner";
 import {
-  defaultCategories,
+  defaultSnippetCategories,
   defaultSnippets,
   defaultTemplates,
   type Snippet,
@@ -29,19 +29,19 @@ export function useLibraryData() {
   const [snippetTitle, setSnippetTitle] = useState("");
   const [snippetContent, setSnippetContent] = useState("");
   const [snippetCategory, setSnippetCategory] = useState("CTA");
-  const [snippetTagsInput, setSnippetTagsInput] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [categories, setCategories] = useState<string[]>(defaultCategories);
+  const [categories, setCategories] = useState<string[]>(
+    defaultSnippetCategories as unknown as string[]
+  );
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedTagFilter, setSelectedTagFilter] = useState<string>("All");
   const [selectedCategoryFilter, setSelectedCategoryFilter] =
     useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [editingSnippetId, setEditingSnippetId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editCategory, setEditCategory] = useState("");
-  const [editTagsInput, setEditTagsInput] = useState("");
   const [isSnippetTipOpen, setIsSnippetTipOpen] = useState(true);
   const [expandedTemplates, setExpandedTemplates] = useState<string[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -72,7 +72,7 @@ export function useLibraryData() {
       } else {
         localStorage.setItem(
           "nanas_snippet_categories",
-          JSON.stringify(defaultCategories),
+          JSON.stringify(defaultSnippetCategories),
         );
       }
 
@@ -91,6 +91,23 @@ export function useLibraryData() {
     } catch {
       // ignore hydration errors
     }
+  }, []);
+
+  // Listen to cross-component sync event when adding snippets from FAB modal
+  useEffect(() => {
+    const handleSync = () => {
+      try {
+        const stored = localStorage.getItem("nanas_snippets");
+        if (stored) {
+          setSnippets(JSON.parse(stored));
+        }
+      } catch (e) {
+        console.error("Library sync error:", e);
+      }
+    };
+
+    window.addEventListener("nanas-library-updated", handleSync);
+    return () => window.removeEventListener("nanas-library-updated", handleSync);
   }, []);
 
   const saveSnippets = (newSnippets: Snippet[]) => {
@@ -152,23 +169,31 @@ export function useLibraryData() {
     e.preventDefault();
     if (!snippetTitle.trim() || !snippetContent.trim()) return;
 
-    const tagsArray = snippetTagsInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag !== "");
-
     const newSnippet: Snippet = {
       id: `snip-${Date.now()}`,
       title: snippetTitle.trim(),
       content: snippetContent.trim(),
       category: snippetCategory,
-      tags: tagsArray,
+      tags: [],
     };
 
     saveSnippets([newSnippet, ...snippets]);
     setSnippetTitle("");
     setSnippetContent("");
-    setSnippetTagsInput("");
+  };
+
+  const addSnippetDirect = (newSnippet: Omit<Snippet, "id" | "tags">) => {
+    const updatedSnippet: Snippet = {
+      id: `snip-${Date.now()}`,
+      ...newSnippet,
+      tags: [],
+    };
+    const updatedList = [updatedSnippet, ...snippets];
+    saveSnippets(updatedList);
+    
+    // Trigger global sync event
+    window.dispatchEvent(new Event("nanas-library-updated"));
+    toast.success(`Aset "${newSnippet.title}" berhasil ditambahkan!`);
   };
 
   const confirmDelete = (
@@ -289,16 +314,10 @@ export function useLibraryData() {
     setEditTitle(snippet.title);
     setEditContent(snippet.content);
     setEditCategory(snippet.category ?? "CTA");
-    setEditTagsInput(snippet.tags ? snippet.tags.join(", ") : "");
   };
 
   const handleSaveEdit = (id: string) => {
     if (!editTitle.trim() || !editContent.trim()) return;
-
-    const tagsArray = editTagsInput
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag !== "");
 
     const updated = snippets.map((snippet) =>
       snippet.id === id
@@ -307,7 +326,6 @@ export function useLibraryData() {
             title: editTitle.trim(),
             content: editContent.trim(),
             category: editCategory,
-            tags: tagsArray,
           }
         : snippet,
     );
@@ -337,24 +355,23 @@ export function useLibraryData() {
     router.push(`/drafts/${newId}`);
   };
 
-  const allUniqueTags = useMemo(
-    () =>
-      Array.from(new Set(snippets.flatMap((snippet) => snippet.tags ?? []))),
-    [snippets],
-  );
-
   const filteredSnippets = useMemo(
     () =>
       snippets.filter((snippet) => {
         const matchesCategory =
           selectedCategoryFilter === "All" ||
           snippet.category === selectedCategoryFilter;
-        const matchesTag =
-          selectedTagFilter === "All" ||
-          (snippet.tags ?? []).includes(selectedTagFilter);
-        return matchesCategory && matchesTag;
+        
+        const q = searchQuery.toLowerCase().trim();
+        const matchesQuery =
+          !q ||
+          snippet.title.toLowerCase().includes(q) ||
+          snippet.content.toLowerCase().includes(q) ||
+          snippet.category.toLowerCase().includes(q);
+
+        return matchesCategory && matchesQuery;
       }),
-    [selectedCategoryFilter, selectedTagFilter, snippets],
+    [selectedCategoryFilter, searchQuery, snippets],
   );
 
   return {
@@ -368,8 +385,6 @@ export function useLibraryData() {
     setSnippetContent,
     snippetCategory,
     setSnippetCategory,
-    snippetTagsInput,
-    setSnippetTagsInput,
     copiedId,
     setCopiedId,
     categories,
@@ -378,10 +393,10 @@ export function useLibraryData() {
     setIsAddingNewCategory,
     newCategoryName,
     setNewCategoryName,
-    selectedTagFilter,
-    setSelectedTagFilter,
     selectedCategoryFilter,
     setSelectedCategoryFilter,
+    searchQuery,
+    setSearchQuery,
     editingSnippetId,
     setEditingSnippetId,
     editTitle,
@@ -390,8 +405,6 @@ export function useLibraryData() {
     setEditContent,
     editCategory,
     setEditCategory,
-    editTagsInput,
-    setEditTagsInput,
     isSnippetTipOpen,
     setIsSnippetTipOpen,
     expandedTemplates,
@@ -414,7 +427,7 @@ export function useLibraryData() {
     handleSaveEdit,
     handleCopy,
     handleUseTemplate,
-    allUniqueTags,
     filteredSnippets,
+    addSnippetDirect,
   };
 }
