@@ -54,8 +54,9 @@ export default function BrainstormPage() {
     handleGenerate,
     handlePromoteSubmit,
     handleCloseIntro,
-    handleSaveAsTemplate,
+    handleSaveAsRawIdea,
     deleteIdea,
+    clearAllIdeas,
   } = useBrainstorm();
 
   // All interactive state & handlers are provided by `useBrainstorm` hook
@@ -122,9 +123,20 @@ export default function BrainstormPage() {
             <div className="bg-card border border-border/60 p-5 rounded-xl shadow-sm space-y-4">
               <h3 className="font-heading text-base font-bold flex items-center justify-between">
                 <span>Hasil Ide Brainstorming</span>
-                <span className="text-xs text-muted-foreground font-normal bg-muted px-2 py-0.5 rounded">
-                  {ideas.length} pending
-                </span>
+                <div className="flex items-center gap-2">
+                  {ideas.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAllIdeas}
+                      className="text-xs text-red-500 hover:text-red-600 hover:underline font-bold transition-all cursor-pointer select-none"
+                    >
+                      Hapus Semua
+                    </button>
+                  )}
+                  <span className="text-xs text-muted-foreground font-normal bg-muted px-2 py-0.5 rounded">
+                    {ideas.length} pending
+                  </span>
+                </div>
               </h3>
 
               {ideas.length > 0 || isGenerating ? (
@@ -165,7 +177,7 @@ export default function BrainstormPage() {
                         key={idea.id}
                         idea={idea}
                         onDelete={(id) => deleteIdea(id)}
-                        onSaveAsTemplate={handleSaveAsTemplate}
+                        onSaveAsRawIdea={handleSaveAsRawIdea}
                         onPromote={(i) => setPromotingIdea(i)}
                       />
                     ))}
@@ -186,113 +198,11 @@ export default function BrainstormPage() {
         </div>
 
         {/* Promote Concept to Scheduled Calendar Draft Modal */}
-        {promotingIdea ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-3">
-            <div className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
-                <div>
-                  <h3 className="font-heading text-base font-bold flex items-center gap-1.5">
-                    <IconCalendarEvent className="size-4 text-primary" />
-                    Promote Concept ke Draft
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Move "{promotingIdea.title}" to active planner.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setPromotingIdea(null)}
-                  className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1.5 text-xs font-semibold transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-
-              <form onSubmit={handlePromoteSubmit} className="mt-4 grid gap-3">
-                {/* Target Date */}
-                <div className="grid gap-1">
-                  <label
-                    htmlFor="promote-date"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Tanggal Penjadwalan (Opsional)
-                  </label>
-                  <input
-                    id="promote-date"
-                    name="date"
-                    type="date"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
-                  />
-                </div>
-
-                {/* Category */}
-                <div className="grid gap-1">
-                  <label
-                    htmlFor="promote-category"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Format / Category
-                  </label>
-                  <select
-                    id="promote-category"
-                    name="category"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
-                  >
-                    <option value="Reels">Reels / Shorts</option>
-                    <option value="Stories">Stories / Snaps</option>
-                    <option value="Post">Standard Post / Feed</option>
-                  </select>
-                </div>
-
-                {/* Workflow Status */}
-                <div className="grid gap-1">
-                  <label
-                    htmlFor="promote-status"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Initial Status
-                  </label>
-                  <select
-                    id="promote-status"
-                    name="status"
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
-                  >
-                    <option value="Draft">Draft</option>
-                    <option value="In progress">In progress</option>
-                    <option value="Published">Published</option>
-                  </select>
-                </div>
-
-                {/* Info Alert */}
-                <div className="bg-blue-500/5 border border-blue-500/20 rounded p-2.5 text-[11px] text-muted-foreground flex gap-2">
-                  <IconInfoCircle className="size-4 text-blue-500 shrink-0" />
-                  <p>
-                    Promoting this idea will automatically convert the catchy
-                    hook and structured outline into a storyboard script, ready
-                    for rich-text writing inside Drafts!
-                  </p>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-2 border-t border-border pt-3 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => setPromotingIdea(null)}
-                    className="rounded-md border border-border bg-background hover:bg-muted px-4 py-2 text-sm font-semibold transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2 text-sm font-semibold transition-colors"
-                  >
-                    Tambahkan ke Draft
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        ) : null}
+        <PromoteModal
+          promotingIdea={promotingIdea}
+          setPromotingIdea={setPromotingIdea}
+          handlePromoteSubmit={handlePromoteSubmit}
+        />
       </div>
     </PageTransition>
   );

@@ -58,37 +58,41 @@ export default function PromoteModal({
             />
           </div>
 
-          <div className="grid gap-1">
-            <label
-              htmlFor="promote-category"
-              className="text-xs font-semibold text-muted-foreground"
-            >
-              Format / Category
-            </label>
-            <CategorySelect
-              name="category"
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-              id="promote-category"
-              className="h-10 text-xs bg-background cursor-pointer"
-              includeNone={false}
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Category Select */}
+            <div className="grid gap-1">
+              <label
+                htmlFor="promote-category"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Format / Category
+              </label>
+              <CategorySelect
+                name="category"
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+                id="promote-category"
+                className="h-10 text-xs sm:text-sm bg-background cursor-pointer"
+                includeNone={false}
+              />
+            </div>
 
-          <div className="grid gap-1">
-            <label
-              htmlFor="promote-status"
-              className="text-xs font-semibold text-muted-foreground"
-            >
-              Initial Status
-            </label>
-            <StatusSelect
-              name="status"
-              value={selectedStatus}
-              onValueChange={setSelectedStatus}
-              id="promote-status"
-              className="h-10 text-xs bg-background cursor-pointer"
-            />
+            {/* Status Select */}
+            <div className="grid gap-1">
+              <label
+                htmlFor="promote-status"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Initial Status
+              </label>
+              <StatusSelect
+                name="status"
+                value={selectedStatus}
+                onValueChange={setSelectedStatus}
+                id="promote-status"
+                className="h-10 text-xs sm:text-sm bg-background cursor-pointer"
+              />
+            </div>
           </div>
 
           <div className="bg-blue-500/5 border border-blue-500/20 rounded p-2.5 text-[11px] text-muted-foreground flex gap-2">

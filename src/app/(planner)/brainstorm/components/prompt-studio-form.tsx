@@ -51,34 +51,36 @@ export default function PromptStudioForm({
           />
         </div>
 
-        <div className="grid gap-1">
-          <label
-            htmlFor="platform-select"
-            className="text-xs font-semibold text-muted-foreground"
-          >
-            Platform Sosial
-          </label>
-          <PlatformSelect
-            value={platform}
-            onValueChange={setPlatform}
-            id="platform-select"
-            className="h-10 text-xs bg-background cursor-pointer"
-          />
-        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-1">
+            <label
+              htmlFor="platform-select"
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              Platform Sosial
+            </label>
+            <PlatformSelect
+              value={platform}
+              onValueChange={setPlatform}
+              id="platform-select"
+              className="h-10 text-xs sm:text-sm bg-background cursor-pointer"
+            />
+          </div>
 
-        <div className="grid gap-1">
-          <label
-            htmlFor="tone-select"
-            className="text-xs font-semibold text-muted-foreground"
-          >
-            Gaya Bicara
-          </label>
-          <ToneSelect
-            value={tone}
-            onValueChange={setTone}
-            id="tone-select"
-            className="h-10 text-xs bg-background cursor-pointer"
-          />
+          <div className="grid gap-1">
+            <label
+              htmlFor="tone-select"
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              Gaya Bicara
+            </label>
+            <ToneSelect
+              value={tone}
+              onValueChange={setTone}
+              id="tone-select"
+              className="h-10 text-xs sm:text-sm bg-background cursor-pointer"
+            />
+          </div>
         </div>
 
         <button

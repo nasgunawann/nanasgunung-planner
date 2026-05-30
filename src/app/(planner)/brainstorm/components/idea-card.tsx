@@ -2,7 +2,7 @@
 
 import React from "react";
 import { m } from "motion/react";
-import { IconTrash, IconBooks, IconArrowRight } from "@tabler/icons-react";
+import { IconTrash, IconBulb, IconArrowRight } from "@tabler/icons-react";
 import {
   BrandInstagramIcon,
   BrandTiktokIcon,
@@ -21,14 +21,14 @@ const platformIconMap: Record<string, any> = {
 interface Props {
   idea: Idea;
   onDelete: (id: string) => void;
-  onSaveAsTemplate: (idea: Idea) => void;
+  onSaveAsRawIdea: (idea: Idea) => void;
   onPromote: (idea: Idea) => void;
 }
 
 export default function IdeaCard({
   idea,
   onDelete,
-  onSaveAsTemplate,
+  onSaveAsRawIdea,
   onPromote,
 }: Props) {
   const PlatformIcon = platformIconMap[idea.platform] || (() => null);
@@ -84,11 +84,11 @@ export default function IdeaCard({
             </button>
             <button
               type="button"
-              onClick={() => onSaveAsTemplate(idea)}
+              onClick={() => onSaveAsRawIdea(idea)}
               className="flex items-center gap-1 bg-muted hover:bg-muted/80 text-foreground border border-border px-2.5 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer"
             >
-              <IconBooks className="size-3.5 text-primary animate-pulse" />
-              Simpan Sebagai Templat
+              <IconBulb className="size-3.5 text-amber-500 animate-pulse" />
+              Simpan Sebagai Ide Mentah
             </button>
             <button
               type="button"

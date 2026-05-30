@@ -2,11 +2,15 @@
 
 import PageTransition from "@/components/page-transition";
 import { AnimatePresence, m } from "motion/react";
+import Link from "next/link";
 import {
   IconListDetails,
   IconTags,
   IconRecycle,
   IconPlus,
+  IconBulb,
+  IconSparkles,
+  IconTrash,
 } from "@tabler/icons-react";
 import { defaultTemplates } from "@/lib/library-seed";
 import TemplateCard from "./components/template-card";
@@ -14,6 +18,8 @@ import SnippetCard from "./components/snippet-card";
 import SnippetForm from "./components/snippet-form";
 import LibraryFilters from "./components/library-filters";
 import { useLibraryData } from "./hooks/use-library-data";
+import { useDrafts } from "@/lib/drafts";
+import { platformColorMap } from "@/lib/platform-map";
 
 export default function LibraryPage() {
   const {
@@ -67,6 +73,8 @@ export default function LibraryPage() {
     setTemplates,
   } = useLibraryData();
 
+  const { rawIdeas, deleteRawIdea } = useDrafts();
+
   const tabPanelVariants = {
     initial: { opacity: 0, y: 10, filter: "blur(1px)" },
     animate: {
@@ -90,6 +98,7 @@ export default function LibraryPage() {
           {[
             { id: "templates", label: "Template", icon: IconListDetails },
             { id: "snippets", label: "Aset Siap Pakai", icon: IconTags },
+            { id: "raw_ideas", label: "Ide Mentah", icon: IconBulb },
             { id: "history", label: "Arsip & Riwayat", icon: IconRecycle },
           ].map((tab) => {
             const Icon = tab.icon as any;
@@ -266,6 +275,76 @@ export default function LibraryPage() {
                     onAddSnippet={handleAddSnippet}
                   />
                 </aside>
+              </m.div>
+            )}
+
+            {activeTab === "raw_ideas" && (
+              <m.div
+                key="raw_ideas"
+                variants={tabPanelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="space-y-4 animate-in fade-in duration-200"
+              >
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {rawIdeas.length > 0 ? (
+                    rawIdeas.map((idea) => (
+                      <div
+                        key={idea.id}
+                        className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4 flex flex-col justify-between hover:shadow-md transition-all group relative overflow-hidden"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={[
+                                "px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm select-none",
+                                platformColorMap[idea.platform] ?? "bg-primary",
+                              ].join(" ")}
+                            >
+                              {idea.platform}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground select-none">
+                              {idea.createdAt}
+                            </span>
+                          </div>
+                          <h4 className="font-heading text-sm font-bold text-foreground leading-snug line-clamp-3">
+                            {idea.title}
+                          </h4>
+                        </div>
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40 mt-auto">
+                          <button
+                            type="button"
+                            onClick={() => deleteRawIdea(idea.id)}
+                            className="p-2 rounded-md border border-border hover:border-red-500/20 hover:bg-red-500/5 text-muted-foreground hover:text-red-500 transition-all cursor-pointer"
+                            title="Hapus Ide Mentah"
+                          >
+                            <IconTrash className="size-4" />
+                          </button>
+                          <Link
+                            href={`/brainstorm?idea=${encodeURIComponent(idea.title)}&platform=${encodeURIComponent(idea.platform)}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 h-8.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-sm select-none cursor-pointer"
+                          >
+                            <IconSparkles className="size-3.5 animate-pulse" />
+                            Kembangkan Ide
+                          </Link>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full rounded-xl border border-dashed border-border/80 bg-card/45 p-8 text-center space-y-4 max-w-md mx-auto mt-6">
+                      <IconBulb className="size-10 text-muted-foreground/35 mx-auto animate-pulse" />
+                      <div className="space-y-1">
+                        <h3 className="font-heading text-sm font-bold text-foreground">
+                          Belum ada ide mentah tersimpan
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                          Catat ide mentah cepat dari menu FAB (`+`) di pojok kanan bawah atau dari Quick Capture di Dashboard.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </m.div>
             )}
 

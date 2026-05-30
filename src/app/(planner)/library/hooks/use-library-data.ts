@@ -23,7 +23,7 @@ export function useLibraryData() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<
-    "templates" | "snippets" | "history"
+    "templates" | "snippets" | "raw_ideas" | "history"
   >("templates");
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [snippetTitle, setSnippetTitle] = useState("");
@@ -50,6 +50,14 @@ export function useLibraryData() {
 
   useEffect(() => {
     try {
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get("tab");
+        if (tabParam && ["templates", "snippets", "raw_ideas", "history"].includes(tabParam)) {
+          setActiveTab(tabParam as any);
+        }
+      }
+
       const storedSnippets = localStorage.getItem("nanas_snippets");
       if (storedSnippets) {
         setSnippets(JSON.parse(storedSnippets));

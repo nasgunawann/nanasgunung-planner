@@ -115,7 +115,7 @@ export default function QuickAddModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Masukkan judul konten..."
-              className="h-10 text-xs bg-background"
+              className="h-10 text-xs sm:text-sm bg-background"
               required
               autoFocus
             />
@@ -134,7 +134,7 @@ export default function QuickAddModal({
                 value={platform}
                 onValueChange={setPlatform}
                 id="modal-platform"
-                className="h-10 text-xs bg-background cursor-pointer"
+                className="h-10 text-xs sm:text-sm bg-background cursor-pointer"
               />
             </div>
 
@@ -150,7 +150,7 @@ export default function QuickAddModal({
                 value={category}
                 onValueChange={setCategory}
                 id="modal-category"
-                className="h-10 text-xs bg-background cursor-pointer"
+                className="h-10 text-xs sm:text-sm bg-background cursor-pointer"
               />
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function QuickAddModal({
                 value={status}
                 onValueChange={setStatus}
                 id="modal-status"
-                className="h-10 text-xs bg-background cursor-pointer"
+                className="h-10 text-xs sm:text-sm bg-background cursor-pointer"
               />
             </div>
 
@@ -185,7 +185,7 @@ export default function QuickAddModal({
                 type="datetime-local"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="h-10 text-xs bg-background cursor-pointer block"
+                className="h-10 text-xs sm:text-sm bg-background cursor-pointer block"
               />
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function QuickAddModal({
               onChange={(e) => setContent(e.target.value)}
               placeholder="Tulis hook awal, ide adegan, atau outline singkat konten di sini..."
               rows={3}
-              className="w-full rounded-md border border-border bg-background p-3 text-xs outline-none focus:border-primary/50 resize-none font-sans text-foreground"
+              className="w-full rounded-md border border-border bg-background p-3 text-xs sm:text-sm outline-none focus:border-primary/50 resize-none font-sans text-foreground"
             />
           </div>
 
@@ -218,13 +218,13 @@ export default function QuickAddModal({
             <button
               type="button"
               onClick={onClose}
-              className="h-9 px-4 rounded-md border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer"
+              className="h-9 px-4 rounded-md border border-border bg-background hover:bg-muted text-xs sm:text-sm font-bold transition-all cursor-pointer"
             >
               Batal
             </button>
             <Button
               type="submit"
-              className="h-9 px-4 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              className="h-9 px-4 text-xs sm:text-sm font-bold transition-all shadow-sm cursor-pointer"
             >
               Buat Draf
             </Button>

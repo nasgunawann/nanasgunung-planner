@@ -67,10 +67,9 @@ function StatIconBadge({
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { drafts, ideas } = useDrafts();
+  const { drafts, ideas, rawIdeas, addRawIdea } = useDrafts();
 
   // Local storage state for Library items
-  const [rawIdeasCount, setRawIdeasCount] = useState(0);
   const [snippetsCount, setSnippetsCount] = useState(0);
   const [customTemplatesCount, setCustomTemplatesCount] = useState(0);
 
@@ -81,13 +80,11 @@ export default function DashboardPage() {
   // Sync Library items counts from LocalStorage on mount
   useEffect(() => {
     try {
-      const storedRaw = localStorage.getItem("nanas_raw_ideas");
       const storedSnippets = localStorage.getItem("nanas_snippets");
       const storedCustomTemplates = localStorage.getItem(
         "nanas_custom_templates",
       );
 
-      if (storedRaw) setRawIdeasCount(JSON.parse(storedRaw).length);
       if (storedSnippets) setSnippetsCount(JSON.parse(storedSnippets).length);
       if (storedCustomTemplates)
         setCustomTemplatesCount(JSON.parse(storedCustomTemplates).length);
@@ -103,29 +100,7 @@ export default function DashboardPage() {
 
     setIsSubmittingIdea(true);
     try {
-      const storedRaw = localStorage.getItem("nanas_raw_ideas");
-      const currentRaw = storedRaw ? JSON.parse(storedRaw) : [];
-
-      const newIdea = {
-        id: `${Date.now()}`,
-        content: quickIdea.trim(),
-        createdAt: new Date().toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        }),
-      };
-
-      const updated = [newIdea, ...currentRaw];
-      localStorage.setItem("nanas_raw_ideas", JSON.stringify(updated));
-      setRawIdeasCount(updated.length);
-
-      toast.success("Ide mentah berhasil dicatat secara instan!", {
-        action: {
-          label: "Lihat di Pustaka",
-          onClick: () => router.push("/library?tab=raw_ideas"),
-        },
-      });
+      addRawIdea(quickIdea.trim(), "Instagram");
       setQuickIdea("");
     } catch (err) {
       toast.error("Gagal menyimpan ide cepat.");
@@ -252,7 +227,7 @@ export default function DashboardPage() {
                   Ide Mentah
                 </CardDescription>
                 <CardTitle className="text-3xl font-extrabold tracking-tight mt-1">
-                  {rawIdeasCount}
+                  {rawIdeas.length}
                 </CardTitle>
               </div>
               <StatIconBadge icon={IconBulb} />

@@ -63,7 +63,7 @@ export function AddCustomItemDialog({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={placeholder}
-            className="h-10 text-xs bg-background outline-none border border-border/80 rounded-md p-3"
+            className="h-10 text-xs sm:text-sm bg-background outline-none border border-border/80 rounded-md p-3"
             required
             autoFocus
           />
@@ -71,13 +71,13 @@ export function AddCustomItemDialog({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer select-none"
+              className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs sm:text-sm font-bold transition-all cursor-pointer select-none"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-3 py-1.5 rounded bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold transition-all cursor-pointer shadow-sm select-none"
+              className="px-3 py-1.5 rounded bg-primary hover:bg-primary/95 text-primary-foreground text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm select-none"
             >
               Tambah
             </button>
