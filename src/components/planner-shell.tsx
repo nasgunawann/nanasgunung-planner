@@ -299,7 +299,7 @@ export default function PlannerShell({
                       className="block h-8 w-auto dark:hidden"
                     />
                     <Image
-                      src="/nanas-putih.svg"
+                      src="/nanas-putih.png"
                       alt="Nanasgunung Planner"
                       width={36}
                       height={36}
