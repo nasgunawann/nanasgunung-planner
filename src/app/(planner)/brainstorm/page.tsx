@@ -30,300 +30,32 @@ const platformIconMap: Record<string, any> = {
   YouTube: BrandYoutubeIcon,
   LinkedIn: BrandLinkedinIcon,
 };
-
-function parseAngles(
-  text: string,
-): { title: string; hook: string; outline: string }[] {
-  const angles: { title: string; hook: string; outline: string }[] = [];
-  
-  // Robust case-insensitive splitter for all ANGLE heading variations
-  const sections = text.split(/={2,}\s*ANGLE\s*\d+\s*={2,}/gi);
-
-  for (const section of sections) {
-    if (!section.trim()) continue;
-
-    // Support case-insensitive title, hook, and outline labels (indonesian or english)
-    const titleMatch = section.match(/(?:TITLE|Title|Judul):\s*(.+)/i);
-    const hookMatch = section.match(/(?:HOOK|Hook|Opening):\s*(.+)/i);
-    const outlineMatch = section.match(/(?:OUTLINE|Outline|Struktur|Storyboard):\s*/i);
-    
-    const outlineIndex = outlineMatch && outlineMatch.index !== undefined ? outlineMatch.index : -1;
-    const outlineLength = outlineMatch ? outlineMatch[0].length : 8;
-
-    let title = "";
-    let hook = "";
-    let outline = "";
-
-    if (titleMatch) {
-      title = titleMatch[1].trim().replace(/^["'*#\s]+|["'*#\s]+$/g, "");
-    }
-    if (hookMatch) {
-      hook = hookMatch[1].trim().replace(/^["'*#\s]+|["'*#\s]+$/g, "");
-    }
-    if (outlineIndex !== -1) {
-      outline = section.substring(outlineIndex + outlineLength).trim();
-      // Clean leading and trailing markdown stars, brackets, hashes, or quotes
-      outline = outline.replace(/^["'*#\s]+|["'*#\s]+$/g, "");
-    }
-
-    if (title || hook || outline) {
-      angles.push({
-        title: title || "Ide Konten Baru",
-        hook: hook || "Hook tidak tersedia.",
-        outline: outline || "Outline tidak tersedia.",
-      });
-    }
-  }
-
-  return angles;
-}
+import useBrainstorm from "./hooks/use-brainstorm";
 
 export default function BrainstormPage() {
-  const { ideas, addIdea, deleteIdea, addDraft } = useDrafts();
-  const router = useRouter();
+  const {
+    ideas,
+    topic,
+    setTopic,
+    platform,
+    setPlatform,
+    tone,
+    setTone,
+    isGenerating,
+    generationStep,
+    displayProgress,
+    showIntro,
+    setShowIntro,
+    promotingIdea,
+    setPromotingIdea,
+    handleGenerate,
+    handlePromoteSubmit,
+    handleCloseIntro,
+    handleSaveAsTemplate,
+    deleteIdea,
+  } = useBrainstorm();
 
-  // Inputs
-  const [topic, setTopic] = useState("");
-  const [platform, setPlatform] = useState("Instagram");
-  const [tone, setTone] = useState("Informative");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStep, setGenerationStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [displayProgress, setDisplayProgress] = useState(0);
-  const [showIntro, setShowIntro] = useState(true);
-
-  // Load intro visibility from localStorage on mount
-  useEffect(() => {
-    try {
-      const hideIntro = localStorage.getItem("hide_brainstorm_intro");
-      if (hideIntro === "true") {
-        setShowIntro(false);
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, []);
-
-  // Read URL query parameter for Raw Idea funnel integration
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const ideaParam = params.get("idea");
-      if (ideaParam) {
-        setTopic(decodeURIComponent(ideaParam));
-        toast.info("Mengimpor ide mentah dari perpustakaan untuk dikembangkan!");
-        
-        // Clean the URL parameter silently without reload
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-      }
-    }
-  }, []);
-
-  function handleSaveAsTemplate(idea: Idea) {
-    try {
-      const stored = localStorage.getItem("nanas_custom_templates");
-      const currentTemplates = stored ? JSON.parse(stored) : [];
-
-      const blueprintHtml = `<h3><strong>[OUTLINE STORYBOARD VIDEO]</strong></h3>
-<p></p>
-<ul>
-  <li><strong>Hook:</strong> ${idea.hook}</li>
-  <li><strong>Outline / Storyboard:</strong></li>
-</ul>
-<pre><code>${idea.outline}</code></pre>`;
-
-      const newTemplate = {
-        title: idea.title,
-        type: "Custom Outline",
-        usage: "0 kali digunakan",
-        platform: idea.platform,
-        category: "Post",
-        description: `Templat kustom yang dibuat dari hasil brainstorm ide: "${idea.title}"`,
-        blueprint: blueprintHtml,
-        isCustom: true,
-      };
-
-      if (currentTemplates.some((t: any) => t.title === idea.title)) {
-        toast.error("Templat dengan nama yang sama sudah ada di Library!");
-        return;
-      }
-
-      const updated = [newTemplate, ...currentTemplates];
-      localStorage.setItem("nanas_custom_templates", JSON.stringify(updated));
-
-      toast.success(`Ide "${idea.title}" berhasil disimpan sebagai Templat Kustom di Library!`, {
-        action: {
-          label: "Buka Library",
-          onClick: () => router.push("/library"),
-        },
-      });
-    } catch (e) {
-      toast.error("Gagal menyimpan templat kustom.");
-    }
-  }
-
-  const handleCloseIntro = () => {
-    setShowIntro(false);
-    try {
-      localStorage.setItem("hide_brainstorm_intro", "true");
-    } catch (e) {
-      // ignore
-    }
-  };
-
-  // Smooth progress animation adapted from reference components
-  useEffect(() => {
-    if (!isGenerating) {
-      setDisplayProgress(0);
-      return;
-    }
-    const targetProgress =
-      generationStep === 1
-        ? 0
-        : generationStep === 2
-          ? 35
-          : generationStep === 3
-            ? 65
-            : generationStep === 4
-              ? 90
-              : 100;
-
-    let animationFrame: number;
-
-    const animateProgress = () => {
-      setDisplayProgress((prev) => {
-        const diff = targetProgress - prev;
-        const nextVal = prev + diff * 0.08; // smooth easing
-        if (Math.abs(diff) < 0.2) return targetProgress;
-        animationFrame = requestAnimationFrame(animateProgress);
-        return nextVal;
-      });
-    };
-
-    animateProgress();
-    return () => cancelAnimationFrame(animationFrame);
-  }, [generationStep, isGenerating]);
-
-  // Promotion Dialog State
-  const [promotingIdea, setPromotingIdea] = useState<Idea | null>(null);
-
-  // Real AI Engine (Multi-Angle Content Briefs)
-  async function handleGenerate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!topic.trim()) return;
-
-    setIsGenerating(true);
-    setGenerationStep(1);
-
-    try {
-      const response = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: topic,
-          commandType: "brainstorm",
-          draftMeta: {
-            platform: platform,
-            status: tone, // We map 'tone' to status which buildPrompt formats in the metadata
-          },
-        }),
-      });
-
-      if (!response.ok || !response.body) {
-        throw new Error("Gagal memanggil AI Agent.");
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedText = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        accumulatedText += decoder.decode(value, { stream: true });
-
-        // Update progress step dynamically based on Gemini stream accumulation
-        if (
-          accumulatedText.length > 0 &&
-          !accumulatedText.includes("=== ANGLE 2 ===")
-        ) {
-          setGenerationStep(2);
-        } else if (
-          accumulatedText.includes("=== ANGLE 2 ===") &&
-          !accumulatedText.includes("=== ANGLE 3 ===")
-        ) {
-          setGenerationStep(3);
-        } else if (accumulatedText.includes("=== ANGLE 3 ===")) {
-          setGenerationStep(4);
-        }
-      }
-
-      setGenerationStep(5);
-
-      const parsedAngles = parseAngles(accumulatedText);
-
-      if (parsedAngles.length === 0) {
-        throw new Error(
-          "Format respons AI tidak sesuai. Pastikan API mengembalikan struktur ANGLE.",
-        );
-      }
-
-      // Add each idea in reverse order to preserve listing order (newest on top)
-      for (let i = parsedAngles.length - 1; i >= 0; i--) {
-        addIdea({
-          title: parsedAngles[i].title,
-          platform,
-          hook: parsedAngles[i].hook,
-          outline: parsedAngles[i].outline,
-        });
-      }
-
-      setTopic("");
-      toast.success("AI berhasil merancang 3 sudut pandang kreatif!");
-    } catch (err: any) {
-      console.error("Brainstorm AI Error:", err);
-      toast.error(err.message || "Terjadi kesalahan saat menghubungi AI.");
-    } finally {
-      setIsGenerating(false);
-    }
-  }
-
-  // Promote Idea to Calendar
-  function handlePromoteSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!promotingIdea) return;
-
-    const form = e.currentTarget as HTMLFormElement;
-    const date = (form.elements.namedItem("date") as HTMLInputElement).value;
-    const category = (form.elements.namedItem("category") as HTMLSelectElement)
-      .value;
-    const status = (form.elements.namedItem("status") as HTMLSelectElement)
-      .value;
-
-    const scriptText = `[AI GENERATED BRIEF & HOOK]\nHook: "${promotingIdea.hook}"\n\n[SCRIPT OUTLINE]\n${promotingIdea.outline}`;
-
-    // Add to drafts silently to handle custom toast layout
-    const draftId = addDraft({
-      title: promotingIdea.title,
-      platform: promotingIdea.platform,
-      category,
-      status,
-      date: date ? date : undefined,
-      content: scriptText,
-    }, true);
-
-    // Custom premium success toast with redirect action button!
-    toast.success(`Ide "${promotingIdea.title}" berhasil dijadikan draf!`, {
-      action: {
-        label: "Lihat Draft",
-        onClick: () => router.push(`/drafts/${draftId}`),
-      },
-    });
-
-    // Delete from ideas funnel silently to prevent overlap error toast
-    deleteIdea(promotingIdea.id, true);
-    setPromotingIdea(null);
-  }
+  // All interactive state & handlers are provided by `useBrainstorm` hook
 
   return (
     <PageTransition>
