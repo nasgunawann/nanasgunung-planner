@@ -1,7 +1,7 @@
 "use client";
 
 import PageTransition from "@/components/page-transition";
-import { m } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import {
   IconListDetails,
   IconTags,
@@ -67,6 +67,22 @@ export default function LibraryPage() {
     setTemplates,
   } = useLibraryData();
 
+  const tabPanelVariants = {
+    initial: { opacity: 0, y: 10, filter: "blur(1px)" },
+    animate: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
+    },
+    exit: {
+      opacity: 0,
+      y: -8,
+      filter: "blur(1px)",
+      transition: { duration: 0.12, ease: [0.16, 1, 0.3, 1] },
+    },
+  } as const;
+
   return (
     <PageTransition>
       <div className="space-y-6">
@@ -98,53 +114,69 @@ export default function LibraryPage() {
         </div>
 
         <div className="w-full">
-          <m.div className="space-y-4">
+          <AnimatePresence mode="wait" initial={false}>
             {activeTab === "templates" && (
-              <div className="grid gap-4">
-                {templates.length > 0 ? (
-                  templates.map((t) => (
-                    <TemplateCard
-                      key={t.title}
-                      template={t}
-                      isExpanded={expandedTemplates.includes(t.title)}
-                      onToggle={toggleTemplateExpand}
-                      onDelete={handleDeleteTemplate}
-                      onUse={handleUseTemplate}
-                    />
-                  ))
-                ) : (
-                  <div className="rounded-xl border border-dashed border-border/80 bg-card/40 p-8 text-center space-y-4 max-w-md mx-auto mt-6">
-                    <IconListDetails className="size-10 text-muted-foreground/35 mx-auto animate-pulse" />
-                    <div className="space-y-1">
-                      <h3 className="font-heading text-sm font-bold text-foreground">
-                        Belum ada templat kustom
-                      </h3>
-                      <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
-                        Gunakan AI Blueprint Generator untuk generate kerangka
-                        konten kustom, atau pulihkan templat bawaan awal.
-                      </p>
+              <m.div
+                key="templates"
+                variants={tabPanelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="space-y-4"
+              >
+                <div className="grid gap-4">
+                  {templates.length > 0 ? (
+                    templates.map((t) => (
+                      <TemplateCard
+                        key={t.title}
+                        template={t}
+                        isExpanded={expandedTemplates.includes(t.title)}
+                        onToggle={toggleTemplateExpand}
+                        onDelete={handleDeleteTemplate}
+                        onUse={handleUseTemplate}
+                      />
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-border/80 bg-card/40 p-8 text-center space-y-4 max-w-md mx-auto mt-6">
+                      <IconListDetails className="size-10 text-muted-foreground/35 mx-auto animate-pulse" />
+                      <div className="space-y-1">
+                        <h3 className="font-heading text-sm font-bold text-foreground">
+                          Belum ada templat kustom
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                          Gunakan AI Blueprint Generator untuk generate kerangka
+                          konten kustom, atau pulihkan templat bawaan awal.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTemplates(defaultTemplates);
+                          localStorage.setItem(
+                            "nanas_custom_templates",
+                            JSON.stringify(defaultTemplates),
+                          );
+                        }}
+                        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 text-xs font-bold transition-all shadow-sm cursor-pointer select-none mx-auto"
+                      >
+                        <IconRecycle className="size-4" /> Muat Ulang Templat
+                        Bawaan
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTemplates(defaultTemplates);
-                        localStorage.setItem(
-                          "nanas_custom_templates",
-                          JSON.stringify(defaultTemplates),
-                        );
-                      }}
-                      className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 text-xs font-bold transition-all shadow-sm cursor-pointer select-none mx-auto"
-                    >
-                      <IconRecycle className="size-4" /> Muat Ulang Templat
-                      Bawaan
-                    </button>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </m.div>
             )}
 
             {activeTab === "snippets" && (
-              <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+              <m.div
+                key="snippets"
+                variants={tabPanelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]"
+              >
                 <div className="space-y-4">
                   <LibraryFilters
                     categories={categories}
@@ -234,11 +266,18 @@ export default function LibraryPage() {
                     onAddSnippet={handleAddSnippet}
                   />
                 </aside>
-              </div>
+              </m.div>
             )}
 
             {activeTab === "history" && (
-              <div className="grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
+              <m.div
+                key="history"
+                variants={tabPanelVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="grid gap-6 md:grid-cols-[1.2fr_0.8fr]"
+              >
                 <div className="rounded-xl border border-border/60 bg-card p-5 space-y-4 h-fit">
                   <h3 className="font-heading text-base font-bold text-foreground">
                     Recent Updates & Synchronizations
@@ -249,9 +288,9 @@ export default function LibraryPage() {
                     Asset Synchronization
                   </h4>
                 </div>
-              </div>
+              </m.div>
             )}
-          </m.div>
+          </AnimatePresence>
 
           {/* Confirmation dialog */}
           {deleteDialogOpen && (
