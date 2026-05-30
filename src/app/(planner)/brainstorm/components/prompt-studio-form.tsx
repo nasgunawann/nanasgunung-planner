@@ -86,7 +86,7 @@ export default function PromptStudioForm({
         <button
           type="submit"
           disabled={isGenerating || !topic.trim()}
-          className="w-full h-10 flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold transition-all disabled:opacity-50 shadow-md shadow-purple-500/10"
+          className="ai-accent w-full h-10 flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50"
         >
           {isGenerating ? (
             <>

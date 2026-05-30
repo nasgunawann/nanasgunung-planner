@@ -217,6 +217,159 @@
   }
 }
 
+/* AI Accent Button / Surface Styles */
+.ai-accent {
+  background-image: linear-gradient(
+    135deg,
+    #111827 0%,
+    #1f2937 28%,
+    #6d28d9 62%,
+    #f59e0b 100%
+  ) !important;
+  color: #fff !important;
+  box-shadow:
+    0 10px 24px -12px rgba(109, 40, 217, 0.55),
+    0 2px 8px rgba(15, 23, 42, 0.18) !important;
+  border: 1px solid color-mix(in oklch, var(--primary) 26%, transparent) !important;
+  position: relative;
+  isolation: isolate;
+}
+
+.ai-accent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18),
+    transparent 40%,
+    rgba(255, 255, 255, 0.06)
+  );
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.ai-accent:hover:not(:disabled) {
+  filter: saturate(1.08) brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 28px -14px rgba(109, 40, 217, 0.6),
+    0 4px 12px rgba(15, 23, 42, 0.2) !important;
+}
+
+.ai-accent:active:not(:disabled) {
+  transform: translateY(0);
+  filter: saturate(1.02) brightness(0.99);
+}
+
+.ai-accent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+.ai-accent-ghost {
+  background: color-mix(in oklch, var(--primary) 10%, var(--card)) !important;
+  color: color-mix(
+    in oklch,
+    var(--primary) 78%,
+    var(--foreground) 22%
+  ) !important;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, transparent) !important;
+  box-shadow: 0 8px 20px -16px rgba(109, 40, 217, 0.38) !important;
+}
+
+.ai-accent-ghost:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--primary) 14%, var(--card)) !important;
+}
+
+.ai-accent-text {
+  color: color-mix(
+    in oklch,
+    var(--primary) 72%,
+    var(--foreground) 28%
+  ) !important;
+}
+
+.ai-accent-surface {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--primary) 8%, var(--card)) 0%,
+    color-mix(in oklch, var(--primary) 3%, var(--card)) 100%
+  ) !important;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, transparent) !important;
+  box-shadow:
+    0 18px 42px -30px rgba(17, 24, 39, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+}
+
+.dark .ai-accent-surface {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--primary) 10%, var(--card)) 0%,
+    color-mix(in oklch, var(--primary) 5%, var(--card)) 100%
+  ) !important;
+  box-shadow:
+    0 18px 42px -30px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.ai-accent-field {
+  border-color: color-mix(in oklch, var(--primary) 18%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 10%, transparent)
+    inset !important;
+}
+
+.ai-accent-field:focus,
+.ai-accent-field:focus-visible {
+  border-color: color-mix(in oklch, var(--primary) 35%, transparent) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--primary) 22%, transparent) inset,
+    0 0 0 3px color-mix(in oklch, var(--primary) 14%, transparent) !important;
+}
+
+.ai-accent-chip {
+  background: color-mix(in oklch, var(--primary) 14%, var(--card)) !important;
+  color: color-mix(
+    in oklch,
+    var(--primary) 78%,
+    var(--foreground) 22%
+  ) !important;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, transparent) !important;
+}
+
+.ai-accent-orb {
+  background: radial-gradient(
+    circle at 30% 30%,
+    color-mix(in oklch, var(--primary) 65%, #fff 35%),
+    color-mix(in oklch, var(--primary) 35%, #6d28d9 65%) 55%,
+    color-mix(in oklch, var(--primary) 10%, #111827 90%) 100%
+  ) !important;
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--primary) 18%, transparent)
+    inset;
+}
+
+.ai-accent-progress {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 88%, #111827 12%),
+    color-mix(in oklch, var(--primary) 65%, #6d28d9 35%),
+    color-mix(in oklch, var(--primary) 38%, #f59e0b 62%)
+  ) !important;
+}
+
+.ai-accent-pulse {
+  background: color-mix(in oklch, var(--primary) 72%, #ffffff 28%) !important;
+  box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 32%, transparent) !important;
+}
+
+.ai-accent .text-white,
+.ai-accent svg {
+  color: inherit;
+}
+
 /* Notion Task List & Checkbox styling */
 .tiptap.ProseMirror ul[data-type="taskList"] {
   list-style: none !important;

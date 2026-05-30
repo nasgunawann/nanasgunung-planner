@@ -315,7 +315,7 @@ export default function LibraryPage() {
                           </button>
                           <Link
                             href={`/brainstorm?idea=${encodeURIComponent(idea.title)}&platform=${encodeURIComponent(idea.platform)}`}
-                            className="flex-1 flex items-center justify-center gap-1.5 h-8.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-sm select-none cursor-pointer"
+                            className="ai-accent flex-1 flex items-center justify-center gap-1.5 h-8.5 rounded-md text-xs font-bold transition-all shadow-sm select-none cursor-pointer"
                           >
                             <IconSparkles className="size-3.5 animate-pulse" />
                             Kembangkan Ide

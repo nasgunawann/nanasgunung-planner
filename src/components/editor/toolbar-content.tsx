@@ -48,7 +48,7 @@ export function MainToolbarContent({
         <Button
           onClick={onAiClick}
           variant="ghost"
-          className="gap-1 px-2 text-[10px] font-semibold text-primary"
+          className="ai-accent-ghost gap-1 px-2 text-[10px] font-semibold"
           title="Generate dengan AI (Ctrl+/)"
         >
           <IconSparkles className="size-4 shrink-0" />

@@ -28,7 +28,8 @@ export default function AiPromptPopup({
   draftMeta,
   isAiStreaming,
 }: AiPromptPopupProps) {
-  if (!isAiPromptActive || !aiPromptCoords || typeof document === "undefined") return null;
+  if (!isAiPromptActive || !aiPromptCoords || typeof document === "undefined")
+    return null;
 
   return createPortal(
     <div
@@ -36,22 +37,28 @@ export default function AiPromptPopup({
       style={{
         position: "fixed",
         top:
-          typeof window !== "undefined" && aiPromptCoords.bottom + 160 > window.innerHeight
+          typeof window !== "undefined" &&
+          aiPromptCoords.bottom + 160 > window.innerHeight
             ? aiPromptCoords.top - 164
             : aiPromptCoords.bottom + 6,
         left:
           typeof window !== "undefined"
-            ? Math.max(12, Math.min(aiPromptCoords.left, window.innerWidth - 400))
+            ? Math.max(
+                12,
+                Math.min(aiPromptCoords.left, window.innerWidth - 400),
+              )
             : aiPromptCoords.left,
       }}
-      className="fixed z-[9999] w-96 bg-card border border-primary/30 shadow-2xl rounded-xl p-3 backdrop-blur-md"
+      className="fixed z-[9999] w-96 ai-accent-surface rounded-xl p-3 backdrop-blur-md"
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-2">
-        <IconSparkles className="size-3.5 text-primary shrink-0" />
-        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">AI Generate</span>
+        <IconSparkles className="size-3.5 ai-accent-text shrink-0" />
+        <span className="text-[10px] font-semibold ai-accent-text uppercase tracking-wider">
+          AI Generate
+        </span>
         {draftMeta?.platform && (
-          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+          <span className="text-[9px] px-1.5 py-0.5 rounded-full ai-accent-chip font-medium">
             {draftMeta.platform}
           </span>
         )}
@@ -60,11 +67,16 @@ export default function AiPromptPopup({
             {draftMeta.category}
           </span>
         )}
-        <span className="text-[9px] text-muted-foreground ml-auto">Enter · Esc batal</span>
+        <span className="text-[9px] text-muted-foreground ml-auto">
+          Enter · Esc batal
+        </span>
       </div>
       {draftMeta?.title && (
         <div className="text-[9px] text-muted-foreground/70 mb-2 px-0.5">
-          Topik: <span className="text-foreground/80 font-medium">{draftMeta.title}</span>
+          Topik:{" "}
+          <span className="text-foreground/80 font-medium">
+            {draftMeta.title}
+          </span>
         </div>
       )}
       {/* Input */}
@@ -92,12 +104,12 @@ export default function AiPromptPopup({
           type="button"
           onClick={submitAiPrompt}
           disabled={!aiPromptValue.trim() || isAiStreaming}
-          className="shrink-0 h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
+          className="ai-accent shrink-0 h-8 w-8 flex items-center justify-center rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-sm"
         >
           <IconSparkles className="size-3.5" />
         </button>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

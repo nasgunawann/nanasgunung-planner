@@ -122,9 +122,9 @@ export function GlobalAiLoadingIndicator() {
   return (
     <Link
       href="/brainstorm"
-      className="fixed bottom-6 right-6 lg:right-24 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-purple-500/40 bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm font-bold shadow-xl ring-4 ring-purple-500/20 transition-all select-none animate-pulse shrink-0 touch-manipulation cursor-pointer"
+      className="ai-accent fixed bottom-6 right-6 lg:right-24 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold ring-4 ring-primary/20 transition-all select-none animate-pulse shrink-0 touch-manipulation cursor-pointer"
     >
-      <IconSparkles className="size-4 text-purple-200 animate-spin" />
+      <IconSparkles className="size-4 animate-spin" />
       <span>AI Agent: {Math.round(displayProgress)}%</span>
     </Link>
   );

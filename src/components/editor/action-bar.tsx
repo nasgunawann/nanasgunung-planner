@@ -25,7 +25,8 @@ export default function ActionBar({
   handleAiRetry,
   handleAiDiscard,
 }: ActionBarProps) {
-  if (!aiActionBar || isAiStreaming || typeof document === "undefined") return null;
+  if (!aiActionBar || isAiStreaming || typeof document === "undefined")
+    return null;
 
   return createPortal(
     <div
@@ -39,11 +40,11 @@ export default function ActionBar({
     >
       {/* Command label */}
       <div className="flex items-center gap-1 sm:gap-1.5 mr-0.5 sm:mr-1">
-        <IconSparkles className="size-3 text-primary shrink-0" />
+        <IconSparkles className="size-3 ai-accent-text shrink-0" />
         <span className="text-[10px] font-medium text-foreground/80 max-w-[100px] sm:max-w-[180px] truncate">
           {aiActionBar.commandType === "general" && aiActionBar.prompt
             ? `"${aiActionBar.prompt.length > 28 ? aiActionBar.prompt.slice(0, 28) + "…" : aiActionBar.prompt}"`
-            : AI_COMMAND_LABELS[aiActionBar.commandType] ?? "AI Generate"}
+            : (AI_COMMAND_LABELS[aiActionBar.commandType] ?? "AI Generate")}
         </span>
       </div>
 
@@ -54,10 +55,16 @@ export default function ActionBar({
         type="button"
         onClick={handleAiAccept}
         title="Simpan hasil AI"
-        className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white transition-all shrink-0 cursor-pointer shadow-sm"
+        className="ai-accent flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-bold transition-all shrink-0 cursor-pointer shadow-sm"
       >
         <svg viewBox="0 0 16 16" fill="none" className="size-3 shrink-0">
-          <path d="M3 8l3.5 3.5L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M3 8l3.5 3.5L13 5"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         <span className="hidden sm:inline">Simpan</span>
       </button>
@@ -70,8 +77,19 @@ export default function ActionBar({
         className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0 cursor-pointer"
       >
         <svg viewBox="0 0 16 16" fill="none" className="size-3 shrink-0">
-          <path d="M13.5 2.5A6.5 6.5 0 1 1 9 2.07" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M13.5 2.5V6h-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M13.5 2.5A6.5 6.5 0 1 1 9 2.07"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M13.5 2.5V6h-3.5"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         <span className="hidden sm:inline">Coba Lagi</span>
       </button>
@@ -84,11 +102,16 @@ export default function ActionBar({
         className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0 cursor-pointer"
       >
         <svg viewBox="0 0 16 16" fill="none" className="size-3 shrink-0">
-          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path
+            d="M4 4l8 8M12 4l-8 8"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
         </svg>
         <span className="hidden sm:inline">Buang</span>
       </button>
     </div>,
-    document.body
+    document.body,
   );
 }

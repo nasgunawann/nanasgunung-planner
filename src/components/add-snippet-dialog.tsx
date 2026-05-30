@@ -91,7 +91,7 @@ export default function AddSnippetDialog({
 
       const parsed = parseAiSnippet(accumulatedText);
       setContent(parsed.content);
-      
+
       // Auto-validate and set category if valid
       if (parsed.category) {
         setCategory(parsed.category);
@@ -129,21 +129,30 @@ export default function AddSnippetDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="max-w-md overflow-hidden">
         <DialogHeader className="pb-1.5">
           <DialogTitle className="font-heading text-sm font-bold text-foreground">
             Tambah Aset Siap Pakai Baru
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground mt-1">
-            Simpan kalimat CTA, hashtags, intro, atau outro siap pakai ke Pustaka luring Anda.
+            Simpan kalimat CTA, hashtags, intro, atau outro siap pakai ke
+            Pustaka luring Anda.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 mt-2">
           {/* Judul Aset */}
           <div className="grid gap-1">
-            <label htmlFor="snip-title" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="snip-title"
+              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+            >
               Judul Aset
             </label>
             <Input
@@ -158,7 +167,10 @@ export default function AddSnippetDialog({
 
           {/* Kategori */}
           <div className="grid gap-1">
-            <label htmlFor="snip-category" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="snip-category"
+              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+            >
               Kategori
             </label>
             <SnippetCategorySelect
@@ -172,37 +184,40 @@ export default function AddSnippetDialog({
           {/* Konten Aset */}
           <div className="grid gap-1">
             <div className="flex items-center justify-between">
-              <label htmlFor="snip-content" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="snip-content"
+                className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+              >
                 Konten Aset
               </label>
               <button
                 type="button"
                 onClick={() => setShowAiHelper(!showAiHelper)}
-                className="text-[10px] text-primary hover:underline font-bold flex items-center gap-1 select-none cursor-pointer"
+                className="text-[10px] ai-accent-text hover:underline font-bold flex items-center gap-1 select-none cursor-pointer"
               >
-                <IconSparkles className="size-3 text-purple-500 animate-pulse" />
+                <IconSparkles className="size-3 ai-accent-text animate-pulse" />
                 {showAiHelper ? "Tulis Manual" : "Tulis dengan AI"}
               </button>
             </div>
 
             {/* AI Assistant expandable block */}
             {showAiHelper && (
-              <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-3 space-y-2 mt-1 mb-1.5 animate-in slide-in-from-top-3 duration-200">
-                <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400">
+              <div className="ai-accent-surface rounded-lg p-3 space-y-2 mt-1 mb-1.5 animate-in slide-in-from-top-3 duration-200">
+                <p className="text-[10px] font-bold ai-accent-text">
                   AI Content Generator
                 </p>
                 <Input
                   placeholder="Contoh: Buat penutup video Reels edukasi mengajak follow..."
                   value={aiInstruction}
                   onChange={(e) => setAiInstruction(e.target.value)}
-                  className="h-8 text-xs bg-background border-purple-500/20 focus-visible:ring-purple-500"
+                  className="ai-accent-field h-8 text-xs bg-background"
                   disabled={isAiGenerating}
                 />
                 <Button
                   type="button"
                   onClick={handleAiGenerate}
                   disabled={isAiGenerating || !aiInstruction.trim()}
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-[10px] h-7 cursor-pointer shadow-sm"
+                  className="ai-accent w-full font-bold text-[10px] h-7 cursor-pointer shadow-sm"
                 >
                   {isAiGenerating ? (
                     <>

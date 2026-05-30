@@ -38,7 +38,15 @@ export default function SelectionBubble({
         appendTo: () => document.body,
         zIndex: 9999,
       }}
-      shouldShow={({ editor: ed, from, to }: { editor: any; from: number; to: number }) => {
+      shouldShow={({
+        editor: ed,
+        from,
+        to,
+      }: {
+        editor: any;
+        from: number;
+        to: number;
+      }) => {
         // Only show bubble menu when there is an active selection (not a single cursor)
         // and the editor is focused, and we are not currently streaming
         return from !== to && ed.isFocused && !isAiStreaming;
@@ -113,7 +121,7 @@ export default function SelectionBubble({
             <button
               type="button"
               onClick={() => setIsBubbleAiActive(true)}
-              className="h-7 flex items-center gap-1 px-2 rounded bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-[10px] transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="ai-accent h-7 flex items-center gap-1 px-2 rounded font-semibold text-[10px] transition-all active:scale-95 cursor-pointer shadow-sm"
             >
               <IconSparkles className="size-3.5 animate-pulse" />
               Tanya AI
@@ -128,7 +136,13 @@ export default function SelectionBubble({
               title="Kembali ke Format"
             >
               <svg viewBox="0 0 16 16" fill="none" className="size-3.5">
-                <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M10 3L5 8l5 5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
 

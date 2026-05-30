@@ -189,7 +189,7 @@ export default function DashboardPage() {
               <Button
                 size="sm"
                 onClick={() => router.push("/brainstorm")}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold cursor-pointer"
+                className="ai-accent cursor-pointer"
               >
                 <IconSparkles className="size-4" />
                 Mulai Brainstorm AI
@@ -538,7 +538,7 @@ export default function DashboardPage() {
                                 `/brainstorm?idea=${encodeURIComponent(idea.title)}&platform=${encodeURIComponent(idea.platform)}`,
                               )
                             }
-                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-[10px] h-7 cursor-pointer"
+                            className="ai-accent w-full font-bold text-[10px] h-7 cursor-pointer"
                           >
                             <IconSparkles className="size-3 shrink-0" />
                             Kembangkan Ide

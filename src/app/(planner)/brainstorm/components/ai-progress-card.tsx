@@ -17,15 +17,15 @@ export default function AiProgressCard({
   tone,
 }: Props) {
   return (
-    <div className="group relative rounded-xl border border-primary/20 bg-primary/[0.01] backdrop-blur-sm p-5 shadow-sm overflow-hidden">
-      <div className="absolute top-0 right-0 -mr-12 -mt-12 w-24 h-24 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
+    <div className="group relative ai-accent-surface rounded-xl backdrop-blur-sm p-5 shadow-sm overflow-hidden">
+      <div className="absolute top-0 right-0 -mr-12 -mt-12 w-24 h-24 rounded-full ai-accent-orb blur-2xl pointer-events-none" />
       <div className="relative space-y-4">
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-xs font-bold text-foreground">
               AI Content Brainstormer
             </h4>
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-primary via-purple-500 to-pink-500 text-[10px] font-bold text-white shrink-0 animate-pulse" />
+            <div className="flex h-5 w-5 items-center justify-center rounded-full ai-accent-progress text-[10px] font-bold text-white shrink-0 animate-pulse" />
           </div>
           <p className="text-[10px] text-muted-foreground">
             Merancang 3 sudut pandang kreatif untuk {platform} ({tone})
@@ -44,7 +44,7 @@ export default function AiProgressCard({
 
           <div className="relative h-1.5 overflow-hidden rounded-full bg-muted border border-border/40">
             <div
-              className="h-full bg-gradient-to-r from-primary via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out"
+              className="h-full ai-accent-progress rounded-full transition-all duration-300 ease-out"
               style={{ width: `${displayProgress}%` }}
             />
           </div>
@@ -76,7 +76,7 @@ export default function AiProgressCard({
                       ✓
                     </span>
                   ) : isTaskActive ? (
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
+                    <span className="h-1.5 w-1.5 rounded-full ai-accent-pulse animate-ping" />
                   ) : (
                     <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
                   )}
@@ -85,7 +85,7 @@ export default function AiProgressCard({
                   className={[
                     "text-xs leading-none transition-all",
                     isTaskActive
-                      ? "text-primary font-bold"
+                      ? "ai-accent-text font-bold"
                       : "text-muted-foreground",
                     isTaskDone
                       ? "line-through decoration-muted-foreground/30"
