@@ -80,7 +80,45 @@ export default function useBrainstorm() {
     const category = (form.elements.namedItem("category") as HTMLInputElement).value;
     const status = (form.elements.namedItem("status") as HTMLInputElement).value;
 
-    const scriptText = `[AI GENERATED BRIEF & HOOK]\nHook: "${promotingIdea.hook}"\n\n[SCRIPT OUTLINE]\n${promotingIdea.outline}`;
+    // Format as rich HTML matching our premium TipTap Editor extensions (Callout 🔥, Headings, Lists)
+    const hookHtml = `
+      <div data-type="callout" data-emoji="🔥">
+        <div class="callout-content">
+          <strong>Hook/Opening:</strong> "${promotingIdea.hook.trim()}"
+        </div>
+      </div>
+      <p></p>
+    `.trim();
+
+    const parsedLines = promotingIdea.outline
+      .split("\n")
+      .map((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) return "";
+
+        // Detect bullet points starting with - or *
+        if (trimmed.startsWith("-") || trimmed.startsWith("*")) {
+          return `<li>${trimmed.replace(/^[-*]\s*/, "")}</li>`;
+        }
+
+        // Detect Slide or Timestamp structure (e.g. Slide 1: or 0:03 - or Timestamp 1:)
+        if (/^(Slide \d+|Timestamp \d+|\d+:\d+)/i.test(trimmed)) {
+          const separator = trimmed.includes(":") ? ":" : "-";
+          const parts = trimmed.split(separator);
+          const label = parts[0].trim();
+          const rest = parts.slice(1).join(separator).trim();
+          return `<li><strong>${label}${separator}</strong> ${rest}</li>`;
+        }
+
+        return `<p>${trimmed}</p>`;
+      })
+      .join("");
+
+    // Wrap consecutive <li> elements in <ul>
+    const outlineHtml = `<h3><strong>[SCRIPT OUTLINE & STORYBOARD]</strong></h3>` + 
+      parsedLines.replace(/(<li>.*?<\/li>)+/g, (match) => `<ul>${match}</ul>`);
+
+    const scriptHtml = `${hookHtml}\n${outlineHtml}`;
 
     const draftId = addDraft(
       {
@@ -89,7 +127,7 @@ export default function useBrainstorm() {
         category: category === "none" ? "" : category,
         status,
         date: date ? date : undefined,
-        content: scriptText,
+        content: scriptHtml,
       },
       true,
     );
