@@ -455,9 +455,27 @@ export default function TipTapEditor({
     setAiPromptValue("");
   };
 
-  const handleSelectionAi = async (commandType: string) => {
+  const handleSelectionAi = async (commandType: string, requiresInput = false, customPromptText = "") => {
+    if (!editor) return;
     setIsBubbleAiActive(false);
-    await streamAiGenerate(commandType, "");
+    if (requiresInput) {
+      setAiCommandType(commandType);
+      setAiPromptPlaceholder("Apa yang ingin Anda lakukan pada teks terpilih?...");
+      setIsAiPromptActive(true);
+      try {
+        const coords = editor.view.coordsAtPos(editor.state.selection.from);
+        setAiPromptCoords({
+          top: coords.top,
+          bottom: coords.bottom,
+          left: coords.left,
+        });
+      } catch {
+        setAiPromptCoords({ top: 200, bottom: 200, left: 100 });
+      }
+      setTimeout(() => aiPromptInputRef.current?.focus(), 50);
+    } else {
+      await streamAiGenerate(commandType, customPromptText);
+    }
   };
 
   useEffect(() => {
