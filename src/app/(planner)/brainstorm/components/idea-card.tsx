@@ -41,7 +41,7 @@ export default function IdeaCard({
       transition={{ type: "tween", ease: [0.16, 1, 0.3, 1], duration: 0.22 }}
       className="overflow-hidden w-full"
     >
-      <div className="pb-4">
+      <div className="pb-4 max-w-full">
         <article className="rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm hover:border-border/100 transition-all">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">

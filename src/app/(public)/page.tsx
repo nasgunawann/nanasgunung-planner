@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,25 @@ export default function Landing() {
       <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid w-full items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="max-w-xl space-y-6">
+            <header className="flex items-center justify-start">
+              <Link href="/" aria-label="Nanasgunung Planner home">
+                <Image
+                  src="/logo-black.svg"
+                  alt="Nanasgunung Planner"
+                  width={480}
+                  height={48}
+                  className="block h-24 w-auto dark:hidden"
+                />
+                <Image
+                  src="/logo-white.svg"
+                  alt="Nanasgunung Planner"
+                  width={480}
+                  height={48}
+                  className="hidden h-24 w-auto dark:block"
+                />
+              </Link>
+            </header>
+
             <div className="space-y-4">
               <h1 className="font-heading text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                 Plan content faster, without losing creative flow.

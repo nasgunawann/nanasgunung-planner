@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -287,9 +288,37 @@ export default function PlannerShell({
         <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0 lg:ml-[220px]">
           <header className="sticky top-0 z-30 border-b border-border/60 bg-background px-4 py-3 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between gap-4">
-              <h1 className="font-heading text-lg font-semibold">
-                {activePageHeader.title}
-              </h1>
+              <div className="flex min-w-0 items-center gap-3 md:gap-0">
+                <div className="flex items-center gap-4 md:hidden">
+                  <Link href="/">
+                    <Image
+                      src="/nanas-hitam.svg"
+                      alt="Nanasgunung Planner"
+                      width={36}
+                      height={36}
+                      className="block h-8 w-auto dark:hidden"
+                    />
+                    <Image
+                      src="/nanas-putih.svg"
+                      alt="Nanasgunung Planner"
+                      width={36}
+                      height={36}
+                      className="hidden h-8 w-auto dark:block"
+                    />
+                  </Link>
+                  <span
+                    className="h-5 w-px shrink-0 bg-border/70"
+                    aria-hidden="true"
+                  />
+                  <h1 className="truncate font-heading text-lg font-semibold md:hidden">
+                    {activePageHeader.title}
+                  </h1>
+                </div>
+
+                <h1 className="hidden font-heading text-lg font-semibold md:block">
+                  {activePageHeader.title}
+                </h1>
+              </div>
 
               <div className="hidden items-center gap-2 md:flex">
                 <ThemeToggle />
