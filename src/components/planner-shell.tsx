@@ -94,19 +94,12 @@ export function AddRawIdeaModal({
             />
           </div>
           <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs sm:text-sm font-bold transition-all cursor-pointer"
-            >
+            <Button variant="outline" size="sm" type="button" onClick={onClose}>
               Batal
-            </button>
-            <button
-              type="submit"
-              className="px-3 py-1.5 rounded bg-primary hover:bg-primary/95 text-primary-foreground text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm"
-            >
+            </Button>
+            <Button size="sm" type="submit">
               Simpan Ide
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>
@@ -156,17 +149,19 @@ export function SpeedDialFab({
                 exit={{ opacity: 0, y: 15, scale: 0.8 }}
                 transition={{ duration: 0.15, delay: 0.08 }}
               >
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   type="button"
                   onClick={() => {
                     onAddIdea();
                     setIsExpanded(false);
                   }}
-                  className="flex items-center gap-2 bg-card hover:bg-muted text-foreground border border-border px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer pointer-events-auto shrink-0 touch-manipulation whitespace-nowrap"
+                  className="pointer-events-auto shrink-0 rounded-full bg-card px-3.5 py-2.5 text-xs font-bold shadow-lg transition-all hover:bg-muted sm:text-sm whitespace-nowrap"
                 >
                   <IconBulb className="size-4 text-amber-500 animate-pulse" />
                   <span>Tambah Ide</span>
-                </button>
+                </Button>
               </motion.div>
 
               {/* Action 2: Add Ready-to-Use Snippet */}
@@ -176,17 +171,19 @@ export function SpeedDialFab({
                 exit={{ opacity: 0, y: 15, scale: 0.8 }}
                 transition={{ duration: 0.15, delay: 0.04 }}
               >
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   type="button"
                   onClick={() => {
                     onAddSnippet();
                     setIsExpanded(false);
                   }}
-                  className="flex items-center gap-2 bg-card hover:bg-muted text-foreground border border-border px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer pointer-events-auto shrink-0 touch-manipulation whitespace-nowrap"
+                  className="pointer-events-auto shrink-0 rounded-full bg-card px-3.5 py-2.5 text-xs font-bold shadow-lg transition-all hover:bg-muted sm:text-sm whitespace-nowrap"
                 >
                   <IconTags className="size-4 text-emerald-500" />
                   <span>Tambah Aset Siap Pakai</span>
-                </button>
+                </Button>
               </motion.div>
 
               {/* Action 3: Add Draft */}
@@ -196,17 +193,19 @@ export function SpeedDialFab({
                 exit={{ opacity: 0, y: 15, scale: 0.8 }}
                 transition={{ duration: 0.15 }}
               >
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   type="button"
                   onClick={() => {
                     onAddDraft();
                     setIsExpanded(false);
                   }}
-                  className="flex items-center gap-2 bg-card hover:bg-muted text-foreground border border-border px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer pointer-events-auto shrink-0 touch-manipulation whitespace-nowrap"
+                  className="pointer-events-auto shrink-0 rounded-full bg-card px-3.5 py-2.5 text-xs font-bold shadow-lg transition-all hover:bg-muted sm:text-sm whitespace-nowrap"
                 >
                   <IconFilePlus className="size-4 text-primary" />
                   <span>Tambah Draft Konten</span>
-                </button>
+                </Button>
               </motion.div>
             </div>
           )}
