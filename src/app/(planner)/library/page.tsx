@@ -21,6 +21,7 @@ import LibraryFilters from "./components/library-filters";
 import { useLibraryData } from "./hooks/use-library-data";
 import { useDrafts } from "@/lib/drafts";
 import { platformColorMap } from "@/lib/platform-map";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -98,20 +99,22 @@ export default function LibraryPage() {
             const Icon = tab.icon as any;
             const active = activeTab === tab.id;
             return (
-              <button
+              <Button
                 key={tab.id}
+                variant={active ? "default" : "ghost"}
+                size="sm"
                 type="button"
                 onClick={() => setActiveTab(tab.id as any)}
                 className={[
-                  "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-bold transition-all cursor-pointer select-none whitespace-nowrap shrink-0",
+                  "flex-1 justify-center gap-1.5 rounded-md text-xs font-bold select-none whitespace-nowrap shrink-0",
                   active
                     ? "bg-card border border-border/50 text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
+                    : "",
                 ].join(" ")}
               >
                 <Icon className="size-3.5" />
                 {tab.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -151,7 +154,9 @@ export default function LibraryPage() {
                           konten kustom, atau pulihkan templat bawaan awal.
                         </p>
                       </div>
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         type="button"
                         onClick={() => {
                           setTemplates(defaultTemplates);
@@ -160,11 +165,11 @@ export default function LibraryPage() {
                             JSON.stringify(defaultTemplates),
                           );
                         }}
-                        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 text-xs font-bold transition-all shadow-sm cursor-pointer select-none mx-auto"
+                        className="mx-auto gap-1.5 rounded-md bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm select-none hover:bg-primary/95"
                       >
                         <IconRecycle className="size-4" /> Muat Ulang Templat
                         Bawaan
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -197,25 +202,28 @@ export default function LibraryPage() {
                       <div className="flex items-center gap-2">
                         {(selectedCategoryFilter !== "All" ||
                           searchQuery !== "") && (
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             type="button"
                             onClick={() => {
                               setSelectedCategoryFilter("All");
                               setSearchQuery("");
                             }}
-                            className="text-[10px] text-primary hover:underline font-bold mr-2 cursor-pointer"
+                            className="mr-2 h-7 px-2 text-[10px] font-bold text-primary"
                           >
                             Reset Filter
-                          </button>
+                          </Button>
                         )}
-                        <button
+                        <Button
+                          size="sm"
                           type="button"
                           onClick={() => setIsAddDialogOpen(true)}
-                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-3.5 text-xs font-bold transition-all shadow-sm cursor-pointer select-none"
+                          className="gap-1.5 rounded-md bg-primary px-3.5 text-xs font-bold text-primary-foreground shadow-sm select-none hover:bg-primary/95"
                         >
                           <IconPlus className="size-3.5" />
                           Tambah Aset
-                        </button>
+                        </Button>
                       </div>
                     </h3>
 
@@ -255,14 +263,15 @@ export default function LibraryPage() {
                             baru!
                           </p>
                         </div>
-                        <button
+                        <Button
+                          size="sm"
                           type="button"
                           onClick={() => setIsAddDialogOpen(true)}
-                          className="mt-4 inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 text-xs font-bold transition-all shadow-sm cursor-pointer select-none"
+                          className="mt-4 gap-1.5 rounded-md bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm select-none hover:bg-primary/95"
                         >
                           <IconPlus className="size-4" />
                           Buat Aset Siap Pakai Baru
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -305,14 +314,15 @@ export default function LibraryPage() {
                           </h4>
                         </div>
                         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40 mt-auto">
-                          <button
+                          <Button
+                            variant="destructive"
+                            size="icon-sm"
                             type="button"
                             onClick={() => deleteRawIdea(idea.id)}
-                            className="p-2 rounded-md border border-border hover:border-red-500/20 hover:bg-red-500/5 text-muted-foreground hover:text-red-500 transition-all cursor-pointer"
                             title="Hapus Ide"
                           >
                             <IconTrash className="size-4" />
-                          </button>
+                          </Button>
                           <Link
                             href={`/brainstorm?idea=${encodeURIComponent(idea.title)}&platform=${encodeURIComponent(idea.platform)}`}
                             className="ai-accent flex-1 flex items-center justify-center gap-1.5 h-8.5 rounded-md text-xs font-bold transition-all shadow-sm select-none cursor-pointer"
@@ -384,20 +394,22 @@ export default function LibraryPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={() => setDeleteDialogOpen(false)}
-                  className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer"
                 >
                   Batal
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
                   type="button"
                   onClick={executeDelete}
-                  className="px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
                 >
                   Hapus {itemToDelete?.type === "template" ? "Templat" : "Aset"}
-                </button>
+                </Button>
               </div>
             </DialogContent>
           </Dialog>

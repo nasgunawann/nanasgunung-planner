@@ -3,6 +3,7 @@
 import React from "react";
 import { IconSparkles, IconLoader2 } from "@tabler/icons-react";
 import { PlatformSelect, ToneSelect } from "@/components/planner-selects";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   topic: string;
@@ -83,10 +84,11 @@ export default function PromptStudioForm({
           </div>
         </div>
 
-        <button
+        <Button
+          variant="default"
           type="submit"
           disabled={isGenerating || !topic.trim()}
-          className="ai-accent w-full h-10 flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition-all disabled:opacity-50"
+          className="ai-accent w-full gap-2 text-sm font-semibold disabled:opacity-50"
         >
           {isGenerating ? (
             <>
@@ -99,7 +101,7 @@ export default function PromptStudioForm({
               Proses ide menggunakan AI
             </>
           )}
-        </button>
+        </Button>
       </form>
     </div>
   );

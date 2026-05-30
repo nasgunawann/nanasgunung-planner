@@ -22,6 +22,7 @@ import {
   IconX,
   IconBooks,
 } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
 import PromptStudioForm from "./components/prompt-studio-form";
 import AiProgressCard from "./components/ai-progress-card";
 import IdeaCard from "./components/idea-card";
@@ -88,14 +89,15 @@ export default function BrainstormPage() {
                     </p>
                   </div>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
                   type="button"
                   onClick={handleCloseIntro}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted text-muted-foreground transition-colors shrink-0"
                   title="Sembunyikan Pengenalan"
                 >
                   <IconX className="size-4" />
-                </button>
+                </Button>
               </div>
             </m.div>
           )}
@@ -125,13 +127,15 @@ export default function BrainstormPage() {
                 <span>Hasil Ide Brainstorming</span>
                 <div className="flex items-center gap-2">
                   {ideas.length > 0 && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       type="button"
                       onClick={clearAllIdeas}
-                      className="text-xs text-red-500 hover:text-red-600 hover:underline font-bold transition-all cursor-pointer select-none"
+                      className="h-7 px-2 text-xs font-bold text-red-500"
                     >
                       Hapus Semua
-                    </button>
+                    </Button>
                   )}
                   <span className="text-xs text-muted-foreground font-normal bg-muted px-2 py-0.5 rounded">
                     {ideas.length} pending

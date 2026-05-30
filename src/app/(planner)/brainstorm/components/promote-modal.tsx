@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { IconCalendarEvent, IconInfoCircle } from "@tabler/icons-react";
 import { CategorySelect, StatusSelect } from "@/components/planner-selects";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   promotingIdea: any | null;
@@ -33,13 +34,14 @@ export default function PromoteModal({
               Move "{promotingIdea.title}" to active planner.
             </p>
           </div>
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             type="button"
             onClick={() => setPromotingIdea(null)}
-            className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
           >
             Close
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handlePromoteSubmit} className="mt-4 grid gap-3">
@@ -105,19 +107,17 @@ export default function PromoteModal({
           </div>
 
           <div className="flex justify-end gap-2 border-t border-border pt-3 mt-1">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               type="button"
               onClick={() => setPromotingIdea(null)}
-              className="rounded-md border border-border bg-background hover:bg-muted px-4 py-2 text-sm font-semibold transition-colors cursor-pointer"
             >
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2 text-sm font-semibold transition-colors cursor-pointer shadow-sm"
-            >
+            </Button>
+            <Button size="sm" type="submit">
               Tambahkan ke Draft
-            </button>
+            </Button>
           </div>
         </form>
       </div>
