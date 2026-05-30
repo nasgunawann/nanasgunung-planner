@@ -20,6 +20,13 @@ import LibraryFilters from "./components/library-filters";
 import { useLibraryData } from "./hooks/use-library-data";
 import { useDrafts } from "@/lib/drafts";
 import { platformColorMap } from "@/lib/platform-map";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function LibraryPage() {
   const {
@@ -371,30 +378,35 @@ export default function LibraryPage() {
             )}
           </AnimatePresence>
 
-          {/* Confirmation dialog */}
-          {deleteDialogOpen && (
-            <div className="fixed inset-0 flex items-center justify-center">
-              <div className="bg-white p-6 rounded shadow">
-                Konfirmasi hapus {itemToDelete?.title}
-                <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() => {
-                      setDeleteDialogOpen(false);
-                    }}
-                    className="px-3 py-1 border rounded"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    onClick={executeDelete}
-                    className="px-3 py-1 bg-red-600 text-white rounded"
-                  >
-                    Hapus
-                  </button>
-                </div>
+          {/* Premium Dialog Confirmation: Library Item Deletion */}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="font-heading text-sm font-bold text-foreground">
+                  {itemToDelete?.type === "template" ? "Hapus Templat Konten" : "Hapus Aset Siap Pakai"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-2">
+                  Apakah Anda yakin ingin menghapus {itemToDelete?.type === "template" ? "templat konten" : "aset siap pakai"} <strong>"{itemToDelete?.title}"</strong>? Tindakan ini dapat dibatalkan melalui tombol 'Undo' pada notifikasi setelah dihapus.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setDeleteDialogOpen(false)}
+                  className="px-3 py-1.5 rounded border border-border bg-background hover:bg-muted text-xs font-bold transition-all cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={executeDelete}
+                  className="px-3 py-1.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+                >
+                  Hapus {itemToDelete?.type === "template" ? "Templat" : "Aset"}
+                </button>
               </div>
-            </div>
-          )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </PageTransition>

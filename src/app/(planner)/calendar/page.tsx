@@ -96,9 +96,16 @@ export default function CalendarPage() {
           ) : null}
           {item.date ? (
             <span className="rounded-full border border-current/20 px-1.5 py-0.5 opacity-80">
-              {format(new Date(`${item.date}T00:00:00`), "d MMM yyyy", {
-                locale: id,
-              })}
+              {(() => {
+                try {
+                  const d = item.date.includes("T")
+                    ? new Date(item.date)
+                    : new Date(`${item.date}T00:00:00`);
+                  return format(d, "d MMM yyyy", { locale: id });
+                } catch {
+                  return "Invalid Date";
+                }
+              })()}
             </span>
           ) : null}
           {item.updatedAt ? (

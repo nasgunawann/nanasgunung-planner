@@ -224,12 +224,12 @@ export function useLibraryData() {
     const { id, title, type } = itemToDelete;
 
     if (type === "template") {
-      setTemplates((prev) => {
-        const index = prev.findIndex((template) => template.title === id);
-        if (index === -1) return prev;
-        const deletedObj = prev[index];
-        const updated = prev.filter((template) => template.title !== id);
+      const index = templates.findIndex((template) => template.title === id);
+      if (index !== -1) {
+        const deletedObj = templates[index];
+        const updated = templates.filter((template) => template.title !== id);
 
+        setTemplates(updated);
         try {
           localStorage.setItem(
             "nanas_custom_templates",
@@ -245,16 +245,14 @@ export function useLibraryData() {
             onClick: () => handleUndo({ type, data: deletedObj, index }),
           },
         });
-
-        return updated;
-      });
+      }
     } else {
-      setSnippets((prev) => {
-        const index = prev.findIndex((snippet) => snippet.id === id);
-        if (index === -1) return prev;
-        const deletedObj = prev[index];
-        const updated = prev.filter((snippet) => snippet.id !== id);
+      const index = snippets.findIndex((snippet) => snippet.id === id);
+      if (index !== -1) {
+        const deletedObj = snippets[index];
+        const updated = snippets.filter((snippet) => snippet.id !== id);
 
+        setSnippets(updated);
         try {
           localStorage.setItem("nanas_snippets", JSON.stringify(updated));
         } catch {
@@ -269,9 +267,7 @@ export function useLibraryData() {
             onClick: () => handleUndo({ type, data: deletedObj, index }),
           },
         });
-
-        return updated;
-      });
+      }
     }
 
     setDeleteDialogOpen(false);

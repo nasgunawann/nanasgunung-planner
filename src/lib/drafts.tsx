@@ -138,7 +138,7 @@ type DraftsContextValue = {
   deleteDrafts: (ids: string[]) => void;
   saveDraftAsTemplate: (draftId: string) => void;
   ideas: Idea[];
-  addIdea: (idea: Omit<Idea, "id" | "createdAt">) => void;
+  addIdea: (idea: Omit<Idea, "id" | "createdAt">, silent?: boolean) => void;
   deleteIdea: (id: string, silent?: boolean) => void;
   clearAllIdeas: () => void;
   
@@ -430,7 +430,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
           platform,
           hook: parsedAngles[i].hook,
           outline: parsedAngles[i].outline,
-        });
+        }, true);
       }
 
       setBrainstormTopic(""); // Clear topic upon completion
@@ -528,7 +528,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
-  function addIdea(idea: Omit<Idea, "id" | "createdAt">) {
+  function addIdea(idea: Omit<Idea, "id" | "createdAt">, silent = false) {
     const now = new Date();
     const newIdea: Idea = {
       id: `idea-${now.getTime()}-${Math.random().toString(36).substring(2, 9)}`,
@@ -540,7 +540,9 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     };
 
     setIdeas((currentIdeas) => [newIdea, ...currentIdeas]);
-    toast.success(`Ide "${idea.title}" disimpan ke Funnel!`);
+    if (!silent) {
+      toast.success(`Ide "${idea.title}" disimpan ke Funnel!`);
+    }
   }
 
   function deleteIdea(id: string, silent = false) {
