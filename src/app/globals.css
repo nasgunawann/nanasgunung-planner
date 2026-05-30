@@ -3,8 +3,8 @@
 @import "shadcn/tailwind.css";
 
 /* TipTap Simple Editor Template Styles */
-@import '../styles/_variables.scss';
-@import '../styles/_keyframe-animations.scss';
+@import "../styles/_variables.scss";
+@import "../styles/_keyframe-animations.scss";
 
 /* ─── Override simple-editor template layout to fit inside embedded container ─
    The template is designed as a standalone full-page editor (100vw/100vh).
@@ -31,8 +31,6 @@
     padding: 1rem 1rem 8rem !important;
   }
 }
-
-
 
 @custom-variant dark (&:is(.dark *));
 
@@ -201,7 +199,11 @@
 }
 .tiptap.ProseMirror blockquote {
   border-left: 3px solid var(--primary) !important;
-  background-color: color-mix(in oklch, var(--primary) 6%, transparent) !important;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 6%,
+    transparent
+  ) !important;
   padding: 0.5rem 0.8rem !important;
   margin: 0.75rem 0 !important;
   font-style: italic !important;
@@ -293,7 +295,10 @@
 .ProseMirror table .selectedCell::after {
   background: color-mix(in oklch, var(--primary) 12%, transparent);
   content: "";
-  left: 0; right: 0; top: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
   position: absolute;
   z-index: 2;
   pointer-events: none;
@@ -312,13 +317,27 @@
   opacity: 1;
 }
 /* Text align */
-.ProseMirror [style*="text-align: center"] { text-align: center; }
-.ProseMirror [style*="text-align: right"] { text-align: right; }
-.ProseMirror [style*="text-align: left"] { text-align: left; }
+.ProseMirror [style*="text-align: center"] {
+  text-align: center;
+}
+.ProseMirror [style*="text-align: right"] {
+  text-align: right;
+}
+.ProseMirror [style*="text-align: left"] {
+  text-align: left;
+}
 
 /* AI Highlight Running Rainbow styles */
 .ai-processing {
-  background: linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6, #10b981, #f59e0b, #ec4899);
+  background: linear-gradient(
+    90deg,
+    #ec4899,
+    #8b5cf6,
+    #3b82f6,
+    #10b981,
+    #f59e0b,
+    #ec4899
+  );
   background-size: 200% auto;
   color: white !important;
   animation: rainbow-glow 2s linear infinite;
@@ -374,12 +393,22 @@
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:hover {
+.tiptap.ProseMirror
+  li[data-type="taskItem"]
+  > label
+  input[type="checkbox"]:hover {
   border-color: var(--primary) !important;
-  background-color: color-mix(in oklch, var(--primary) 6%, transparent) !important;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 6%,
+    transparent
+  ) !important;
 }
 
-.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]::before {
+.tiptap.ProseMirror
+  li[data-type="taskItem"]
+  > label
+  input[type="checkbox"]::before {
   content: "" !important;
   width: 8px !important;
   height: 8px !important;
@@ -387,15 +416,28 @@
   transition: 120ms transform cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
   box-shadow: inset 1em 1em var(--primary-foreground) !important;
   background-color: var(--primary-foreground) !important;
-  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%) !important;
+  clip-path: polygon(
+    14% 44%,
+    0 65%,
+    50% 100%,
+    100% 16%,
+    80% 0%,
+    43% 62%
+  ) !important;
 }
 
-.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:checked {
+.tiptap.ProseMirror
+  li[data-type="taskItem"]
+  > label
+  input[type="checkbox"]:checked {
   background-color: var(--primary) !important;
   border-color: var(--primary) !important;
 }
 
-.tiptap.ProseMirror li[data-type="taskItem"] > label input[type="checkbox"]:checked::before {
+.tiptap.ProseMirror
+  li[data-type="taskItem"]
+  > label
+  input[type="checkbox"]:checked::before {
   transform: scale(1) !important;
 }
 
@@ -429,23 +471,39 @@
   margin: 0.8rem 0 !important;
   border-radius: 8px !important;
   border: 1px solid color-mix(in oklch, var(--primary) 12%, transparent) !important;
-  background-color: color-mix(in oklch, var(--primary) 5%, transparent) !important;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 5%,
+    transparent
+  ) !important;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
   transition: all 0.2s ease !important;
 }
 
 .dark .tiptap.ProseMirror div[data-type="callout"] {
-  background-color: color-mix(in oklch, var(--primary) 8%, transparent) !important;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 8%,
+    transparent
+  ) !important;
   border-color: color-mix(in oklch, var(--primary) 18%, transparent) !important;
 }
 
 .tiptap.ProseMirror div[data-type="callout"]:hover {
   border-color: color-mix(in oklch, var(--primary) 20%, transparent) !important;
-  background-color: color-mix(in oklch, var(--primary) 7%, transparent) !important;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 7%,
+    transparent
+  ) !important;
 }
 
 .dark .tiptap.ProseMirror div[data-type="callout"]:hover {
-  background-color: color-mix(in oklch, var(--primary) 10%, transparent) !important;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 10%,
+    transparent
+  ) !important;
   border-color: color-mix(in oklch, var(--primary) 25%, transparent) !important;
 }
 
@@ -463,7 +521,11 @@
 }
 
 .tiptap.ProseMirror div[data-type="callout"] .callout-emoji:hover {
-  background-color: color-mix(in oklch, var(--primary) 15%, transparent) !important;
+  background-color: color-mix(
+    in oklch,
+    var(--primary) 15%,
+    transparent
+  ) !important;
 }
 
 .tiptap.ProseMirror div[data-type="callout"] .callout-content {
@@ -510,4 +572,3 @@
   padding: 0.4rem 0.6rem !important;
   flex-wrap: wrap !important;
 }
-
