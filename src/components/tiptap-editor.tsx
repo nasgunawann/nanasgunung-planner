@@ -11,7 +11,7 @@ import { Highlight } from "@tiptap/extension-highlight";
 import { Subscript } from "@tiptap/extension-subscript";
 import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
-import { Mark, Node, mergeAttributes } from "@tiptap/core";
+import { mergeAttributes } from "@tiptap/core";
 import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
@@ -19,30 +19,9 @@ import { TableCell } from "@tiptap/extension-table-cell";
 
 // ─── Template UI Primitives ───────────────────────────────────────────────────
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
-import {
-  Toolbar,
-  ToolbarGroup,
-  ToolbarSeparator,
-} from "@/components/tiptap-ui-primitive/toolbar";
+import { Toolbar } from "@/components/tiptap-ui-primitive/toolbar";
 
 // ─── Template UI Components ───────────────────────────────────────────────────
-import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu";
-import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu";
-import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button";
-import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button";
-import {
-  ColorHighlightPopover,
-  ColorHighlightPopoverContent,
-  ColorHighlightPopoverButton,
-} from "@/components/tiptap-ui/color-highlight-popover";
-import {
-  LinkPopover,
-  LinkContent,
-  LinkButton,
-} from "@/components/tiptap-ui/link-popover";
-import { MarkButton } from "@/components/tiptap-ui/mark-button";
-import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
-import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button";
 import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
 
 // ─── Template Node Extensions ─────────────────────────────────────────────────
@@ -62,11 +41,6 @@ import { useWindowSize } from "@/hooks/use-window-size";
 import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 
-// ─── Template Icons ───────────────────────────────────────────────────────────
-import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon";
-import { HighlighterIcon } from "@/components/tiptap-icons/highlighter-icon";
-import { LinkIcon } from "@/components/tiptap-icons/link-icon";
-
 // ─── Template Styles ──────────────────────────────────────────────────────────
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
@@ -85,7 +59,11 @@ import AiPromptPopup from "./editor/ai-prompt-popup";
 import TableBubble from "./editor/table-bubble";
 import { BlockReorder } from "./editor/block-reorder";
 import DragHandle from "./editor/drag-handle";
-import { IconSparkles, IconMaximize, IconMinimize } from "@tabler/icons-react";
+import { IconSparkles } from "@tabler/icons-react";
+import {
+  MainToolbarContent,
+  MobileToolbarContent,
+} from "@/components/editor/toolbar-content";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TipTapEditorProps = {
@@ -96,186 +74,9 @@ type TipTapEditorProps = {
   draftMeta?: DraftMeta;
 };
 
-// ─── Custom AI Highlight Mark Extension ──────────────────────────────────────
-const AiHighlight = Mark.create({
-  name: "aiHighlight",
-  addOptions() {
-    return { HTMLAttributes: { class: "ai-processing px-1 rounded" } };
-  },
-  parseHTML() {
-    return [{ tag: "span[data-ai-highlight]" }];
-  },
-  renderHTML({ HTMLAttributes }: any) {
-    return [
-      "span",
-      mergeAttributes(
-        { "data-ai-highlight": "" },
-        this.options.HTMLAttributes,
-        HTMLAttributes,
-      ),
-      0,
-    ];
-  },
-});
-
-// ─── Custom Callout Node Extension ───────────────────────────────────────────
-const Callout = Node.create({
-  name: "callout",
-  group: "block",
-  content: "block+",
-  defining: true,
-  addAttributes() {
-    return { emoji: { default: "💡" } };
-  },
-  parseHTML() {
-    return [{ tag: "div[data-type='callout']" }];
-  },
-  renderHTML({ node, HTMLAttributes }: any) {
-    return [
-      "div",
-      mergeAttributes(HTMLAttributes, { "data-type": "callout" }),
-      [
-        "span",
-        { class: "callout-emoji select-none", contenteditable: "false" },
-        node.attrs.emoji,
-      ],
-      ["div", { class: "callout-content" }, 0],
-    ];
-  },
-  addCommands() {
-    return {
-      setCallout:
-        (attributes: any) =>
-        ({ commands }: any) => {
-          return commands.toggleNode(this.name, "paragraph", attributes);
-        },
-    };
-  },
-} as any);
-
-// ─── Toolbar Content Components ───────────────────────────────────────────────
-const MainToolbarContent = ({
-  onHighlighterClick,
-  onLinkClick,
-  onAiClick,
-  isMobile,
-  isFullscreen,
-  onFullscreenToggle,
-}: {
-  onHighlighterClick: () => void;
-  onLinkClick: () => void;
-  onAiClick: () => void;
-  isMobile: boolean;
-  isFullscreen: boolean;
-  onFullscreenToggle: () => void;
-}) => (
-  <>
-    {/* AI Button */}
-    <ToolbarGroup>
-      <Button
-        onClick={onAiClick}
-        variant="ghost"
-        className="gap-1 px-2 text-[10px] font-semibold text-primary"
-        title="AI Generate (Ctrl+/)"
-      >
-        <IconSparkles className="size-4 shrink-0" />
-        {!isMobile && <span>AI Generate</span>}
-      </Button>
-    </ToolbarGroup>
-
-    <ToolbarSeparator />
-
-    <ToolbarGroup>
-      <UndoRedoButton action="undo" />
-      <UndoRedoButton action="redo" />
-    </ToolbarGroup>
-
-    <ToolbarSeparator />
-
-    <ToolbarGroup>
-      <HeadingDropdownMenu modal={false} levels={[1, 2, 3, 4]} />
-      <ListDropdownMenu
-        modal={false}
-        types={["bulletList", "orderedList", "taskList"]}
-      />
-      <BlockquoteButton />
-      <CodeBlockButton />
-    </ToolbarGroup>
-
-    <ToolbarSeparator />
-
-    <ToolbarGroup>
-      <MarkButton type="bold" />
-      <MarkButton type="italic" />
-      <MarkButton type="strike" />
-      <MarkButton type="underline" />
-      {!isMobile ? (
-        <ColorHighlightPopover />
-      ) : (
-        <ColorHighlightPopoverButton onClick={onHighlighterClick} />
-      )}
-      {!isMobile ? <LinkPopover /> : <LinkButton onClick={onLinkClick} />}
-    </ToolbarGroup>
-
-    <ToolbarSeparator />
-
-    <ToolbarGroup>
-      <TextAlignButton align="left" />
-      <TextAlignButton align="center" />
-      <TextAlignButton align="right" />
-    </ToolbarGroup>
-
-    {/* Zen Focus Mode Button */}
-    {!isMobile && (
-      <>
-        <ToolbarSeparator />
-        <ToolbarGroup>
-          <Button
-            onClick={onFullscreenToggle}
-            variant="ghost"
-            className="size-7 flex items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-            title={isFullscreen ? "Keluar Mode Fokus (Esc)" : "Mode Fokus Fullscreen (Zen)"}
-          >
-            {isFullscreen ? (
-              <IconMinimize className="size-4 shrink-0 text-primary" />
-            ) : (
-              <IconMaximize className="size-4 shrink-0" />
-            )}
-          </Button>
-        </ToolbarGroup>
-      </>
-    )}
-  </>
-);
-
-const MobileToolbarContent = ({
-  type,
-  onBack,
-}: {
-  type: "highlighter" | "link";
-  onBack: () => void;
-}) => (
-  <>
-    <ToolbarGroup>
-      <Button variant="ghost" onClick={onBack}>
-        <ArrowLeftIcon className="tiptap-button-icon" />
-        {type === "highlighter" ? (
-          <HighlighterIcon className="tiptap-button-icon" />
-        ) : (
-          <LinkIcon className="tiptap-button-icon" />
-        )}
-      </Button>
-    </ToolbarGroup>
-
-    <ToolbarSeparator />
-
-    {type === "highlighter" ? (
-      <ColorHighlightPopoverContent />
-    ) : (
-      <LinkContent />
-    )}
-  </>
-);
+// Extracted extensions (AiHighlight, Callout)
+import AiHighlight from "@/components/editor/extensions/ai-highlight";
+import Callout from "@/components/editor/extensions/callout";
 
 // ─── Main TipTap Editor Component ────────────────────────────────────────────
 export default function TipTapEditor({
