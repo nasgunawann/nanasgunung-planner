@@ -30,7 +30,7 @@ export default function PromptStudioForm({
     <div className="bg-card border border-border/60 p-5 rounded-xl shadow-sm space-y-4">
       <h3 className="font-heading text-base font-bold flex items-center gap-2">
         <IconSparkles className="size-4 text-primary" />
-        AI Prompt Studio
+        AI Brainstormer
       </h3>
 
       <form onSubmit={onGenerate} className="grid gap-4">

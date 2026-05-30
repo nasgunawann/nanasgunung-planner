@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
   IconPlus,
@@ -109,17 +110,23 @@ export function AddRawIdeaModal({
 
 export function GlobalAiLoadingIndicator() {
   const { isGenerating, displayProgress } = useDrafts();
+  const [isMounted, setIsMounted] = useState(false);
 
-  if (!isGenerating) return null;
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-  return (
+  if (!isMounted || !isGenerating) return null;
+
+  return createPortal(
     <Link
       href="/brainstorm"
-      className="ai-accent fixed bottom-6 right-6 lg:right-24 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold ring-4 ring-primary/20 transition-all select-none animate-pulse shrink-0 touch-manipulation cursor-pointer"
+      className="ai-accent !fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full px-4 py-2.5 text-xs font-bold ring-4 ring-primary/20 transition-all select-none animate-pulse shrink-0 touch-manipulation cursor-pointer sm:text-sm lg:right-24"
     >
       <IconSparkleHighlight className="size-4 animate-spin" />
       <span>AI Agent: {Math.round(displayProgress)}%</span>
-    </Link>
+    </Link>,
+    document.body,
   );
 }
 
