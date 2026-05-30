@@ -121,7 +121,7 @@ export default function BrainstormPage() {
           </section>
 
           {/* Column 2: Idea Funnel (Saved Concepts) */}
-          <section className="space-y-3 sm:space-y-4">
+          <section className="min-w-0 space-y-3 sm:space-y-4 overflow-x-hidden">
             <div className="bg-card border border-border/60 p-3 sm:p-5 rounded-xl shadow-sm space-y-3 sm:space-y-4">
               <h3 className="font-heading text-base font-bold flex items-center justify-between">
                 <span>Hasil Ide Brainstorming</span>
@@ -144,7 +144,7 @@ export default function BrainstormPage() {
               </h3>
 
               {ideas.length > 0 || isGenerating ? (
-                <div className="w-full space-y-4">
+                <div className="w-full max-w-full space-y-4 overflow-x-hidden">
                   {isGenerating && (
                     <div className="space-y-4 pb-4">
                       <AiProgressCard

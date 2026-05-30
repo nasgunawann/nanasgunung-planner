@@ -39,11 +39,11 @@ export default function IdeaCard({
       animate={{ height: "auto", opacity: 1, scale: 1, y: 0 }}
       exit={{ height: 0, opacity: 0, scale: 0.98, y: -6 }}
       transition={{ type: "tween", ease: [0.16, 1, 0.3, 1], duration: 0.22 }}
-      className="overflow-hidden w-full"
+      className="w-full max-w-full overflow-hidden"
     >
-      <div className="pb-4 max-w-full">
-        <article className="rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm hover:border-border/100 transition-all">
-          <div className="flex items-center justify-between gap-3">
+      <div className="pb-4 max-w-full min-w-0">
+        <article className="max-w-full min-w-0 rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm transition-all hover:border-border/100">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <PlatformIcon className="size-5 shrink-0" />
               <h4 className="font-heading font-bold text-sm truncate text-foreground">
@@ -73,11 +73,11 @@ export default function IdeaCard({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-border/40 pt-2.5 flex-wrap">
+          <div className="grid gap-2 border-t border-border/40 pt-2.5 sm:flex sm:flex-wrap sm:justify-end">
             <button
               type="button"
               onClick={() => onDelete(idea.id)}
-              className="flex items-center gap-1 text-red-500 hover:bg-red-500/5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all"
+              className="flex w-full items-center justify-center gap-1 rounded px-2.5 py-1.5 text-xs font-semibold text-red-500 transition-all hover:bg-red-500/5 sm:w-auto"
             >
               <IconTrash className="size-3.5" />
               Hapus Ide
@@ -85,7 +85,7 @@ export default function IdeaCard({
             <button
               type="button"
               onClick={() => onSaveAsRawIdea(idea)}
-              className="flex items-center gap-1 bg-muted hover:bg-muted/80 text-foreground border border-border px-2.5 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer"
+              className="flex w-full items-center justify-center gap-1 rounded border border-border bg-muted px-2.5 py-1.5 text-xs font-semibold text-foreground transition-all cursor-pointer hover:bg-muted/80 sm:w-auto"
             >
               <IconBulb className="size-3.5 text-amber-500 animate-pulse" />
               Simpan Sebagai Ide
@@ -93,7 +93,7 @@ export default function IdeaCard({
             <button
               type="button"
               onClick={() => onPromote(idea)}
-              className="flex items-center gap-1 bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded text-xs font-bold transition-all"
+              className="flex w-full items-center justify-center gap-1 rounded bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-all hover:bg-primary/20 sm:w-auto"
             >
               Tambahkan ke Draft <IconArrowRight className="size-3.5" />
             </button>
