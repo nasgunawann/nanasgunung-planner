@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useDrafts, type Draft } from "@/lib/drafts";
 import {
   contentCategoryLabelMap,
-  platformColorMap,
   normalizeStatus,
   statusAccentMap,
 } from "@/lib/platform-map";
@@ -48,14 +47,8 @@ import {
 } from "@/components/ui/dialog";
 
 export default function DraftsPage() {
-  const {
-    drafts,
-    deleteDraft,
-    deleteDrafts,
-    addDraft,
-    updateDraft,
-    platforms,
-  } = useDrafts();
+  const { drafts, deleteDraft, deleteDrafts, updateDraft, platforms } =
+    useDrafts();
 
   // Dialog Confirmation States
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
@@ -588,9 +581,9 @@ export default function DraftsPage() {
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-2">
                 Apakah Anda yakin ingin menghapus draft{" "}
-                <strong>"{deletingDraft?.title}"</strong>? Tindakan ini dapat
-                dibatalkan melalui tombol 'Undo' pada notifikasi setelah
-                dihapus.
+                <strong>&quot;{deletingDraft?.title}&quot;</strong>? Tindakan
+                ini dapat dibatalkan melalui tombol &apos;Undo&apos; pada
+                notifikasi setelah dihapus.
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
@@ -627,8 +620,8 @@ export default function DraftsPage() {
               <DialogDescription className="text-xs text-muted-foreground mt-2">
                 Apakah Anda yakin ingin menghapus{" "}
                 <strong>{selectedIds.length} draft</strong> terpilih secara
-                permanen? Tindakan ini dapat dibatalkan melalui tombol 'Undo'
-                pada notifikasi setelah dihapus.
+                permanen? Tindakan ini dapat dibatalkan melalui tombol
+                &apos;Undo&apos; pada notifikasi setelah dihapus.
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">

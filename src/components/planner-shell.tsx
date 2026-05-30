@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import * as React from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
@@ -111,13 +111,7 @@ export function AddRawIdeaModal({
 
 export function GlobalAiLoadingIndicator() {
   const { isGenerating, displayProgress } = useDrafts();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted || !isGenerating) return null;
+  if (typeof window === "undefined" || !isGenerating) return null;
 
   return createPortal(
     <Link
@@ -275,7 +269,7 @@ export default function PlannerShell({
       window.dispatchEvent(new Event("nanas-library-updated"));
 
       toast.success(`Aset "${newSnippet.title}" berhasil ditambahkan!`);
-    } catch (e) {
+    } catch {
       toast.error("Gagal menambahkan aset ke Pustaka.");
     }
   };

@@ -4,13 +4,9 @@ import { Button } from "@/components/ui/button";
 import {
   IconArrowRight,
   IconSparkles,
-  IconCalendarEvent,
-  IconPencil,
-  IconCalendarWeek,
   IconChevronLeft,
   IconChevronRight,
   IconDots,
-  IconBolt,
 } from "@tabler/icons-react";
 
 export default function Landing() {

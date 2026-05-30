@@ -11,7 +11,10 @@ import {
 } from "@/components/brand-icons";
 import { type Idea } from "@/lib/drafts";
 
-const platformIconMap: Record<string, any> = {
+const platformIconMap: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   Instagram: BrandInstagramIcon,
   TikTok: BrandTiktokIcon,
   YouTube: BrandYoutubeIcon,
@@ -31,7 +34,7 @@ export default function IdeaCard({
   onSaveAsRawIdea,
   onPromote,
 }: Props) {
-  const PlatformIcon = platformIconMap[idea.platform] || (() => null);
+  const PlatformIcon = platformIconMap[idea.platform];
 
   return (
     <m.div
@@ -45,7 +48,9 @@ export default function IdeaCard({
         <article className="max-w-full min-w-0 rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm transition-all hover:border-border/100">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <PlatformIcon className="size-5 shrink-0" />
+              {PlatformIcon ? (
+                <PlatformIcon className="size-5 shrink-0" />
+              ) : null}
               <h4 className="font-heading font-bold text-sm truncate text-foreground">
                 {idea.title}
               </h4>
@@ -60,7 +65,7 @@ export default function IdeaCard({
               Suggested Hook:
             </span>
             <p className="italic text-foreground/90 font-medium break-words whitespace-pre-wrap text-[11px] sm:text-xs">
-              "{idea.hook}"
+              &quot;{idea.hook}&quot;
             </p>
           </div>
 

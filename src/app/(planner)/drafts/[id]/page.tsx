@@ -279,7 +279,9 @@ export default function DraftWorkspacePage() {
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-2">
                   Apakah Anda yakin ingin menghapus draft{" "}
-                  <strong>"{draft.title}"</strong>? Tindakan ini dapat dibatalkan melalui tombol 'Undo' pada notifikasi setelah dihapus.
+                  <strong>&quot;{draft.title}&quot;</strong>? Tindakan ini dapat
+                  dibatalkan melalui tombol &apos;Undo&apos; pada notifikasi
+                  setelah dihapus.
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">

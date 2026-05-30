@@ -3,21 +3,22 @@
 import React from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   PlatformSelect,
   CategorySelect,
   StatusSelect,
 } from "@/components/planner-selects";
 import { IconArrowLeft, IconTrash, IconBooks } from "@tabler/icons-react";
-import { useDrafts } from "@/lib/drafts";
+import { useDrafts, type Draft } from "@/lib/drafts";
+
+type DraftField = "platform" | "category" | "status" | "date";
 
 type Props = {
-  draft: any;
+  draft: Draft;
   localTitle: string;
   setLocalTitle: (v: string) => void;
   setIsDeleteOpen: (v: boolean) => void;
-  handleDropdownChange: (field: string, value: string) => void;
+  handleDropdownChange: (field: DraftField, value: string) => void;
 };
 
 export default function MetadataSidebar({
