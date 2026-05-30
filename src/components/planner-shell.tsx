@@ -9,7 +9,7 @@ import {
   IconPlus,
   IconBulb,
   IconFilePlus,
-  IconSparkles,
+  IconSparkleHighlight,
   IconTags,
 } from "@tabler/icons-react";
 
@@ -124,7 +124,7 @@ export function GlobalAiLoadingIndicator() {
       href="/brainstorm"
       className="ai-accent fixed bottom-6 right-6 lg:right-24 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold ring-4 ring-primary/20 transition-all select-none animate-pulse shrink-0 touch-manipulation cursor-pointer"
     >
-      <IconSparkles className="size-4 animate-spin" />
+      <IconSparkleHighlight className="size-4 animate-spin" />
       <span>AI Agent: {Math.round(displayProgress)}%</span>
     </Link>
   );

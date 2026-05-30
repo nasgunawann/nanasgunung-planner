@@ -25,6 +25,7 @@ import { getPlatformIcon } from "@/components/brand-icons";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import QuickAddModal from "@/components/quick-add-modal";
 import PageTransition from "@/components/page-transition";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -54,8 +55,6 @@ export default function CalendarPage() {
       ? drafts.filter((draft) => draft.date && draft.date.startsWith(key))
       : [];
   }
-
-
 
   const categoryOptions = ["Stories", "Reels", "Post"];
   const statusOptions = ["Draft", "In progress", "Published"];
@@ -127,16 +126,19 @@ export default function CalendarPage() {
             <h2 className="text-lg font-semibold capitalize">{monthLabel}</h2>
 
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="icon-sm"
                 type="button"
                 aria-label="Previous month"
                 onClick={() => setCurrentMonth((date) => subMonths(date, 1))}
-                className="rounded-md border border-border bg-background hover:bg-muted px-2 py-1 text-sm transition-colors"
               >
                 <IconChevronLeft className="h-4 w-4" />
-              </button>
+              </Button>
 
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 type="button"
                 aria-label="Today"
                 onClick={() => {
@@ -145,19 +147,19 @@ export default function CalendarPage() {
                     new Date(now.getFullYear(), now.getMonth(), 1),
                   );
                 }}
-                className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1 text-sm font-medium transition-colors"
               >
                 Today
-              </button>
+              </Button>
 
-              <button
+              <Button
+                variant="outline"
+                size="icon-sm"
                 type="button"
                 aria-label="Next month"
                 onClick={() => setCurrentMonth((date) => addMonths(date, 1))}
-                className="rounded-md border border-border bg-background hover:bg-muted px-2 py-1 text-sm transition-colors"
               >
                 <IconChevronRight className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
