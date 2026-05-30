@@ -37,11 +37,11 @@ export default function MetadataSidebar({
         <div className="flex items-center justify-between w-full gap-2">
           <Link
             href="/drafts"
-            className="flex items-center justify-center gap-2 h-9 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground text-xs sm:text-sm font-medium transition-all shadow-sm"
+            className="flex w-full items-center justify-center gap-2 h-9 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground text-xs sm:text-sm font-medium transition-all shadow-sm"
             title="Kembali ke Drafts"
           >
             <IconArrowLeft className="size-4" />
-            <span>Kembali dan Simpan</span>
+            <span>Simpan dan Kembali</span>
           </Link>
 
           <button
@@ -77,7 +77,7 @@ export default function MetadataSidebar({
           id="ws-title"
           value={localTitle}
           onChange={(e) => setLocalTitle(e.target.value)}
-          className="min-h-[80px] p-2 w-full resize-y rounded-md bg-background text-xs sm:text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="min-h-[80px] p-2 w-full resize-y rounded-md bg-muted text-xs sm:text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         />
       </div>
 
