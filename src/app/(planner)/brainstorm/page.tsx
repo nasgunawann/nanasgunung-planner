@@ -16,13 +16,16 @@ import {
 import {
   IconSparkles,
   IconCalendarEvent,
-  IconTrash,
   IconLoader2,
   IconArrowRight,
   IconInfoCircle,
   IconX,
   IconBooks,
 } from "@tabler/icons-react";
+import PromptStudioForm from "./components/prompt-studio-form";
+import AiProgressCard from "./components/ai-progress-card";
+import IdeaCard from "./components/idea-card";
+import PromoteModal from "./components/promote-modal";
 
 const platformIconMap: Record<string, any> = {
   Instagram: BrandInstagramIcon,
@@ -101,98 +104,17 @@ export default function BrainstormPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_1.25fr]">
           {/* Column 1: AI Planner Studio */}
           <section className="space-y-4 lg:sticky lg:top-20 self-start">
-            <div className="bg-card border border-border/60 p-5 rounded-xl shadow-sm space-y-4">
-              <h3 className="font-heading text-base font-bold flex items-center gap-2">
-                <IconSparkles className="size-4 text-primary" />
-                AI Prompt Studio
-              </h3>
-
-              <form onSubmit={handleGenerate} className="grid gap-4">
-                {/* Topic Input */}
-                <div className="grid gap-1">
-                  <label
-                    htmlFor="topic-input"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Masukkan ide atau topik kasar di sini
-                  </label>
-                  <textarea
-                    id="topic-input"
-                    rows={4}
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    placeholder="Ketemu cafe murah buat nugas... "
-                    className="rounded-md border border-border bg-background p-3 text-sm outline-none focus:border-primary/50 resize-none"
-                    required
-                  />
-                </div>
-
-                {/* Target Platform */}
-                <div className="grid gap-1">
-                  <label
-                    htmlFor="platform-select"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Platform Sosial
-                  </label>
-                  <select
-                    id="platform-select"
-                    value={platform}
-                    onChange={(e) => setPlatform(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
-                  >
-                    <option value="Instagram">
-                      Instagram (Reels/Carousels)
-                    </option>
-                    <option value="TikTok">TikTok (Short Form)</option>
-                    <option value="YouTube">YouTube (Tutorial/Tech)</option>
-                    <option value="LinkedIn">LinkedIn (Professional)</option>
-                  </select>
-                </div>
-
-                {/* Tone */}
-                <div className="grid gap-1">
-                  <label
-                    htmlFor="tone-select"
-                    className="text-xs font-semibold text-muted-foreground"
-                  >
-                    Gaya Bicara
-                  </label>
-                  <select
-                    id="tone-select"
-                    value={tone}
-                    onChange={(e) => setTone(e.target.value)}
-                    className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
-                  >
-                    <option value="Informative">
-                      Informative & Educational
-                    </option>
-                    <option value="Hype">Hype & High Energy</option>
-                    <option value="Storytelling">Engaging Storytelling</option>
-                    <option value="Professional">Professional Insight</option>
-                  </select>
-                </div>
-
-                {/* Generate Trigger */}
-                <button
-                  type="submit"
-                  disabled={isGenerating || !topic.trim()}
-                  className="w-full h-10 flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-semibold transition-all disabled:opacity-50 shadow-md shadow-purple-500/10 cursor-pointer"
-                >
-                  {isGenerating ? (
-                    <>
-                      <IconLoader2 className="size-4 animate-spin" />
-                      Sedang memproses, harap tunggu...
-                    </>
-                  ) : (
-                    <>
-                      <IconSparkles className="size-4" />
-                      Proses ide menggunakan AI
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+            {/* Prompt Studio Form Component */}
+            <PromptStudioForm
+              topic={topic}
+              setTopic={setTopic}
+              platform={platform}
+              setPlatform={setPlatform}
+              tone={tone}
+              setTone={setTone}
+              isGenerating={isGenerating}
+              onGenerate={handleGenerate}
+            />
           </section>
 
           {/* Column 2: Idea Funnel (Saved Concepts) */}
@@ -209,105 +131,12 @@ export default function BrainstormPage() {
                 <div className="w-full space-y-4">
                   {isGenerating && (
                     <div className="space-y-4 pb-4">
-                      {/* Premium Adapted AI Progress Card */}
-                      <div className="group relative rounded-xl border border-primary/20 bg-primary/[0.01] backdrop-blur-sm p-5 shadow-sm overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-                        {/* Shimmer Ambient Glow background */}
-                        <div className="absolute top-0 right-0 -mr-12 -mt-12 w-24 h-24 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
-
-                        {/* Card Content Wrapper */}
-                        <div className="relative space-y-4">
-                          {/* Header */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between gap-3">
-                              <h4 className="text-xs font-bold text-foreground">
-                                AI Content Brainstormer
-                              </h4>
-                              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-primary via-purple-500 to-pink-500 text-[10px] font-bold text-white shrink-0 animate-pulse"></div>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">
-                              Merancang 3 sudut pandang kreatif...
-                            </p>
-                          </div>
-
-                          {/* Progress bar */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center justify-between text-[10px] font-mono leading-none">
-                              <span className="font-semibold text-muted-foreground">
-                                Progress
-                              </span>
-                              <span className="font-bold text-foreground">
-                                {Math.round(displayProgress)}%
-                              </span>
-                            </div>
-
-                            <div className="relative h-1.5 overflow-hidden rounded-full bg-muted border border-border/40">
-                              <div
-                                className="h-full bg-gradient-to-r from-primary via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out"
-                                style={{ width: `${displayProgress}%` }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Task List Stepper with translation & opacity */}
-                          <div className="space-y-2.5 pt-1">
-                            {[
-                              "Menganalisis ide & keselarasan audiens",
-                              `Meriset opening hook untuk ${platform}`,
-                              `Menyusun 3 sudut pandang kreatif (${tone})`,
-                              "Membuat draf visual & outline storyboard",
-                              "Menyimpan draf ide kreatif...",
-                            ].map((task, index) => {
-                              const isTaskDone = index < generationStep - 1;
-                              const isTaskActive = index === generationStep - 1;
-                              const isTaskPending = index > generationStep - 1;
-
-                              return (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2.5 transition-all duration-300"
-                                  style={{
-                                    opacity: isTaskActive
-                                      ? 1
-                                      : isTaskDone
-                                        ? 0.65
-                                        : 0.35,
-                                    transform: isTaskActive
-                                      ? "translateX(4px)"
-                                      : "translateX(0)",
-                                  }}
-                                >
-                                  <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted border border-border/50">
-                                    {isTaskDone ? (
-                                      <span className="text-[10px] text-green-500 font-bold">
-                                        ✓
-                                      </span>
-                                    ) : isTaskActive ? (
-                                      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
-                                    ) : (
-                                      <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
-                                    )}
-                                  </div>
-                                  <span
-                                    className={[
-                                      "text-xs leading-none transition-all",
-                                      isTaskActive
-                                        ? "text-primary font-bold"
-                                        : "text-muted-foreground",
-                                      isTaskDone
-                                        ? "line-through decoration-muted-foreground/30"
-                                        : "",
-                                    ].join(" ")}
-                                  >
-                                    {task}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 2 Arriving Cards Slots Skeletons */}
+                      <AiProgressCard
+                        displayProgress={displayProgress}
+                        generationStep={generationStep}
+                        platform={platform}
+                        tone={tone}
+                      />
                       <div className="space-y-4 opacity-35 animate-pulse">
                         {[1, 2].map((n) => (
                           <div
@@ -331,95 +160,15 @@ export default function BrainstormPage() {
                     </div>
                   )}
                   <AnimatePresence initial={false}>
-                    {ideas.map((idea) => {
-                      const PlatformIcon =
-                        platformIconMap[idea.platform] || IconSparkles;
-
-                      return (
-                        <m.div
-                          key={idea.id}
-                          initial={{ height: 0, opacity: 0, scale: 0.98, y: 6 }}
-                          animate={{
-                            height: "auto",
-                            opacity: 1,
-                            scale: 1,
-                            y: 0,
-                          }}
-                          exit={{ height: 0, opacity: 0, scale: 0.98, y: -6 }}
-                          transition={{
-                            type: "tween",
-                            ease: [0.16, 1, 0.3, 1],
-                            duration: 0.22,
-                          }}
-                          className="overflow-hidden w-full"
-                        >
-                          <div className="pb-4">
-                            <article className="rounded-lg border border-border/60 bg-background p-4 space-y-3 shadow-sm hover:border-border/100 transition-all">
-                              {/* Header Title / Platform */}
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <PlatformIcon className="size-5 shrink-0" />
-                                  <h4 className="font-heading font-bold text-sm truncate text-foreground">
-                                    {idea.title}
-                                  </h4>
-                                </div>
-                                <span className="text-[10px] text-muted-foreground font-semibold">
-                                  {idea.createdAt}
-                                </span>
-                              </div>
-
-                              {/* Hook Quote block */}
-                              <div className="bg-muted/15 border-l-2 border-primary/50 p-2 text-xs rounded-r-md">
-                                <span className="text-[9px] uppercase tracking-wider font-bold text-primary block mb-0.5">
-                                  Suggested Hook:
-                                </span>
-                                <p className="italic text-foreground/90 font-medium break-words whitespace-pre-wrap">
-                                  "{idea.hook}"
-                                </p>
-                              </div>
-
-                              {/* Script outline snippet */}
-                              <div className="space-y-1">
-                                <span className="text-[9px] uppercase tracking-wider font-semibold text-muted-foreground block">
-                                  AI Structured Script Outline:
-                                </span>
-                                <div className="bg-muted/30 border border-border/40 p-2 text-[11px] font-mono text-muted-foreground rounded whitespace-pre-wrap break-words leading-relaxed">
-                                  {idea.outline}
-                                </div>
-                              </div>
-
-                              {/* Actions */}
-                              <div className="flex justify-end gap-2 border-t border-border/40 pt-2.5 flex-wrap">
-                                <button
-                                  type="button"
-                                  onClick={() => deleteIdea(idea.id)}
-                                  className="flex items-center gap-1 text-red-500 hover:bg-red-500/5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all"
-                                >
-                                  <IconTrash className="size-3.5" />
-                                  Hapus Ide
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSaveAsTemplate(idea)}
-                                  className="flex items-center gap-1 bg-muted hover:bg-muted/80 text-foreground border border-border px-2.5 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer"
-                                >
-                                  <IconBooks className="size-3.5 text-primary animate-pulse" />
-                                  Simpan Sebagai Templat
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setPromotingIdea(idea)}
-                                  className="flex items-center gap-1 bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded text-xs font-bold transition-all"
-                                >
-                                  Tambahkan ke Draft
-                                  <IconArrowRight className="size-3.5" />
-                                </button>
-                              </div>
-                            </article>
-                          </div>
-                        </m.div>
-                      );
-                    })}
+                    {ideas.map((idea) => (
+                      <IdeaCard
+                        key={idea.id}
+                        idea={idea}
+                        onDelete={(id) => deleteIdea(id)}
+                        onSaveAsTemplate={handleSaveAsTemplate}
+                        onPromote={(i) => setPromotingIdea(i)}
+                      />
+                    ))}
                   </AnimatePresence>
                 </div>
               ) : (
