@@ -9,6 +9,7 @@ type ActionBarState = {
   prompt: string;
   coords: { top: number; left: number };
   originalText?: string;
+  newText?: string;
 } | null;
 
 export function useEditorAi(
@@ -107,6 +108,9 @@ export function useEditorAi(
       }
       
       let accumulatedText = "";
+      // Set active mark so streaming chunks automatically inherit the glowing processing mark
+      editor.chain().focus().setMark("aiHighlight").run();
+      
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -162,6 +166,10 @@ export function useEditorAi(
       editor.commands.insertContentAt(startPos, finalHtml);
       
       const finalEndPos = editor.state.selection.from;
+      
+      // Clean up the streaming highlight immediately and place the cursor at the end of generated content
+      editor.chain().focus().focus(finalEndPos).run();
+      
       try {
         const coords = editor.view.coordsAtPos(finalEndPos);
         let barTop = coords.bottom + 8;
@@ -194,6 +202,7 @@ export function useEditorAi(
           prompt: userPrompt,
           coords: { top: barTop, left: barLeft },
           originalText: isSelection ? originalText : undefined,
+          newText: accumulatedText,
         });
       } catch {
         setAiActionBar({
@@ -203,6 +212,7 @@ export function useEditorAi(
           prompt: userPrompt,
           coords: { top: 200, left: 100 },
           originalText: isSelection ? originalText : undefined,
+          newText: accumulatedText,
         });
       }
     } catch (e: any) {

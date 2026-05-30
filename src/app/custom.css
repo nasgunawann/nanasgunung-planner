@@ -191,22 +191,7 @@
   text-align: left;
 }
 
-/* AI Highlight Running Rainbow styles */
-.ai-processing {
-  background: linear-gradient(
-    90deg,
-    #ec4899,
-    #8b5cf6,
-    #3b82f6,
-    #10b981,
-    #f59e0b,
-    #ec4899
-  );
-  background-size: 200% auto;
-  color: white !important;
-  animation: rainbow-glow 2s linear infinite;
-  box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
-}
+/* AI Highlight Running Rainbow styles (Managed natively in simple-editor.scss) */
 
 @keyframes rainbow-glow {
   0% {
@@ -250,8 +235,7 @@
 .ai-accent:hover:not(:disabled) {
   filter: saturate(1.08) brightness(1.03);
   transform: translateY(-1px);
-  box-shadow:
-  0 0 20px rgba(255, 123, 0, 0.4) !important;
+  box-shadow: 0 0 20px rgba(255, 123, 0, 0.4) !important;
 }
 
 .ai-accent:active:not(:disabled) {
@@ -349,9 +333,9 @@
 .ai-accent-progress {
   background: linear-gradient(
     90deg,
-    color-mix(in oklch, var(--primary) 88%, #111827 12%),
-    color-mix(in oklch, var(--primary) 65%, #6d28d9 35%),
-    color-mix(in oklch, var(--primary) 38%, #f59e0b 62%)
+    color-mix(in oklch, var(--primary) 88%, #ff416c 12%),
+    color-mix(in oklch, var(--primary) 65%, #ff4b2b 35%),
+    color-mix(in oklch, var(--primary) 38%, #ff8c00 62%)
   ) !important;
 }
 
