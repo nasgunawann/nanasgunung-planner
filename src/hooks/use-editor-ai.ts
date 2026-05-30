@@ -117,11 +117,45 @@ export function useEditorAi(
         }
       }
       
-      let finalHtml = accumulatedText
-        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-        .replace(/^-\s+(.+)$/gm, "<li>$1</li>")
-        .replace(/(<li>.*?<\/li>)+/g, "<ul>$&</ul>");
+      // Convert markdown-style bold, italic, lists, and paragraphs with timezone/newline robustness
+      const convertMarkdownToHtml = (markdown: string): string => {
+        let normalized = markdown.replace(/\r\n/g, "\n");
+        
+        // Bold and Italic formatting
+        normalized = normalized
+          .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+          .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+          
+        // Convert list items
+        normalized = normalized.replace(/^[-*]\s+(.+)$/gm, "<li>$1</li>");
+        
+        // Wrap sequential <li> tags inside <ul>
+        normalized = normalized.replace(/(<li>.*?<\/li>)+/g, "<ul>$&</ul>");
+        
+        // Split content by paragraphs (\n\n) to wrap them in <p> tags
+        const parts = normalized.split(/\n{2,}/);
+        const formattedParts = parts.map((part) => {
+          const trimmed = part.trim();
+          if (!trimmed) return "";
+          
+          if (
+            trimmed.startsWith("<ul>") ||
+            trimmed.startsWith("<ol>") ||
+            trimmed.startsWith("<blockquote") ||
+            trimmed.startsWith("<pre") ||
+            trimmed.startsWith("<div")
+          ) {
+            return trimmed;
+          }
+          
+          const withBreaks = trimmed.replace(/\n/g, "<br />");
+          return `<p>${withBreaks}</p>`;
+        });
+        
+        return formattedParts.filter(Boolean).join("");
+      };
+
+      let finalHtml = convertMarkdownToHtml(accumulatedText);
       
       const currentSelectionEnd = editor.state.selection.from;
       editor.commands.deleteRange({ from: startPos, to: currentSelectionEnd });
