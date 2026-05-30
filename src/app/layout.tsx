@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import "./custom.css";
 import { cn } from "@/lib/utils";
 import ThemeProvider from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -49,6 +50,13 @@ export default function RootLayout({
         ibmPlexSansHeading.variable,
       )}
     >
+      <head>
+        <script
+          async
+          crossOrigin="anonymous"
+          src="https://tweakcn.com/live-preview.min.js"
+        />
+      </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground">
         <ThemeProvider>
           <TooltipProvider>
