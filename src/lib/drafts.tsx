@@ -34,9 +34,21 @@ export type RawIdea = {
 };
 
 // Database Preset Schemas
-export const presetPlatforms = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Facebook", "Twitter / X"];
+export const presetPlatforms = [
+  "Instagram",
+  "TikTok",
+  "YouTube",
+  "LinkedIn",
+  "Facebook",
+  "Twitter / X",
+];
 export const presetCategories = ["Stories", "Reels", "Post"];
-export const presetTones = ["Informative", "Hype", "Storytelling", "Professional"];
+export const presetTones = [
+  "Informative",
+  "Hype",
+  "Storytelling",
+  "Professional",
+];
 
 export const seedDrafts: Draft[] = [
   {
@@ -47,7 +59,8 @@ export const seedDrafts: Draft[] = [
     date: "2026-05-03",
     status: "Published",
     updatedAt: "May 03, 2026",
-    content: "Hook: If you are still building state like it's 2018, stop!\n\nScene 1: Close up of keyboard with dynamic red overlay. text: 'Old Way'.\nScene 2: Transition to clean React context structure. text: 'Refactored!'.\nScene 3: CTA to read the bio for details.",
+    content:
+      "Hook: If you are still building state like it's 2018, stop!\n\nScene 1: Close up of keyboard with dynamic red overlay. text: 'Old Way'.\nScene 2: Transition to clean React context structure. text: 'Refactored!'.\nScene 3: CTA to read the bio for details.",
   },
   {
     id: "mock-2026-05-03-2",
@@ -57,7 +70,8 @@ export const seedDrafts: Draft[] = [
     date: "2026-05-03",
     status: "In progress",
     updatedAt: "May 28, 2026",
-    content: "Slide 1: Why Next.js 15 is a game changer for content creators.\nSlide 2: Speed metrics showing pnpm vs npm.\nSlide 3: Code snippets comparing Server Actions.\nSlide 4: Call to action to leave a comment.",
+    content:
+      "Slide 1: Why Next.js 15 is a game changer for content creators.\nSlide 2: Speed metrics showing pnpm vs npm.\nSlide 3: Code snippets comparing Server Actions.\nSlide 4: Call to action to leave a comment.",
   },
   {
     id: "mock-2026-05-08-1",
@@ -67,7 +81,8 @@ export const seedDrafts: Draft[] = [
     date: "2026-05-08",
     status: "Draft",
     updatedAt: "May 28, 2026",
-    content: "Explain how our team modularized a 1000 line tip-tap editor into 3 clean sub-components in less than an hour, keeping LocalStorage features 100% active.",
+    content:
+      "Explain how our team modularized a 1000 line tip-tap editor into 3 clean sub-components in less than an hour, keeping LocalStorage features 100% active.",
   },
   {
     id: "mock-2026-05-15-1",
@@ -77,7 +92,8 @@ export const seedDrafts: Draft[] = [
     date: "2026-05-15",
     status: "Published",
     updatedAt: "May 28, 2026",
-    content: "Scene 1: Waking up in a modern apartment, coffee brewing. Overlay text: 'DeepMind pair programming session starts'.\nScene 2: Over the shoulder shot of standard Next.js directory tree.\nScene 3: Quick time lapse showing clean git diffs.\nScene 4: Happy coding face.",
+    content:
+      "Scene 1: Waking up in a modern apartment, coffee brewing. Overlay text: 'DeepMind pair programming session starts'.\nScene 2: Over the shoulder shot of standard Next.js directory tree.\nScene 3: Quick time lapse showing clean git diffs.\nScene 4: Happy coding face.",
   },
   {
     id: "mock-2026-05-22-1",
@@ -87,7 +103,8 @@ export const seedDrafts: Draft[] = [
     date: "2026-05-22",
     status: "Draft",
     updatedAt: "May 28, 2026",
-    content: "A quick infographic comparing raw coding hours versus pair programming with Antigravity AI CLI. Highlighting an 83% speed increment.",
+    content:
+      "A quick infographic comparing raw coding hours versus pair programming with Antigravity AI CLI. Highlighting an 83% speed increment.",
   },
   {
     id: "mock-2026-05-26-1",
@@ -97,7 +114,8 @@ export const seedDrafts: Draft[] = [
     date: "2026-05-26",
     status: "Published",
     updatedAt: "May 28, 2026",
-    content: "Community post script for the monthly wrap up. Announcing the top 3 tools that saved our workflow.",
+    content:
+      "Community post script for the monthly wrap up. Announcing the top 3 tools that saved our workflow.",
   },
   {
     id: "mock-2026-05-26-2",
@@ -107,7 +125,8 @@ export const seedDrafts: Draft[] = [
     date: "2026-05-26",
     status: "In progress",
     updatedAt: "May 28, 2026",
-    content: "A layout containing a side-by-side comparison of a chaotic Google Calendar vs the clean Nanasgunung Planner grid. Highlight with bright green arrows.",
+    content:
+      "A layout containing a side-by-side comparison of a chaotic Google Calendar vs the clean Nanasgunung Planner grid. Highlight with bright green arrows.",
   },
 ];
 
@@ -117,7 +136,8 @@ export const seedIdeas: Idea[] = [
     title: "10x Productivity Tips for Creators",
     platform: "Instagram",
     hook: "You are not lazy, your tools are just slowing you down.",
-    outline: "1. Batching visual design\n2. Automating file transfers\n3. Restricting notifications to 2 specific slots a day.",
+    outline:
+      "1. Batching visual design\n2. Automating file transfers\n3. Restricting notifications to 2 specific slots a day.",
     createdAt: "May 28, 2026",
   },
   {
@@ -125,7 +145,8 @@ export const seedIdeas: Idea[] = [
     title: "Why I Avoid Heavy Databases for Side-Projects",
     platform: "LinkedIn",
     hook: "Stop setting up PostgreSQL for an app with 5 users.",
-    outline: "Explain how SQLite or browser LocalStorage is more than enough for building initial MVPs, boosting launch speeds by 2 weeks.",
+    outline:
+      "Explain how SQLite or browser LocalStorage is more than enough for building initial MVPs, boosting launch speeds by 2 weeks.",
     createdAt: "May 28, 2026",
   },
 ];
@@ -141,7 +162,7 @@ type DraftsContextValue = {
   addIdea: (idea: Omit<Idea, "id" | "createdAt">, silent?: boolean) => void;
   deleteIdea: (id: string, silent?: boolean) => void;
   clearAllIdeas: () => void;
-  
+
   // Raw Ideas (stored in Pustaka and sent to brainstorm)
   rawIdeas: RawIdea[];
   addRawIdea: (title: string, platform?: string) => void;
@@ -165,14 +186,18 @@ type DraftsContextValue = {
   setBrainstormPlatform: (v: string) => void;
   brainstormTone: string;
   setBrainstormTone: (v: string) => void;
-  generateBrainstormIdeas: (topic: string, platform: string, tone: string) => Promise<void>;
+  generateBrainstormIdeas: (
+    topic: string,
+    platform: string,
+    tone: string,
+  ) => Promise<void>;
 };
 
 const DraftsContext = createContext<DraftsContextValue | undefined>(undefined);
 
 export function DraftsProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  
+
   const [drafts, setDrafts] = useState<Draft[]>(seedDrafts);
   const [ideas, setIdeas] = useState<Idea[]>(seedIdeas);
   const [rawIdeas, setRawIdeas] = useState<RawIdea[]>([]);
@@ -242,14 +267,15 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
           },
           {
             id: "raw-seed-2",
-            title: "Mengapa Setup Database Postgres Terlalu Dini Bisa Membunuh Side-Project",
+            title:
+              "Mengapa Setup Database Postgres Terlalu Dini Bisa Membunuh Side-Project",
             platform: "LinkedIn",
             createdAt: new Date().toLocaleDateString("id-ID", {
               day: "numeric",
               month: "short",
               year: "numeric",
             }),
-          }
+          },
         ];
         setRawIdeas(initialRaw);
         localStorage.setItem("nanas_raw_ideas", JSON.stringify(initialRaw));
@@ -262,7 +288,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     try {
       const rawCustomPlat = localStorage.getItem("nanas_custom_platforms");
       if (rawCustomPlat) setCustomPlatforms(JSON.parse(rawCustomPlat));
-      
+
       const rawCustomCat = localStorage.getItem("nanas_custom_categories");
       if (rawCustomCat) setCustomCategories(JSON.parse(rawCustomCat));
 
@@ -343,7 +369,8 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     const trimmed = name.trim();
     if (!trimmed) return;
     setCustomPlatforms((prev) => {
-      if (prev.includes(trimmed) || presetPlatforms.includes(trimmed)) return prev;
+      if (prev.includes(trimmed) || presetPlatforms.includes(trimmed))
+        return prev;
       const updated = [...prev, trimmed];
       localStorage.setItem("nanas_custom_platforms", JSON.stringify(updated));
       return updated;
@@ -354,7 +381,8 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     const trimmed = name.trim();
     if (!trimmed) return;
     setCustomCategories((prev) => {
-      if (prev.includes(trimmed) || presetCategories.includes(trimmed)) return prev;
+      if (prev.includes(trimmed) || presetCategories.includes(trimmed))
+        return prev;
       const updated = [...prev, trimmed];
       localStorage.setItem("nanas_custom_categories", JSON.stringify(updated));
       return updated;
@@ -372,7 +400,11 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  async function generateBrainstormIdeas(topic: string, platform: string, tone: string) {
+  async function generateBrainstormIdeas(
+    topic: string,
+    platform: string,
+    tone: string,
+  ) {
     if (!topic.trim()) return;
 
     setIsGenerating(true);
@@ -425,12 +457,15 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         );
 
       for (let i = parsedAngles.length - 1; i >= 0; i--) {
-        addIdea({
-          title: parsedAngles[i].title,
-          platform,
-          hook: parsedAngles[i].hook,
-          outline: parsedAngles[i].outline,
-        }, true);
+        addIdea(
+          {
+            title: parsedAngles[i].title,
+            platform,
+            hook: parsedAngles[i].hook,
+            outline: parsedAngles[i].outline,
+          },
+          true,
+        );
       }
 
       setBrainstormTopic(""); // Clear topic upon completion
@@ -444,7 +479,10 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  function addDraft(d: Omit<Draft, "id" | "updatedAt">, silent = false): string {
+  function addDraft(
+    d: Omit<Draft, "id" | "updatedAt">,
+    silent = false,
+  ): string {
     const now = new Date();
     const newId = `${now.getTime()}`;
     const newDraft: Draft = {
@@ -490,7 +528,9 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     const found = drafts.find((d) => d.id === id);
     if (!found) return;
 
-    setDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== id));
+    setDrafts((currentDrafts) =>
+      currentDrafts.filter((draft) => draft.id !== id),
+    );
 
     // Show single Undo toast
     toast.error(`Draft "${found.title}" telah dihapus.`, {
@@ -498,7 +538,8 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         label: "Undo",
         onClick: () => {
           setDrafts((currentDrafts) => {
-            if (currentDrafts.some((d) => d.id === found.id)) return currentDrafts;
+            if (currentDrafts.some((d) => d.id === found.id))
+              return currentDrafts;
             return [found, ...currentDrafts];
           });
           toast.success(`Draft "${found.title}" berhasil dipulihkan!`);
@@ -511,7 +552,9 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     const found = drafts.filter((d) => ids.includes(d.id));
     if (found.length === 0) return;
 
-    setDrafts((currentDrafts) => currentDrafts.filter((draft) => !ids.includes(draft.id)));
+    setDrafts((currentDrafts) =>
+      currentDrafts.filter((draft) => !ids.includes(draft.id)),
+    );
 
     // Show single bulk Undo toast
     toast.error(`${found.length} draft telah dihapus.`, {
@@ -519,7 +562,9 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         label: "Undo",
         onClick: () => {
           setDrafts((currentDrafts) => {
-            const toAdd = found.filter((f) => !currentDrafts.some((d) => d.id === f.id));
+            const toAdd = found.filter(
+              (f) => !currentDrafts.some((d) => d.id === f.id),
+            );
             return [...toAdd, ...currentDrafts];
           });
           toast.success(`${found.length} draf berhasil dipulihkan!`);
@@ -558,7 +603,8 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
           label: "Undo",
           onClick: () => {
             setIdeas((currentIdeas) => {
-              if (currentIdeas.some((i) => i.id === found.id)) return currentIdeas;
+              if (currentIdeas.some((i) => i.id === found.id))
+                return currentIdeas;
               const updated = [...currentIdeas];
               updated.splice(index, 0, found);
               return updated;
@@ -641,7 +687,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
       }),
     };
     setRawIdeas((prev) => [newIdea, ...prev]);
-    toast.success(`Ide mentah "${title}" berhasil disimpan di Pustaka!`, {
+    toast.success(`Ide "${title}" berhasil disimpan di Pustaka!`, {
       action: {
         label: "Buka Pustaka",
         onClick: () => router.push("/library?tab=raw_ideas"),
@@ -655,7 +701,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     const found = rawIdeas[index];
 
     setRawIdeas((prev) => prev.filter((i) => i.id !== id));
-    toast.error(`Ide mentah "${found.title}" telah dihapus.`, {
+    toast.error(`Ide "${found.title}" telah dihapus.`, {
       action: {
         label: "Undo",
         onClick: () => {
@@ -665,7 +711,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
             updated.splice(index, 0, found);
             return updated;
           });
-          toast.success(`Ide mentah "${found.title}" berhasil dipulihkan!`);
+          toast.success(`Ide "${found.title}" berhasil dipulihkan!`);
         },
       },
     });
@@ -689,7 +735,7 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         rawIdeas,
         addRawIdea,
         deleteRawIdea,
-        
+
         // Relational custom states combined
         platforms: [...presetPlatforms, ...customPlatforms],
         categories: [...presetCategories, ...customCategories],
@@ -744,7 +790,11 @@ export function getRevisions(draftId: string): DraftRevision[] {
   }
 }
 
-export function saveRevision(draftId: string, title: string, content: string): DraftRevision[] {
+export function saveRevision(
+  draftId: string,
+  title: string,
+  content: string,
+): DraftRevision[] {
   if (typeof window === "undefined") return [];
   try {
     const stored = localStorage.getItem("nanas_draft_revisions");
@@ -754,7 +804,7 @@ export function saveRevision(draftId: string, title: string, content: string): D
     const draftRevisions = allRevisions
       .filter((rev) => rev.draftId === draftId)
       .sort((a, b) => b.timestamp - a.timestamp);
-    
+
     if (draftRevisions.length > 0 && draftRevisions[0].content === content) {
       return draftRevisions; // No need to save a duplicate revision
     }
@@ -770,11 +820,18 @@ export function saveRevision(draftId: string, title: string, content: string): D
     const updatedAll = [newRevision, ...allRevisions];
 
     // Limit to 5 revisions per draft to optimize localStorage usage
-    const filteredDraftRevisions = updatedAll.filter((rev) => rev.draftId === draftId).slice(0, 5);
-    const otherDraftsRevisions = updatedAll.filter((rev) => rev.draftId !== draftId);
+    const filteredDraftRevisions = updatedAll
+      .filter((rev) => rev.draftId === draftId)
+      .slice(0, 5);
+    const otherDraftsRevisions = updatedAll.filter(
+      (rev) => rev.draftId !== draftId,
+    );
     const finalRevisions = [...filteredDraftRevisions, ...otherDraftsRevisions];
 
-    localStorage.setItem("nanas_draft_revisions", JSON.stringify(finalRevisions));
+    localStorage.setItem(
+      "nanas_draft_revisions",
+      JSON.stringify(finalRevisions),
+    );
     return filteredDraftRevisions;
   } catch (e) {
     return [];

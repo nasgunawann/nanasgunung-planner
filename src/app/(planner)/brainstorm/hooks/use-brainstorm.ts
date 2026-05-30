@@ -12,7 +12,7 @@ export default function useBrainstorm() {
     deleteIdea,
     clearAllIdeas,
     addRawIdea,
-    
+
     // Centralized AI states and functions
     isGenerating,
     generationStep,
@@ -49,9 +49,7 @@ export default function useBrainstorm() {
         if (platformParam) {
           setBrainstormPlatform(decodeURIComponent(platformParam));
         }
-        toast.info(
-          "Mengimpor ide mentah dari Pustaka untuk dikembangkan!",
-        );
+        toast.info("Mengimpor ide dari Pustaka untuk dikembangkan!");
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
       }
@@ -60,14 +58,18 @@ export default function useBrainstorm() {
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
-    await generateBrainstormIdeas(brainstormTopic, brainstormPlatform, brainstormTone);
+    await generateBrainstormIdeas(
+      brainstormTopic,
+      brainstormPlatform,
+      brainstormTone,
+    );
   }
 
   function handleSaveAsRawIdea(idea: Idea) {
     try {
       addRawIdea(idea.title, idea.platform);
     } catch (e) {
-      toast.error("Gagal menyimpan sebagai ide mentah.");
+      toast.error("Gagal menyimpan sebagai ide.");
     }
   }
 
@@ -77,8 +79,10 @@ export default function useBrainstorm() {
 
     const form = e.currentTarget as HTMLFormElement;
     const date = (form.elements.namedItem("date") as HTMLInputElement).value;
-    const category = (form.elements.namedItem("category") as HTMLInputElement).value;
-    const status = (form.elements.namedItem("status") as HTMLInputElement).value;
+    const category = (form.elements.namedItem("category") as HTMLInputElement)
+      .value;
+    const status = (form.elements.namedItem("status") as HTMLInputElement)
+      .value;
 
     // Format as rich HTML matching our premium TipTap Editor extensions (Callout 🔥, Headings, Lists)
     const hookHtml = `
@@ -115,7 +119,8 @@ export default function useBrainstorm() {
       .join("");
 
     // Wrap consecutive <li> elements in <ul>
-    const outlineHtml = `<h3><strong>[SCRIPT OUTLINE & STORYBOARD]</strong></h3>` + 
+    const outlineHtml =
+      `<h3><strong>[SCRIPT OUTLINE & STORYBOARD]</strong></h3>` +
       parsedLines.replace(/(<li>.*?<\/li>)+/g, (match) => `<ul>${match}</ul>`);
 
     const scriptHtml = `${hookHtml}\n${outlineHtml}`;

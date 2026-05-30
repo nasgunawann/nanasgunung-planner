@@ -105,7 +105,7 @@ export default function LibraryPage() {
           {[
             { id: "templates", label: "Template", icon: IconListDetails },
             { id: "snippets", label: "Aset Siap Pakai", icon: IconTags },
-            { id: "raw_ideas", label: "Ide Mentah", icon: IconBulb },
+            { id: "raw_ideas", label: "Ide", icon: IconBulb },
             { id: "history", label: "Arsip & Riwayat", icon: IconRecycle },
           ].map((tab) => {
             const Icon = tab.icon as any;
@@ -324,7 +324,7 @@ export default function LibraryPage() {
                             type="button"
                             onClick={() => deleteRawIdea(idea.id)}
                             className="p-2 rounded-md border border-border hover:border-red-500/20 hover:bg-red-500/5 text-muted-foreground hover:text-red-500 transition-all cursor-pointer"
-                            title="Hapus Ide Mentah"
+                            title="Hapus Ide"
                           >
                             <IconTrash className="size-4" />
                           </button>
@@ -343,10 +343,11 @@ export default function LibraryPage() {
                       <IconBulb className="size-10 text-muted-foreground/35 mx-auto animate-pulse" />
                       <div className="space-y-1">
                         <h3 className="font-heading text-sm font-bold text-foreground">
-                          Belum ada ide mentah tersimpan
+                          Belum ada ide tersimpan
                         </h3>
                         <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
-                          Catat ide mentah cepat dari menu FAB (`+`) di pojok kanan bawah atau dari Quick Capture di Dashboard.
+                          Catat ide cepat dari menu FAB (`+`) di pojok
+                          kanan bawah atau dari Quick Capture di Dashboard.
                         </p>
                       </div>
                     </div>
@@ -383,10 +384,18 @@ export default function LibraryPage() {
             <DialogContent className="max-w-sm">
               <DialogHeader>
                 <DialogTitle className="font-heading text-sm font-bold text-foreground">
-                  {itemToDelete?.type === "template" ? "Hapus Templat Konten" : "Hapus Aset Siap Pakai"}
+                  {itemToDelete?.type === "template"
+                    ? "Hapus Templat Konten"
+                    : "Hapus Aset Siap Pakai"}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-2">
-                  Apakah Anda yakin ingin menghapus {itemToDelete?.type === "template" ? "templat konten" : "aset siap pakai"} <strong>"{itemToDelete?.title}"</strong>? Tindakan ini dapat dibatalkan melalui tombol 'Undo' pada notifikasi setelah dihapus.
+                  Apakah Anda yakin ingin menghapus{" "}
+                  {itemToDelete?.type === "template"
+                    ? "templat konten"
+                    : "aset siap pakai"}{" "}
+                  <strong>"{itemToDelete?.title}"</strong>? Tindakan ini dapat
+                  dibatalkan melalui tombol 'Undo' pada notifikasi setelah
+                  dihapus.
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">

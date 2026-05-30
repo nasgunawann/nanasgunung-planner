@@ -60,7 +60,7 @@ export function AddRawIdeaModal({
       <DialogContent className="max-w-sm p-6 rounded-xl border border-border bg-background shadow-lg outline-none select-none">
         <DialogHeader>
           <DialogTitle className="font-heading text-sm font-bold text-foreground">
-            Tambah Ide Mentah Baru
+            Tambah Ide Baru
             <p className="text-xs text-muted-foreground font-normal mt-1">
               Ide bisa diakses di menu Pustaka
             </p>
@@ -160,7 +160,7 @@ export function SpeedDialFab({
                   className="flex items-center gap-2 bg-card hover:bg-muted text-foreground border border-border px-3.5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer pointer-events-auto shrink-0 touch-manipulation whitespace-nowrap"
                 >
                   <IconBulb className="size-4 text-amber-500 animate-pulse" />
-                  <span>Tambah Ide Mentah</span>
+                  <span>Tambah Ide</span>
                 </button>
               </motion.div>
 

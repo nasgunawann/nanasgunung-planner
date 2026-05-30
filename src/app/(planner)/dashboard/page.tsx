@@ -110,7 +110,9 @@ export default function DashboardPage() {
   };
 
   // Compute stats metrics
-  const activeDraftsCount = drafts.filter((d) => d.status !== "Published").length;
+  const activeDraftsCount = drafts.filter(
+    (d) => d.status !== "Published",
+  ).length;
   const scheduledDraftsCount = drafts.filter(
     (d) => d.date && d.status !== "Published",
   ).length;
@@ -322,13 +324,17 @@ export default function DashboardPage() {
                       const getDaysLeft = (targetDateStr?: string) => {
                         if (!targetDateStr) return "";
                         const datePart = targetDateStr.split("T")[0];
-                        const [year, month, day] = datePart.split("-").map(Number);
+                        const [year, month, day] = datePart
+                          .split("-")
+                          .map(Number);
                         const targetDate = new Date(year, month - 1, day);
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
                         const diffTime = targetDate.getTime() - today.getTime();
-                        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                        
+                        const diffDays = Math.round(
+                          diffTime / (1000 * 60 * 60 * 24),
+                        );
+
                         if (diffDays < 0) return "Lampau";
                         if (diffDays === 0) return "Hari ini";
                         if (diffDays === 1) return "1 hari lagi";
@@ -440,10 +446,13 @@ export default function DashboardPage() {
                                     <span>•</span>
                                     <span className="text-blue-500 font-semibold flex items-center gap-1 shrink-0">
                                       <IconClock className="size-3" />
-                                      {new Date(d.date).toLocaleDateString("id-ID", {
-                                        day: "numeric",
-                                        month: "short",
-                                      })}
+                                      {new Date(d.date).toLocaleDateString(
+                                        "id-ID",
+                                        {
+                                          day: "numeric",
+                                          month: "short",
+                                        },
+                                      )}
                                     </span>
                                   </>
                                 )}
@@ -493,10 +502,11 @@ export default function DashboardPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-1.5">
                   <IconBulb className="size-4.5 text-primary animate-pulse" />
-                  Ide Mentah Sebelumnya
+                  Ide Sebelumnya
                 </CardTitle>
                 <CardDescription className="text-[11px] leading-relaxed">
-                  Ide kamu sebelumnya. Kembangkan lagi idemu yang tersimpan untuk konten selanjutnya!
+                  Ide kamu sebelumnya. Kembangkan lagi idemu yang tersimpan
+                  untuk konten selanjutnya!
                 </CardDescription>
               </CardHeader>
               <CardContent className="pb-4">
@@ -523,7 +533,11 @@ export default function DashboardPage() {
                           </div>
                           <Button
                             size="xs"
-                            onClick={() => router.push(`/brainstorm?idea=${encodeURIComponent(idea.title)}&platform=${encodeURIComponent(idea.platform)}`)}
+                            onClick={() =>
+                              router.push(
+                                `/brainstorm?idea=${encodeURIComponent(idea.title)}&platform=${encodeURIComponent(idea.platform)}`,
+                              )
+                            }
                             className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-[10px] h-7 cursor-pointer"
                           >
                             <IconSparkles className="size-3 shrink-0" />
@@ -548,7 +562,8 @@ export default function DashboardPage() {
                   <div className="p-6 text-center text-muted-foreground space-y-2 border border-dashed border-border/80 rounded-lg bg-background/20">
                     <IconBulb className="size-6 text-muted-foreground/30 mx-auto" />
                     <p className="text-[11px] leading-relaxed">
-                      Belum ada ide mentah terdaftar. Ketuk tombol FAB `+` di sudut kanan bawah untuk mulai mencatat!
+                      Belum ada ide terdaftar. Ketuk tombol FAB `+` di sudut
+                      kanan bawah untuk mulai mencatat!
                     </p>
                   </div>
                 )}
