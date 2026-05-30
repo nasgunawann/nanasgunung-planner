@@ -3,6 +3,8 @@ export const platformColorMap: Record<string, string> = {
   TikTok: "bg-black text-white",
   YouTube: "bg-red-600 text-white",
   LinkedIn: "bg-sky-600 text-white",
+  Facebook: "bg-blue-600 text-white",
+  "Twitter / X": "bg-slate-900 dark:bg-slate-800 text-white",
   Default: "bg-muted/40 text-foreground",
 };
 

@@ -11,6 +11,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { IconArrowLeft, IconTrash } from "@tabler/icons-react";
+import { useDrafts } from "@/lib/drafts";
 
 type Props = {
   draft: any;
@@ -27,6 +28,8 @@ export default function MetadataSidebar({
   setIsDeleteOpen,
   handleDropdownChange,
 }: Props) {
+  const { platforms, categories, addCustomPlatform, addCustomCategory } = useDrafts();
+
   return (
     <div className="bg-card border border-border/60 p-4 rounded-xl shadow-sm space-y-4">
       <div className="border-b border-border/60 pb-3 space-y-2">
@@ -73,7 +76,18 @@ export default function MetadataSidebar({
         </label>
         <Select
           value={draft.platform ?? "Instagram"}
-          onValueChange={(val) => handleDropdownChange("platform", val)}
+          onValueChange={(val) => {
+            if (val === "_custom_") {
+              const name = prompt("Masukkan nama platform baru:");
+              if (name && name.trim()) {
+                const formatted = name.trim();
+                addCustomPlatform(formatted);
+                handleDropdownChange("platform", formatted);
+              }
+            } else {
+              handleDropdownChange("platform", val);
+            }
+          }}
         >
           <SelectTrigger
             id="ws-platform"
@@ -82,10 +96,12 @@ export default function MetadataSidebar({
             <SelectValue placeholder="Platform" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Instagram">Instagram</SelectItem>
-            <SelectItem value="TikTok">TikTok</SelectItem>
-            <SelectItem value="YouTube">YouTube</SelectItem>
-            <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+            {platforms.map((plat) => (
+              <SelectItem key={plat} value={plat}>{plat}</SelectItem>
+            ))}
+            <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
+              + Platform Baru...
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -99,9 +115,18 @@ export default function MetadataSidebar({
         </label>
         <Select
           value={draft.category ?? "none"}
-          onValueChange={(val) =>
-            handleDropdownChange("category", val === "none" ? "" : val)
-          }
+          onValueChange={(val) => {
+            if (val === "_custom_") {
+              const name = prompt("Masukkan nama format/kategori baru:");
+              if (name && name.trim()) {
+                const formatted = name.trim();
+                addCustomCategory(formatted);
+                handleDropdownChange("category", formatted);
+              }
+            } else {
+              handleDropdownChange("category", val === "none" ? "" : val);
+            }
+          }}
         >
           <SelectTrigger
             id="ws-category"
@@ -111,9 +136,12 @@ export default function MetadataSidebar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">No Category</SelectItem>
-            <SelectItem value="Stories">Stories</SelectItem>
-            <SelectItem value="Reels">Reels</SelectItem>
-            <SelectItem value="Post">Post</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+            <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
+              + Kategori Baru...
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

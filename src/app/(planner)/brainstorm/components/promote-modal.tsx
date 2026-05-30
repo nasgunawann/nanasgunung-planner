@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { IconCalendarEvent, IconInfoCircle } from "@tabler/icons-react";
+import { useDrafts } from "@/lib/drafts";
 
 interface Props {
   promotingIdea: any | null;
@@ -14,7 +15,24 @@ export default function PromoteModal({
   setPromotingIdea,
   handlePromoteSubmit,
 }: Props) {
+  const { categories, addCustomCategory } = useDrafts();
+  const [selectedCategory, setSelectedCategory] = useState("Reels");
+
   if (!promotingIdea) return null;
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "_custom_") {
+      const name = prompt("Masukkan nama format/kategori baru:");
+      if (name && name.trim()) {
+        const formatted = name.trim();
+        addCustomCategory(formatted);
+        setSelectedCategory(formatted);
+      }
+    } else {
+      setSelectedCategory(val);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-3">
@@ -64,11 +82,16 @@ export default function PromoteModal({
             <select
               id="promote-category"
               name="category"
-              className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+              value={selectedCategory}
+              onChange={handleCategoryChange}
+              className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
             >
-              <option value="Reels">Reels / Shorts</option>
-              <option value="Stories">Stories / Snaps</option>
-              <option value="Post">Standard Post / Feed</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+              <option value="_custom_" className="text-primary font-bold">
+                + Kategori Baru...
+              </option>
             </select>
           </div>
 
@@ -82,7 +105,7 @@ export default function PromoteModal({
             <select
               id="promote-status"
               name="status"
-              className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50"
+              className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
             >
               <option value="Draft">Draft</option>
               <option value="In progress">In progress</option>

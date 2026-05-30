@@ -9,12 +9,7 @@ import {
   normalizeStatus,
   statusAccentMap,
 } from "@/lib/platform-map";
-import {
-  BrandInstagramIcon,
-  BrandTiktokIcon,
-  BrandYoutubeIcon,
-  BrandLinkedinIcon,
-} from "@/components/brand-icons";
+import { getPlatformIcon } from "@/components/brand-icons";
 import {
   IconSearch,
   IconTrash,
@@ -52,15 +47,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-const platformIconMap: Record<string, ComponentType<{ className?: string }>> = {
-  Instagram: BrandInstagramIcon,
-  LinkedIn: BrandLinkedinIcon,
-  TikTok: BrandTiktokIcon,
-  YouTube: BrandYoutubeIcon,
-};
+
 
 export default function DraftsPage() {
-  const { drafts, deleteDraft, deleteDrafts, addDraft, updateDraft } = useDrafts();
+  const { drafts, deleteDraft, deleteDrafts, addDraft, updateDraft, platforms } = useDrafts();
 
   // Dialog Confirmation States
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
@@ -80,7 +70,7 @@ export default function DraftsPage() {
   // Bulk Selection State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const platformOptions = ["All", "Instagram", "TikTok", "LinkedIn", "YouTube"];
+  const platformOptions = ["All", ...platforms];
   const statusTabOptions = ["All", "Draft", "In progress", "Published"];
   const timeFilterOptions = [
     { value: "All", label: "Semua Waktu" },
@@ -299,7 +289,7 @@ export default function DraftsPage() {
               const status = normalizeStatus(d.status);
               const statusTheme =
                 statusAccentMap[status] ?? statusAccentMap.Default;
-              const Icon = platformIconMap[d.platform ?? ""];
+              const Icon = getPlatformIcon(d.platform);
 
               return (
                 <m.div
@@ -482,7 +472,7 @@ export default function DraftsPage() {
           <DialogHeader>
             <DialogTitle className="font-heading text-sm font-bold text-foreground">Hapus Draft</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground mt-2">
-              Apakah Anda yakin ingin menghapus draft <strong>"{deletingDraft?.title}"</strong>? Tindakan ini tidak dapat dibatalkan.
+              Apakah Anda yakin ingin menghapus draft <strong>"{deletingDraft?.title}"</strong>? Tindakan ini dapat dibatalkan melalui tombol 'Undo' pada notifikasi setelah dihapus.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">
@@ -515,7 +505,7 @@ export default function DraftsPage() {
           <DialogHeader>
             <DialogTitle className="font-heading text-sm font-bold text-foreground">Hapus Massal Draft</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground mt-2">
-              Apakah Anda yakin ingin menghapus <strong>{selectedIds.length} draft</strong> terpilih secara permanen? Tindakan ini tidak dapat dibatalkan.
+              Apakah Anda yakin ingin menghapus <strong>{selectedIds.length} draft</strong> terpilih secara permanen? Tindakan ini dapat dibatalkan melalui tombol 'Undo' pada notifikasi setelah dihapus.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 border-t border-border/40 pt-3 mt-4">

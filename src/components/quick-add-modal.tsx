@@ -31,7 +31,7 @@ export default function QuickAddModal({
   defaultDate?: string;
   defaultPlatform?: string;
 }) {
-  const { addDraft } = useDrafts();
+  const { addDraft, platforms, categories, addCustomPlatform, addCustomCategory } = useDrafts();
   const router = useRouter();
 
   // Local Form States matching Draft data structure
@@ -136,7 +136,18 @@ export default function QuickAddModal({
               >
                 Platform
               </label>
-              <Select value={platform} onValueChange={setPlatform}>
+              <Select value={platform} onValueChange={(val) => {
+                if (val === "_custom_") {
+                  const name = prompt("Masukkan nama platform baru:");
+                  if (name && name.trim()) {
+                    const formatted = name.trim();
+                    addCustomPlatform(formatted);
+                    setPlatform(formatted);
+                  }
+                } else {
+                  setPlatform(val);
+                }
+              }}>
                 <SelectTrigger
                   id="modal-platform"
                   className="h-10 text-xs bg-background cursor-pointer"
@@ -144,10 +155,12 @@ export default function QuickAddModal({
                   <SelectValue placeholder="Pilih Platform" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Instagram">Instagram</SelectItem>
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="YouTube">YouTube</SelectItem>
-                  <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                  {platforms.map((plat) => (
+                    <SelectItem key={plat} value={plat}>{plat}</SelectItem>
+                  ))}
+                  <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
+                    + Platform Baru...
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -160,7 +173,18 @@ export default function QuickAddModal({
               >
                 Format / Kategori
               </label>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={(val) => {
+                if (val === "_custom_") {
+                  const name = prompt("Masukkan nama format/kategori baru:");
+                  if (name && name.trim()) {
+                    const formatted = name.trim();
+                    addCustomCategory(formatted);
+                    setCategory(formatted);
+                  }
+                } else {
+                  setCategory(val);
+                }
+              }}>
                 <SelectTrigger
                   id="modal-category"
                   className="h-10 text-xs bg-background cursor-pointer"
@@ -169,9 +193,12 @@ export default function QuickAddModal({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No Category</SelectItem>
-                  <SelectItem value="Stories">Stories</SelectItem>
-                  <SelectItem value="Reels">Reels</SelectItem>
-                  <SelectItem value="Post">Post</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                  <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
+                    + Kategori Baru...
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

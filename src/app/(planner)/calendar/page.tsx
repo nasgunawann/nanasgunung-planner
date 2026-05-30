@@ -21,12 +21,7 @@ import {
   platformColorMap,
   statusAccentMap,
 } from "@/lib/platform-map";
-import {
-  BrandInstagramIcon,
-  BrandTiktokIcon,
-  BrandYoutubeIcon,
-  BrandLinkedinIcon,
-} from "@/components/brand-icons";
+import { getPlatformIcon } from "@/components/brand-icons";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import QuickAddModal from "@/components/quick-add-modal";
 import PageTransition from "@/components/page-transition";
@@ -60,12 +55,7 @@ export default function CalendarPage() {
       : [];
   }
 
-  const platformIconMap: Record<string, any> = {
-    Instagram: BrandInstagramIcon,
-    TikTok: BrandTiktokIcon,
-    YouTube: BrandYoutubeIcon,
-    LinkedIn: BrandLinkedinIcon,
-  };
+
 
   const categoryOptions = ["Stories", "Reels", "Post"];
   const statusOptions = ["Draft", "In progress", "Published"];
@@ -218,7 +208,7 @@ export default function CalendarPage() {
                       const status = normalizeStatus(item.status);
                       const statusTheme =
                         statusAccentMap[status] ?? statusAccentMap.Default;
-                      const Icon = platformIconMap[item.platform ?? ""];
+                      const Icon = getPlatformIcon(item.platform);
 
                       return (
                         <Tooltip key={item.id} delayDuration={120}>

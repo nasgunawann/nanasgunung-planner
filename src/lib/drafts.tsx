@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export type Draft = {
   id: string;
@@ -23,6 +24,11 @@ export type Idea = {
   outline: string;
   createdAt: string;
 };
+
+// Database Preset Schemas
+export const presetPlatforms = ["Instagram", "TikTok", "YouTube", "LinkedIn", "Facebook", "Twitter / X"];
+export const presetCategories = ["Stories", "Reels", "Post"];
+export const presetTones = ["Informative", "Hype", "Storytelling", "Professional"];
 
 export const seedDrafts: Draft[] = [
   {
@@ -48,70 +54,40 @@ export const seedDrafts: Draft[] = [
   {
     id: "mock-2026-05-08-1",
     title: "Behind the scenes",
-    platform: "Instagram",
-    category: "Stories",
-    date: "2026-05-08",
-    status: "Published",
-    updatedAt: "May 08, 2026",
-    content: "Quick photo of the new physical planner layout on the desk.\nCaption: 'Designing the ultimate planner. What features do you want to see? Link in bio to vote!'",
-  },
-  {
-    id: "mock-2026-05-08-2",
-    title: "Promo caption",
-    platform: "Instagram",
-    category: "Post",
-    date: "2026-05-08",
-    status: "Draft",
-    updatedAt: "May 28, 2026",
-    content: "Drafting the launch post script. Focus on solving the creator burnout problem through better planning.",
-  },
-  {
-    id: "mock-2026-05-08-3",
-    title: "Story sequence",
-    platform: "Instagram",
-    category: "Stories",
-    date: "2026-05-08",
-    status: "In progress",
-    updatedAt: "May 28, 2026",
-    content: "Sequence of 3 stories:\nStory 1: Interactive poll: 'Do you schedule your posts?'\nStory 2: Responding to results showing that 80% don't.\nStory 3: Introduction of Nanasgunung Planner.",
-  },
-  {
-    id: "mock-2026-05-14-1",
-    title: "Launch post",
     platform: "LinkedIn",
     category: "Post",
-    date: "2026-05-14",
-    status: "Published",
-    updatedAt: "May 14, 2026",
-    content: "Today we are officially launching Nanasgunung Planner! 🎉\n\nBuilt for content creators who are tired of heavy project management software. Designed to be lightweight, instant, and offline-first.\n\nRead the full developer journey below 👇",
-  },
-  {
-    id: "mock-2026-05-14-2",
-    title: "Short-form cut",
-    platform: "TikTok",
-    category: "Reels",
-    date: "2026-05-14",
+    date: "2026-05-08",
     status: "Draft",
     updatedAt: "May 28, 2026",
-    content: "A short 15-second teaser showing the drag & drop interface in action. Upbeat lofi track in the background.",
+    content: "Explain how our team modularized a 1000 line tip-tap editor into 3 clean sub-components in less than an hour, keeping LocalStorage features 100% active.",
   },
   {
-    id: "mock-2026-05-20-1",
-    title: "Q&A prompt",
+    id: "mock-2026-05-15-1",
+    title: "Vlog outline",
+    platform: "YouTube",
+    category: "Reels",
+    date: "2026-05-15",
+    status: "Published",
+    updatedAt: "May 28, 2026",
+    content: "Scene 1: Waking up in a modern apartment, coffee brewing. Overlay text: 'DeepMind pair programming session starts'.\nScene 2: Over the shoulder shot of standard Next.js directory tree.\nScene 3: Quick time lapse showing clean git diffs.\nScene 4: Happy coding face.",
+  },
+  {
+    id: "mock-2026-05-22-1",
+    title: "Productivity stats",
     platform: "Instagram",
     category: "Stories",
-    date: "2026-05-20",
-    status: "Published",
-    updatedAt: "May 20, 2026",
-    content: "Using the Q&A sticker to ask followers about their biggest content organization struggle.",
+    date: "2026-05-22",
+    status: "Draft",
+    updatedAt: "May 28, 2026",
+    content: "A quick infographic comparing raw coding hours versus pair programming with Antigravity AI CLI. Highlighting an 83% speed increment.",
   },
   {
     id: "mock-2026-05-26-1",
-    title: "Monthly recap",
-    platform: "YouTube",
+    title: "Community wrap up",
+    platform: "LinkedIn",
     category: "Post",
     date: "2026-05-26",
-    status: "Draft",
+    status: "Published",
     updatedAt: "May 28, 2026",
     content: "Community post script for the monthly wrap up. Announcing the top 3 tools that saved our workflow.",
   },
@@ -155,14 +131,29 @@ type DraftsContextValue = {
   ideas: Idea[];
   addIdea: (idea: Omit<Idea, "id" | "createdAt">) => void;
   deleteIdea: (id: string, silent?: boolean) => void;
+  
+  // Relational Cloud-Ready Fields & Dynamic Customizers
+  platforms: string[];
+  categories: string[];
+  tones: string[];
+  addCustomPlatform: (name: string) => void;
+  addCustomCategory: (name: string) => void;
+  addCustomTone: (name: string) => void;
 };
 
 const DraftsContext = createContext<DraftsContextValue | undefined>(undefined);
 
 export function DraftsProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  
   const [drafts, setDrafts] = useState<Draft[]>(seedDrafts);
   const [ideas, setIdeas] = useState<Idea[]>(seedIdeas);
   const [isHydrated, setIsHydrated] = useState(false);
+
+  // Relational Local collections
+  const [customPlatforms, setCustomPlatforms] = useState<string[]>([]);
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [customTones, setCustomTones] = useState<string[]>([]);
 
   // Hydrate from localStorage on first mount (client-only)
   useEffect(() => {
@@ -172,7 +163,6 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(rawDrafts) as Draft[];
         setDrafts(parsed);
       } else {
-        // First load: seed localStorage with default mock data
         localStorage.setItem("nanas_drafts", JSON.stringify(seedDrafts));
       }
     } catch (e) {
@@ -185,12 +175,26 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(rawIdeas) as Idea[];
         setIdeas(parsed);
       } else {
-        // First load: seed localStorage with default mock data
         localStorage.setItem("nanas_ideas", JSON.stringify(seedIdeas));
       }
     } catch (e) {
       // ignore
     }
+
+    // Hydrate relational dynamic customizations
+    try {
+      const rawCustomPlat = localStorage.getItem("nanas_custom_platforms");
+      if (rawCustomPlat) setCustomPlatforms(JSON.parse(rawCustomPlat));
+      
+      const rawCustomCat = localStorage.getItem("nanas_custom_categories");
+      if (rawCustomCat) setCustomCategories(JSON.parse(rawCustomCat));
+
+      const rawCustomTone = localStorage.getItem("nanas_custom_tones");
+      if (rawCustomTone) setCustomTones(JSON.parse(rawCustomTone));
+    } catch (e) {
+      // ignore
+    }
+
     setIsHydrated(true);
   }, []);
 
@@ -214,6 +218,40 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [ideas, isHydrated]);
 
+  // Relational Custom additions with async-ready handlers
+  const addCustomPlatform = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setCustomPlatforms((prev) => {
+      if (prev.includes(trimmed) || presetPlatforms.includes(trimmed)) return prev;
+      const updated = [...prev, trimmed];
+      localStorage.setItem("nanas_custom_platforms", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const addCustomCategory = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setCustomCategories((prev) => {
+      if (prev.includes(trimmed) || presetCategories.includes(trimmed)) return prev;
+      const updated = [...prev, trimmed];
+      localStorage.setItem("nanas_custom_categories", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const addCustomTone = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setCustomTones((prev) => {
+      if (prev.includes(trimmed) || presetTones.includes(trimmed)) return prev;
+      const updated = [...prev, trimmed];
+      localStorage.setItem("nanas_custom_tones", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   function addDraft(d: Omit<Draft, "id" | "updatedAt">, silent = false): string {
     const now = new Date();
     const newId = `${now.getTime()}`;
@@ -230,7 +268,12 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
 
     setDrafts((s) => [newDraft, ...s]);
     if (!silent) {
-      toast.success(`Draft "${d.title}" berhasil ditambahkan!`);
+      toast.success(`Draft "${d.title}" berhasil ditambahkan!`, {
+        action: {
+          label: "Lihat Draft",
+          onClick: () => router.push(`/drafts/${newId}`),
+        },
+      });
     }
     return newId;
   }
@@ -309,11 +352,28 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
   }
 
   function deleteIdea(id: string, silent = false) {
-    const found = ideas.find((i) => i.id === id);
-    if (found && !silent) {
-      toast.error(`Ide "${found.title}" telah dihapus.`);
-    }
+    const index = ideas.findIndex((i) => i.id === id);
+    if (index === -1) return;
+    const found = ideas[index];
+
     setIdeas((currentIdeas) => currentIdeas.filter((idea) => idea.id !== id));
+
+    if (!silent) {
+      toast.error(`Ide "${found.title}" telah dihapus.`, {
+        action: {
+          label: "Undo",
+          onClick: () => {
+            setIdeas((currentIdeas) => {
+              if (currentIdeas.some((i) => i.id === found.id)) return currentIdeas;
+              const updated = [...currentIdeas];
+              updated.splice(index, 0, found);
+              return updated;
+            });
+            toast.success(`Ide "${found.title}" berhasil dipulihkan!`);
+          },
+        },
+      });
+    }
   }
 
   return (
@@ -327,6 +387,14 @@ export function DraftsProvider({ children }: { children: React.ReactNode }) {
         ideas,
         addIdea,
         deleteIdea,
+        
+        // Relational custom states combined
+        platforms: [...presetPlatforms, ...customPlatforms],
+        categories: [...presetCategories, ...customCategories],
+        tones: [...presetTones, ...customTones],
+        addCustomPlatform,
+        addCustomCategory,
+        addCustomTone,
       }}
     >
       {children}
