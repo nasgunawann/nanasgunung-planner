@@ -252,7 +252,6 @@ export default function PlannerShell({
     title: string;
     content: string;
     category: string;
-    tags: string[];
   }) => {
     try {
       const stored = localStorage.getItem("nanas_snippets");
@@ -260,6 +259,7 @@ export default function PlannerShell({
       const updatedSnippet = {
         id: `snip-${Date.now()}`,
         ...newSnippet,
+        tags: [],
       };
       const updatedList = [updatedSnippet, ...snippetsList];
       localStorage.setItem("nanas_snippets", JSON.stringify(updatedList));

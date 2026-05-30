@@ -18,7 +18,7 @@ export default function Landing() {
           Open Planner
         </Link>
         <Link
-          href="/auth/login"
+          href="/login"
           className="rounded-md border border-border px-4 py-2"
         >
           Login
