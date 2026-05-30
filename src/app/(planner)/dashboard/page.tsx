@@ -132,17 +132,22 @@ export default function DashboardPage() {
     })
     .slice(0, 3);
 
-  // Calculate platform distribution percentage
+  // Calculate platform distribution percentage including fallback 'Lainnya'
   const platformCounts: Record<string, number> = {
     Instagram: 0,
     TikTok: 0,
     YouTube: 0,
     LinkedIn: 0,
+    Lainnya: 0,
   };
   let totalPlatformDrafts = 0;
   drafts.forEach((d) => {
-    if (d.platform && d.platform in platformCounts) {
-      platformCounts[d.platform]++;
+    if (d.platform) {
+      if (d.platform in platformCounts) {
+        platformCounts[d.platform]++;
+      } else {
+        platformCounts.Lainnya++;
+      }
       totalPlatformDrafts++;
     }
   });
@@ -196,186 +201,97 @@ export default function DashboardPage() {
         {/* 4 Columns Analytics Stats Metrics Panel */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Active Drafts Metrics */}
-          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group">
-            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
-              <div className="space-y-1">
-                <CardDescription className="text-[11px] font-bold uppercase tracking-wider">
+          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group p-3.5 flex flex-col justify-between h-28">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-0.5">
+                <CardDescription className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground/80">
                   Draf Aktif
                 </CardDescription>
-                <CardTitle className="text-3xl font-extrabold tracking-tight mt-1">
+                <CardTitle className="text-2xl font-black tracking-tight text-foreground">
                   {activeDraftsCount}
                 </CardTitle>
               </div>
-              <StatIconBadge icon={IconPencil} />
-            </CardHeader>
-            <CardContent className="text-[10px] text-muted-foreground flex gap-2">
-              <span className="font-medium text-orange-500">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-background shadow-sm ring-1 ring-primary/15">
+                <IconPencil className="size-4.5" />
+              </div>
+            </div>
+            <div className="text-[10px] text-muted-foreground flex gap-1.5 flex-wrap">
+              <span className="font-semibold text-orange-500">
                 {scheduledDraftsCount} Terjadwal
               </span>
               <span>•</span>
-              <span className="font-medium text-emerald-500">
+              <span className="font-semibold text-emerald-500">
                 {publishedDraftsCount} Rilis
               </span>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Raw Ideas Metrics */}
-          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group">
-            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
-              <div className="space-y-1">
-                <CardDescription className="text-[11px] font-bold uppercase tracking-wider">
+          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group p-3.5 flex flex-col justify-between h-28">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-0.5">
+                <CardDescription className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground/80">
                   Ide Mentah
                 </CardDescription>
-                <CardTitle className="text-3xl font-extrabold tracking-tight mt-1">
+                <CardTitle className="text-2xl font-black tracking-tight text-foreground">
                   {rawIdeas.length}
                 </CardTitle>
               </div>
-              <StatIconBadge icon={IconBulb} />
-            </CardHeader>
-            <CardContent className="text-[10px] text-muted-foreground">
-              Ide kasar yang tersimpan di Pustaka
-            </CardContent>
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-background shadow-sm ring-1 ring-primary/15">
+                <IconBulb className="size-4.5" />
+              </div>
+            </div>
+            <div className="text-[10px] text-muted-foreground truncate">
+              Ide kasar tersimpan di Pustaka
+            </div>
           </Card>
 
           {/* Quick Snippets Metrics */}
-          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group">
-            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
-              <div className="space-y-1">
-                <CardDescription className="text-[11px] font-bold uppercase tracking-wider">
+          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group p-3.5 flex flex-col justify-between h-28">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-0.5">
+                <CardDescription className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground/80">
                   Aset Snippets
                 </CardDescription>
-                <CardTitle className="text-3xl font-extrabold tracking-tight mt-1">
+                <CardTitle className="text-2xl font-black tracking-tight text-foreground">
                   {snippetsCount}
                 </CardTitle>
               </div>
-              <StatIconBadge icon={IconBooks} />
-            </CardHeader>
-            <CardContent className="text-[10px] text-muted-foreground">
-              Teks siap pakai untuk penyisipan instan
-            </CardContent>
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-background shadow-sm ring-1 ring-primary/15">
+                <IconBooks className="size-4.5" />
+              </div>
+            </div>
+            <div className="text-[10px] text-muted-foreground truncate">
+              Teks siap pakai penyisipan instan
+            </div>
           </Card>
 
           {/* Custom Templates Metrics */}
-          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group">
-            <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
-              <div className="space-y-1">
-                <CardDescription className="text-[11px] font-bold uppercase tracking-wider">
+          <Card className="hover:shadow-md transition-all border-border/80 bg-card/60 backdrop-blur-sm group p-3.5 flex flex-col justify-between h-28">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-0.5">
+                <CardDescription className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground/80">
                   Templat Kustom
                 </CardDescription>
-                <CardTitle className="text-3xl font-extrabold tracking-tight mt-1">
+                <CardTitle className="text-2xl font-black tracking-tight text-foreground">
                   {customTemplatesCount}
                 </CardTitle>
               </div>
-              <StatIconBadge icon={IconTemplate} />
-            </CardHeader>
-            <CardContent className="text-[10px] text-muted-foreground">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-background shadow-sm ring-1 ring-primary/15">
+                <IconTemplate className="size-4.5" />
+              </div>
+            </div>
+            <div className="text-[10px] text-muted-foreground truncate">
               Kerangka struktur buatan Anda
-            </CardContent>
+            </div>
           </Card>
         </div>
 
         {/* Main Columns Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Column Left (Span 2): WIP Drafts and Upcoming Queue */}
+          {/* Column Left (Span 2): Upcoming Queue and WIP Drafts */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Melanjutkan Pekerjaan (WIP Drafts) */}
-            <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
-              <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-sm font-bold flex items-center gap-1.5">
-                    <IconClock className="size-4.5 text-primary" />
-                    Melanjutkan Draf Terakhir
-                  </CardTitle>
-                  <CardDescription className="text-[11px]">
-                    Lanjutkan menulis draf konten yang baru-baru ini Anda
-                    perbarui.
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => router.push("/drafts")}
-                  className="text-xs text-primary hover:text-primary/80 font-bold cursor-pointer"
-                >
-                  Lihat Semua
-                  <IconArrowRight className="size-3" />
-                </Button>
-              </CardHeader>
-              <CardContent className="p-0">
-                {recentDrafts.length > 0 ? (
-                  <div className="divide-y divide-border/40">
-                    {recentDrafts.map((d) => {
-                      const Icon =
-                        (d.platform && platformIcons[d.platform]) ||
-                        IconFileText;
-                      return (
-                        <div
-                          key={d.id}
-                          onClick={() => router.push(`/drafts/${d.id}`)}
-                          className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors cursor-pointer group"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            {/* Platform Icon */}
-                            <Icon className="size-8 shrink-0" />
-                            <div className="min-w-0 space-y-0.5">
-                              <h4 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors truncate max-w-[280px] sm:max-w-[400px]">
-                                {d.title}
-                              </h4>
-                              <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                                <span>{d.category || "No Category"}</span>
-                                <span>•</span>
-                                <span>{d.updatedAt}</span>
-                                {d.date && d.status !== "Published" && (
-                                  <>
-                                    <span>•</span>
-                                    <span className="text-blue-500 font-semibold flex items-center gap-1 shrink-0">
-                                      <IconClock className="size-3" />
-                                      {new Date(d.date).toLocaleDateString("id-ID", {
-                                        day: "numeric",
-                                        month: "short",
-                                      })}
-                                    </span>
-                                  </>
-                                )}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Status Badge */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
-                                d.status === "Published"
-                                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                                  : d.status === "In progress"
-                                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                                    : "bg-slate-500/10 text-slate-500 border border-slate-500/20"
-                              }`}
-                            >
-                              {d.status || "Draft"}
-                            </span>
-                            <IconArrowRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="p-8 text-center text-muted-foreground space-y-1.5">
-                    <IconPencil className="size-8 text-muted-foreground/30 mx-auto" />
-                    <p className="text-xs font-bold text-foreground">
-                      Belum ada draf aktif
-                    </p>
-                    <p className="text-[11px] max-w-xs mx-auto">
-                      Buat draf baru menggunakan tombol tambah di sudut kanan
-                      bawah layar Anda.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Jadwal Konten Mendatang (Upcoming Content) */}
+            {/* Jadwal Konten Mendatang (Upcoming Content) - FIRST */}
             <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-bold flex items-center gap-1.5">
@@ -471,41 +387,171 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Melanjutkan Pekerjaan (WIP Drafts) - SECOND */}
+            <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
+              <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-bold flex items-center gap-1.5">
+                    <IconClock className="size-4.5 text-primary" />
+                    Melanjutkan Draf Terakhir
+                  </CardTitle>
+                  <CardDescription className="text-[11px]">
+                    Lanjutkan menulis draf konten yang baru-baru ini Anda
+                    perbarui.
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => router.push("/drafts")}
+                  className="text-xs text-primary hover:text-primary/80 font-bold cursor-pointer"
+                >
+                  Lihat Semua
+                  <IconArrowRight className="size-3" />
+                </Button>
+              </CardHeader>
+              <CardContent className="p-0">
+                {recentDrafts.length > 0 ? (
+                  <div className="divide-y divide-border/40">
+                    {recentDrafts.map((d) => {
+                      const Icon =
+                        (d.platform && platformIcons[d.platform]) ||
+                        IconFileText;
+                      return (
+                        <div
+                          key={d.id}
+                          onClick={() => router.push(`/drafts/${d.id}`)}
+                          className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Platform Icon */}
+                            <Icon className="size-8 shrink-0" />
+                            <div className="min-w-0 space-y-0.5">
+                              <h4 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors truncate max-w-[280px] sm:max-w-[400px]">
+                                {d.title}
+                              </h4>
+                              <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                                <span>{d.category || "No Category"}</span>
+                                <span>•</span>
+                                <span>{d.updatedAt}</span>
+                                {d.date && d.status !== "Published" && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="text-blue-500 font-semibold flex items-center gap-1 shrink-0">
+                                      <IconClock className="size-3" />
+                                      {new Date(d.date).toLocaleDateString("id-ID", {
+                                        day: "numeric",
+                                        month: "short",
+                                      })}
+                                    </span>
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Status Badge */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
+                                d.status === "Published"
+                                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                                  : d.status === "In progress"
+                                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                                    : "bg-slate-500/10 text-slate-500 border border-slate-500/20"
+                              }`}
+                            >
+                              {d.status || "Draft"}
+                            </span>
+                            <IconArrowRight className="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground space-y-1.5">
+                    <IconPencil className="size-8 text-muted-foreground/30 mx-auto" />
+                    <p className="text-xs font-bold text-foreground">
+                      Belum ada draf aktif
+                    </p>
+                    <p className="text-[11px] max-w-xs mx-auto">
+                      Buat draf baru menggunakan tombol tambah di sudut kanan
+                      bawah layar Anda.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Column Right: Quick-Capture Idea Box & Platform Distribution */}
+          {/* Column Right: Past Raw Ideas & Platform Distribution */}
           <div className="space-y-6">
-            {/* Quick-Capture Raw Idea Box */}
-            <Card className="border-border/80 bg-card/60 backdrop-blur-sm relative overflow-hidden">
+            {/* Ide Mentah Sebelumnya Catalog */}
+            <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-1.5">
                   <IconBulb className="size-4.5 text-primary animate-pulse" />
-                  Pencatat Ide Kilat
+                  Ide Mentah Sebelumnya
                 </CardTitle>
-                <CardDescription className="text-[11px]">
-                  Tulis pemikiran cepat atau ide konten kasar sebelum Anda
-                  melupakannya!
+                <CardDescription className="text-[11px] leading-relaxed">
+                  Ide kamu sebelumnya. Kembangkan lagi idemu yang tersimpan untuk konten selanjutnya!
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSaveQuickIdea} className="space-y-3">
-                  <Textarea
-                    placeholder="Nanti bikin video tentang tips produktivitas untuk kreator..."
-                    value={quickIdea}
-                    onChange={(e) => setQuickIdea(e.target.value)}
-                    rows={4}
-                    className="text-xs resize-none bg-background/50 border-border/70 placeholder:text-muted-foreground/70"
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isSubmittingIdea || !quickIdea.trim()}
-                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs h-8 cursor-pointer"
-                  >
-                    <IconPlus className="size-3.5" />
-                    Simpan Ide Mentah
-                  </Button>
-                </form>
+              <CardContent className="pb-4">
+                {rawIdeas.length > 0 ? (
+                  <div className="space-y-2.5">
+                    {rawIdeas.slice(0, 3).map((idea) => {
+                      const Icon = platformIcons[idea.platform] ?? IconBulb;
+                      return (
+                        <div
+                          key={idea.id}
+                          className="p-3 rounded-lg border border-border/80 bg-background/50 flex flex-col justify-between gap-2.5 group hover:border-primary/40 transition-all"
+                        >
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between gap-2 text-[9px] text-muted-foreground">
+                              <span className="font-bold flex items-center gap-1">
+                                <Icon className="size-3.5" />
+                                {idea.platform}
+                              </span>
+                              <span>{idea.createdAt}</span>
+                            </div>
+                            <h4 className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-relaxed">
+                              {idea.title}
+                            </h4>
+                          </div>
+                          <Button
+                            size="xs"
+                            onClick={() => router.push(`/brainstorm?idea=${encodeURIComponent(idea.title)}&platform=${encodeURIComponent(idea.platform)}`)}
+                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-[10px] h-7 cursor-pointer"
+                          >
+                            <IconSparkles className="size-3 shrink-0" />
+                            Kembangkan Ide
+                          </Button>
+                        </div>
+                      );
+                    })}
+                    {rawIdeas.length > 3 && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => router.push("/library?tab=raw_ideas")}
+                        className="w-full text-xs text-primary hover:text-primary/80 font-bold cursor-pointer mt-1"
+                      >
+                        Lihat Semua Ide ({rawIdeas.length})
+                        <IconArrowRight className="size-3" />
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center text-muted-foreground space-y-2 border border-dashed border-border/80 rounded-lg bg-background/20">
+                    <IconBulb className="size-6 text-muted-foreground/30 mx-auto" />
+                    <p className="text-[11px] leading-relaxed">
+                      Belum ada ide mentah terdaftar. Ketuk tombol FAB `+` di sudut kanan bawah untuk mulai mencatat!
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -610,6 +656,30 @@ export default function DashboardPage() {
                         />
                       </div>
                     </div>
+
+                    {/* Lainnya (Custom Platforms) */}
+                    {platformCounts.Lainnya > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-semibold flex items-center gap-1 text-muted-foreground">
+                            <IconFileText className="size-3.5 text-muted-foreground" />
+                            Lainnya
+                          </span>
+                          <span className="font-bold text-foreground">
+                            {platformCounts.Lainnya} draf (
+                            {getPlatformPercentage("Lainnya")}%)
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-muted-foreground/60 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${getPlatformPercentage("Lainnya")}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="py-4 text-center text-[11px] text-muted-foreground">
