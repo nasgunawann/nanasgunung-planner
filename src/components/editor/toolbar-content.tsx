@@ -49,10 +49,10 @@ export function MainToolbarContent({
           onClick={onAiClick}
           variant="ghost"
           className="gap-1 px-2 text-[10px] font-semibold text-primary"
-          title="AI Generate (Ctrl+/)"
+          title="Generate dengan AI (Ctrl+/)"
         >
           <IconSparkles className="size-4 shrink-0" />
-          {!isMobile && <span>AI Generate</span>}
+          {!isMobile && <span>Generate</span>}
         </Button>
       </ToolbarGroup>
 

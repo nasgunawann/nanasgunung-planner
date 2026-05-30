@@ -1,26 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Roboto, IBM_Plex_Sans } from "next/font/google";
+import { Geist_Mono, Merriweather, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "./custom.css";
 import { cn } from "@/lib/utils";
 import ThemeProvider from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const ibmPlexSansHeading = IBM_Plex_Sans({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-sans",
 });
 
-const roboto = Roboto({ subsets: ["latin"], variable: "--font-sans" });
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const merriweather = Merriweather({
   subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  variable: "--font-serif",
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -43,11 +42,10 @@ export default function RootLayout({
       className={cn(
         "h-full",
         "antialiased",
-        geistSans.variable,
+        plusJakartaSans.variable,
+        merriweather.variable,
         geistMono.variable,
         "font-sans",
-        roboto.variable,
-        ibmPlexSansHeading.variable,
       )}
     >
       <head>
