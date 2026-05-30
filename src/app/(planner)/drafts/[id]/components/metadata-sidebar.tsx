@@ -3,15 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { PlatformSelect, CategorySelect, StatusSelect } from "@/components/planner-selects";
 import { IconArrowLeft, IconTrash } from "@tabler/icons-react";
-import { useDrafts } from "@/lib/drafts";
 
 type Props = {
   draft: any;
@@ -28,8 +21,6 @@ export default function MetadataSidebar({
   setIsDeleteOpen,
   handleDropdownChange,
 }: Props) {
-  const { platforms, categories, addCustomPlatform, addCustomCategory } = useDrafts();
-
   return (
     <div className="bg-card border border-border/60 p-4 rounded-xl shadow-sm space-y-4">
       <div className="border-b border-border/60 pb-3 space-y-2">
@@ -74,36 +65,12 @@ export default function MetadataSidebar({
         >
           Platform
         </label>
-        <Select
+        <PlatformSelect
           value={draft.platform ?? "Instagram"}
-          onValueChange={(val) => {
-            if (val === "_custom_") {
-              const name = prompt("Masukkan nama platform baru:");
-              if (name && name.trim()) {
-                const formatted = name.trim();
-                addCustomPlatform(formatted);
-                handleDropdownChange("platform", formatted);
-              }
-            } else {
-              handleDropdownChange("platform", val);
-            }
-          }}
-        >
-          <SelectTrigger
-            id="ws-platform"
-            className="h-9 text-xs bg-background cursor-pointer"
-          >
-            <SelectValue placeholder="Platform" />
-          </SelectTrigger>
-          <SelectContent>
-            {platforms.map((plat) => (
-              <SelectItem key={plat} value={plat}>{plat}</SelectItem>
-            ))}
-            <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
-              + Platform Baru...
-            </SelectItem>
-          </SelectContent>
-        </Select>
+          onValueChange={(val) => handleDropdownChange("platform", val)}
+          id="ws-platform"
+          className="h-9 text-xs bg-background cursor-pointer"
+        />
       </div>
 
       <div className="grid gap-1">
@@ -113,37 +80,12 @@ export default function MetadataSidebar({
         >
           Format / Category
         </label>
-        <Select
-          value={draft.category ?? "none"}
-          onValueChange={(val) => {
-            if (val === "_custom_") {
-              const name = prompt("Masukkan nama format/kategori baru:");
-              if (name && name.trim()) {
-                const formatted = name.trim();
-                addCustomCategory(formatted);
-                handleDropdownChange("category", formatted);
-              }
-            } else {
-              handleDropdownChange("category", val === "none" ? "" : val);
-            }
-          }}
-        >
-          <SelectTrigger
-            id="ws-category"
-            className="h-9 text-xs bg-background cursor-pointer"
-          >
-            <SelectValue placeholder="No Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No Category</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-            ))}
-            <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
-              + Kategori Baru...
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <CategorySelect
+          value={draft.category ?? ""}
+          onValueChange={(val) => handleDropdownChange("category", val)}
+          id="ws-category"
+          className="h-9 text-xs bg-background cursor-pointer"
+        />
       </div>
 
       <div className="grid gap-1">
@@ -153,22 +95,12 @@ export default function MetadataSidebar({
         >
           Workflow Status
         </label>
-        <Select
+        <StatusSelect
           value={draft.status ?? "Draft"}
           onValueChange={(val) => handleDropdownChange("status", val)}
-        >
-          <SelectTrigger
-            id="ws-status"
-            className="h-9 text-xs bg-background cursor-pointer"
-          >
-            <SelectValue placeholder="Workflow Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Draft">Draft</SelectItem>
-            <SelectItem value="In progress">In progress</SelectItem>
-            <SelectItem value="Published">Published</SelectItem>
-          </SelectContent>
-        </Select>
+          id="ws-status"
+          className="h-9 text-xs bg-background cursor-pointer"
+        />
       </div>
 
       <div className="grid gap-1">

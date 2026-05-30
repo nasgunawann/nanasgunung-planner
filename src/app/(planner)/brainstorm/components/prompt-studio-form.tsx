@@ -2,7 +2,7 @@
 
 import React from "react";
 import { IconSparkles, IconLoader2 } from "@tabler/icons-react";
-import { useDrafts } from "@/lib/drafts";
+import { PlatformSelect, ToneSelect } from "@/components/planner-selects";
 
 interface Props {
   topic: string;
@@ -25,36 +25,6 @@ export default function PromptStudioForm({
   isGenerating,
   onGenerate,
 }: Props) {
-  const { platforms, tones, addCustomPlatform, addCustomTone } = useDrafts();
-
-  const handlePlatformChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    if (val === "_custom_") {
-      const name = prompt("Masukkan nama platform baru:");
-      if (name && name.trim()) {
-        const formatted = name.trim();
-        addCustomPlatform(formatted);
-        setPlatform(formatted);
-      }
-    } else {
-      setPlatform(val);
-    }
-  };
-
-  const handleToneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    if (val === "_custom_") {
-      const name = prompt("Masukkan nama gaya bicara baru:");
-      if (name && name.trim()) {
-        const formatted = name.trim();
-        addCustomTone(formatted);
-        setTone(formatted);
-      }
-    } else {
-      setTone(val);
-    }
-  };
-
   return (
     <div className="bg-card border border-border/60 p-5 rounded-xl shadow-sm space-y-4">
       <h3 className="font-heading text-base font-bold flex items-center gap-2">
@@ -88,19 +58,12 @@ export default function PromptStudioForm({
           >
             Platform Sosial
           </label>
-          <select
-            id="platform-select"
+          <PlatformSelect
             value={platform}
-            onChange={handlePlatformChange}
-            className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
-          >
-            {platforms.map((plat) => (
-              <option key={plat} value={plat}>{plat}</option>
-            ))}
-            <option value="_custom_" className="text-primary font-bold">
-              + Platform Baru...
-            </option>
-          </select>
+            onValueChange={setPlatform}
+            id="platform-select"
+            className="h-10 text-xs bg-background cursor-pointer"
+          />
         </div>
 
         <div className="grid gap-1">
@@ -110,19 +73,12 @@ export default function PromptStudioForm({
           >
             Gaya Bicara
           </label>
-          <select
-            id="tone-select"
+          <ToneSelect
             value={tone}
-            onChange={handleToneChange}
-            className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
-          >
-            {tones.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-            <option value="_custom_" className="text-primary font-bold">
-              + Gaya Bicara Baru...
-            </option>
-          </select>
+            onValueChange={setTone}
+            id="tone-select"
+            className="h-10 text-xs bg-background cursor-pointer"
+          />
         </div>
 
         <button

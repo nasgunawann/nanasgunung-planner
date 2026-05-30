@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { IconCalendarEvent, IconInfoCircle } from "@tabler/icons-react";
-import { useDrafts } from "@/lib/drafts";
+import { CategorySelect, StatusSelect } from "@/components/planner-selects";
 
 interface Props {
   promotingIdea: any | null;
@@ -15,27 +15,13 @@ export default function PromoteModal({
   setPromotingIdea,
   handlePromoteSubmit,
 }: Props) {
-  const { categories, addCustomCategory } = useDrafts();
   const [selectedCategory, setSelectedCategory] = useState("Reels");
+  const [selectedStatus, setSelectedStatus] = useState("Draft");
 
   if (!promotingIdea) return null;
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    if (val === "_custom_") {
-      const name = prompt("Masukkan nama format/kategori baru:");
-      if (name && name.trim()) {
-        const formatted = name.trim();
-        addCustomCategory(formatted);
-        setSelectedCategory(formatted);
-      }
-    } else {
-      setSelectedCategory(val);
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-3 select-none">
       <div className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
           <div>
@@ -50,7 +36,7 @@ export default function PromoteModal({
           <button
             type="button"
             onClick={() => setPromotingIdea(null)}
-            className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1.5 text-xs font-semibold transition-colors"
+            className="rounded-md border border-border bg-background hover:bg-muted px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -79,20 +65,14 @@ export default function PromoteModal({
             >
               Format / Category
             </label>
-            <select
-              id="promote-category"
+            <CategorySelect
               name="category"
               value={selectedCategory}
-              onChange={handleCategoryChange}
-              className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-              <option value="_custom_" className="text-primary font-bold">
-                + Kategori Baru...
-              </option>
-            </select>
+              onValueChange={setSelectedCategory}
+              id="promote-category"
+              className="h-10 text-xs bg-background cursor-pointer"
+              includeNone={false}
+            />
           </div>
 
           <div className="grid gap-1">
@@ -102,15 +82,13 @@ export default function PromoteModal({
             >
               Initial Status
             </label>
-            <select
-              id="promote-status"
+            <StatusSelect
               name="status"
-              className="h-10 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-primary/50 cursor-pointer"
-            >
-              <option value="Draft">Draft</option>
-              <option value="In progress">In progress</option>
-              <option value="Published">Published</option>
-            </select>
+              value={selectedStatus}
+              onValueChange={setSelectedStatus}
+              id="promote-status"
+              className="h-10 text-xs bg-background cursor-pointer"
+            />
           </div>
 
           <div className="bg-blue-500/5 border border-blue-500/20 rounded p-2.5 text-[11px] text-muted-foreground flex gap-2">
@@ -126,13 +104,13 @@ export default function PromoteModal({
             <button
               type="button"
               onClick={() => setPromotingIdea(null)}
-              className="rounded-md border border-border bg-background hover:bg-muted px-4 py-2 text-sm font-semibold transition-colors"
+              className="rounded-md border border-border bg-background hover:bg-muted px-4 py-2 text-sm font-semibold transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2 text-sm font-semibold transition-colors"
+              className="rounded-md bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2 text-sm font-semibold transition-colors cursor-pointer shadow-sm"
             >
               Tambahkan ke Draft
             </button>

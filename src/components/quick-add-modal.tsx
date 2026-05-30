@@ -12,13 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { PlatformSelect, CategorySelect, StatusSelect } from "@/components/planner-selects";
 
 export default function QuickAddModal({
   isOpen,
@@ -31,7 +25,7 @@ export default function QuickAddModal({
   defaultDate?: string;
   defaultPlatform?: string;
 }) {
-  const { addDraft, platforms, categories, addCustomPlatform, addCustomCategory } = useDrafts();
+  const { addDraft } = useDrafts();
   const router = useRouter();
 
   // Local Form States matching Draft data structure
@@ -136,33 +130,12 @@ export default function QuickAddModal({
               >
                 Platform
               </label>
-              <Select value={platform} onValueChange={(val) => {
-                if (val === "_custom_") {
-                  const name = prompt("Masukkan nama platform baru:");
-                  if (name && name.trim()) {
-                    const formatted = name.trim();
-                    addCustomPlatform(formatted);
-                    setPlatform(formatted);
-                  }
-                } else {
-                  setPlatform(val);
-                }
-              }}>
-                <SelectTrigger
-                  id="modal-platform"
-                  className="h-10 text-xs bg-background cursor-pointer"
-                >
-                  <SelectValue placeholder="Pilih Platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  {platforms.map((plat) => (
-                    <SelectItem key={plat} value={plat}>{plat}</SelectItem>
-                  ))}
-                  <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
-                    + Platform Baru...
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <PlatformSelect
+                value={platform}
+                onValueChange={setPlatform}
+                id="modal-platform"
+                className="h-10 text-xs bg-background cursor-pointer"
+              />
             </div>
 
             {/* Category Select */}
@@ -173,34 +146,12 @@ export default function QuickAddModal({
               >
                 Format / Kategori
               </label>
-              <Select value={category} onValueChange={(val) => {
-                if (val === "_custom_") {
-                  const name = prompt("Masukkan nama format/kategori baru:");
-                  if (name && name.trim()) {
-                    const formatted = name.trim();
-                    addCustomCategory(formatted);
-                    setCategory(formatted);
-                  }
-                } else {
-                  setCategory(val);
-                }
-              }}>
-                <SelectTrigger
-                  id="modal-category"
-                  className="h-10 text-xs bg-background cursor-pointer"
-                >
-                  <SelectValue placeholder="Pilih Format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Category</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                  <SelectItem value="_custom_" className="text-primary font-semibold border-t border-border mt-1">
-                    + Kategori Baru...
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <CategorySelect
+                value={category}
+                onValueChange={setCategory}
+                id="modal-category"
+                className="h-10 text-xs bg-background cursor-pointer"
+              />
             </div>
           </div>
 
@@ -213,19 +164,12 @@ export default function QuickAddModal({
               >
                 Workflow Status
               </label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger
-                  id="modal-status"
-                  className="h-10 text-xs bg-background cursor-pointer"
-                >
-                  <SelectValue placeholder="Pilih Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Draft">Draft</SelectItem>
-                  <SelectItem value="In progress">In progress</SelectItem>
-                  <SelectItem value="Published">Published</SelectItem>
-                </SelectContent>
-              </Select>
+              <StatusSelect
+                value={status}
+                onValueChange={setStatus}
+                id="modal-status"
+                className="h-10 text-xs bg-background cursor-pointer"
+              />
             </div>
 
             {/* Publish Date & Time Field */}
